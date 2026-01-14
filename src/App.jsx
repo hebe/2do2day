@@ -29,7 +29,7 @@ function App() {
               onClick={() => setCurrentView('today')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'today'
-                  ? 'border-calm-700 text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700'
                   : 'border-transparent text-calm-600 hover:text-calm-700'
               }`}
             >
@@ -39,7 +39,7 @@ function App() {
               onClick={() => setCurrentView('backlog')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'backlog'
-                  ? 'border-calm-700 text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700'
                   : 'border-transparent text-calm-600 hover:text-calm-700'
               }`}
             >
@@ -49,7 +49,7 @@ function App() {
               onClick={() => setCurrentView('settings')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'settings'
-                  ? 'border-calm-700 text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700'
                   : 'border-transparent text-calm-600 hover:text-calm-700'
               }`}
             >

@@ -85,7 +85,7 @@ function SettingsView() {
                 className={`px-6 py-2 rounded-lg font-medium transition-all ${
                   isSaved
                     ? 'bg-green-600 text-white'
-                    : 'bg-calm-700 text-white hover:bg-calm-600'
+                    : 'bg-[#F0A500] text-white hover:bg-[#D89400] shadow-sm'
                 }`}
               >
                 {isSaved ? '✓ Saved!' : 'Save Changes'}

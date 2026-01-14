@@ -209,6 +209,12 @@ function TodayView() {
         .animate-slideDown {
           animation: slideDown 0.3s ease-out;
         }
+        
+        /* Custom accent color */
+        :root {
+          --accent-color: #F0A500;
+          --accent-hover: #D89400;
+        }
       `}</style>
     </div>
   )

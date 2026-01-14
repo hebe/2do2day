@@ -203,11 +203,11 @@ function BacklogView() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Add to backlog..."
-            className="flex-1 px-4 py-2 text-sm border border-calm-200 rounded-lg focus:outline-none focus:border-calm-600 transition-colors"
+            className="flex-1 px-4 py-3 text-sm border border-calm-200 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors"
           />
           <button
             type="submit"
-            className="px-6 py-2 bg-calm-700 text-white text-sm rounded-lg hover:bg-calm-600 transition-colors font-medium"
+            className="px-6 py-3 bg-[#F0A500] text-white text-sm rounded-lg hover:bg-[#D89400] transition-colors font-medium shadow-sm"
           >
             Add
           </button>
