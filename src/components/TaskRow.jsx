@@ -109,17 +109,10 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
         }}
         onDragOver={(e) => onDragOver(e, index)}
         onDrop={(e) => onDrop(e, index)}
-        className={`flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group cursor-move ${
+        className={`flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
           isDragging ? 'opacity-50' : ''
         }`}
       >
-        {/* Drag handle */}
-        <div className="flex-shrink-0 text-calm-300 group-hover:text-calm-400 transition-colors">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-          </svg>
-        </div>
-
         {/* Checkbox */}
         <button
           onClick={() => toggleDone(task.id)}

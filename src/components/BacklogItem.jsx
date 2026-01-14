@@ -176,18 +176,9 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
       onDragOver={(e) => type === 'backlog' && onDragOver && onDragOver(e, index)}
       onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
       className={`flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
-        type === 'backlog' ? 'cursor-move' : ''
-      } ${isDragging ? 'opacity-50' : ''}`}
+        isDragging ? 'opacity-50' : ''
+      }`}
     >
-      {/* Drag handle - only for backlog items */}
-      {type === 'backlog' && (
-        <div className="flex-shrink-0 text-calm-300 group-hover:text-calm-400 transition-colors">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-          </svg>
-        </div>
-      )}
-
       {/* Task title */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -222,12 +213,12 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Add to Today button */}
+        {/* Add to Today button - compact on mobile */}
         <button
           onClick={handleAddToToday}
-          className="px-3 py-1 text-xs text-calm-700 bg-calm-100 hover:bg-calm-200 rounded transition-colors font-medium"
+          className="px-2 py-1 text-xs text-calm-700 bg-calm-100 hover:bg-calm-200 rounded transition-colors font-medium whitespace-nowrap"
         >
-          + Add to Today
+          ← Today
         </button>
 
         {/* Menu button */}
