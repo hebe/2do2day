@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
+import useSwipeGesture from '../hooks/useSwipeGesture'
 
 function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
   const { 
@@ -18,6 +19,23 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
   const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
+
+  // Swipe gestures for backlog items
+  const { handlers: swipeHandlers, swipeOffset } = useSwipeGesture({
+    onSwipeRight: () => {
+      // Swipe right = add to today
+      if (type === 'backlog') {
+        addFromBacklog(task.id)
+      } else if (type === 'recurring') {
+        addFromRecurring(task.id)
+      }
+    },
+    onSwipeLeft: () => {
+      // Swipe left = show menu
+      setShowMenu(true)
+    },
+    threshold: 80
+  })
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -160,6 +178,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
 
   return (
     <div 
+      {...(type !== 'done' ? swipeHandlers : {})}
       draggable={!isEditing && type === 'backlog'}
       onDragStart={(e) => {
         if (type === 'backlog' && onDragStart) {
@@ -175,10 +194,26 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
       }}
       onDragOver={(e) => type === 'backlog' && onDragOver && onDragOver(e, index)}
       onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
-      className={`flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
+      style={{
+        transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
+        transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+      }}
+      className={`relative flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
+      {/* Swipe indicator */}
+      {type !== 'done' && swipeOffset > 50 && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
+          → Today
+        </div>
+      )}
+      {type !== 'done' && swipeOffset < -50 && (
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
+          Menu ←
+        </div>
+      )}
+
       {/* Task title */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

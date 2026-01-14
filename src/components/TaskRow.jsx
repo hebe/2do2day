@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
+import useSwipeGesture from '../hooks/useSwipeGesture'
 
 function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
   const { toggleDone, moveToBacklog, moveTodayToRecurring } = useStore()
@@ -10,6 +11,19 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
+
+  // Swipe gestures
+  const { handlers: swipeHandlers, swipeOffset } = useSwipeGesture({
+    onSwipeRight: () => {
+      // Swipe right = move to backlog
+      moveToBacklog(task.id)
+    },
+    onSwipeLeft: () => {
+      // Swipe left = show menu
+      setShowMenu(true)
+    },
+    threshold: 80
+  })
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
