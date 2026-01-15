@@ -111,27 +111,28 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div
-        {...swipeHandlers}
-        draggable={!isEditing}
-        onDragStart={(e) => {
-          setIsDragging(true)
-          onDragStart(e, index)
-        }}
-        onDragEnd={(e) => {
-          setIsDragging(false)
-          onDragEnd(e)
-        }}
-        onDragOver={(e) => onDragOver(e, index)}
-        onDrop={(e) => onDrop(e, index)}
-        style={{
-          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-          transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
-        }}
-        className={`relative flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
-          isDragging ? 'opacity-50' : ''
-        }`}
-      >
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#F0A500' }}>
+        <div
+          {...swipeHandlers}
+          draggable={!isEditing}
+          onDragStart={(e) => {
+            setIsDragging(true)
+            onDragStart(e, index)
+          }}
+          onDragEnd={(e) => {
+            setIsDragging(false)
+            onDragEnd(e)
+          }}
+          onDragOver={(e) => onDragOver(e, index)}
+          onDrop={(e) => onDrop(e, index)}
+          style={{
+            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
+            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+          }}
+          className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
+            isDragging ? 'opacity-50' : ''
+          }`}
+        >
         {/* Checkbox */}
         <button
           onClick={() => toggleDone(task.id)}
@@ -220,6 +221,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
             </>
           )}
         </div>
+      </div>
       </div>
 
       {/* Recurring Interval Modal */}
