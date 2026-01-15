@@ -133,6 +133,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           isDragging ? 'opacity-50' : ''
         }`}
       >
+
         {/* Checkbox */}
         <button
           onClick={() => toggleDone(task.id)}
@@ -235,4 +236,4 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   )
 }
 
-export default TaskRowg
+export default TaskRow

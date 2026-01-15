@@ -202,17 +202,6 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
         isDragging ? 'opacity-50' : ''
       }`}
     >
-      {/* Swipe indicator */}
-      {type !== 'done' && swipeOffset > 50 && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
-          → Today
-        </div>
-      )}
-      {type !== 'done' && swipeOffset < -50 && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
-          Menu ←
-        </div>
-      )}
 
       {/* Task title */}
       <div className="flex-1 min-w-0">
