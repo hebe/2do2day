@@ -189,35 +189,38 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           {/* Dropdown menu */}
           {showMenu && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
-              />
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-calm-200 py-1 z-20">
-                <button
-                  onClick={handleEdit}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={handleMakeRecurring}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  ↻ Make recurring
-                </button>
-                <button
-                  onClick={handleMoveToBacklog}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  📦 Move to backlog
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  🗑️ Delete
-                </button>
+              {/* Desktop only - dropdown */}
+              <div className="hidden md:block">
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-calm-200 py-1 z-20">
+                  <button onClick={handleEdit} className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors">
+                    ✏️ Edit
+                  </button>
+                  <button onClick={handleMakeRecurring} className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors">
+                    ↻ Make recurring
+                  </button>
+                  <button onClick={handleMoveToBacklog} className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors">
+                    📦 Move to backlog
+                  </button>
+                  <button onClick={handleDelete} className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+
+              {/* Mobile - full modal */}
+              <div className="md:hidden">
+                <TaskActionsModal
+                  task={task}
+                  onEdit={handleEdit}
+                  onMakeRecurring={handleMakeRecurring}
+                  onMoveToBacklog={handleMoveToBacklog}
+                  onDelete={handleDelete}
+                  onClose={() => setShowMenu(false)}
+                />
               </div>
             </>
           )}
