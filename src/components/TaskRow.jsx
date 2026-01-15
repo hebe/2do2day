@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
+import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
 function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
@@ -111,28 +112,28 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#DFD8C7' }}>
-        <div
-          {...swipeHandlers}
-          draggable={!isEditing}
-          onDragStart={(e) => {
-            setIsDragging(true)
-            onDragStart(e, index)
-          }}
-          onDragEnd={(e) => {
-            setIsDragging(false)
-            onDragEnd(e)
-          }}
-          onDragOver={(e) => onDragOver(e, index)}
-          onDrop={(e) => onDrop(e, index)}
-          style={{
-            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
-          }}
-          className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
-            isDragging ? 'opacity-50' : ''
-          }`}
-        >
+      <div 
+        {...swipeHandlers}
+        draggable={!isEditing}
+        onDragStart={(e) => {
+          setIsDragging(true)
+          onDragStart(e, index)
+        }}
+        onDragEnd={(e) => {
+          setIsDragging(false)
+          onDragEnd(e)
+        }}
+        onDragOver={(e) => onDragOver(e, index)}
+        onDrop={(e) => onDrop(e, index)}
+        style={{
+          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
+          transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+        }}
+        className={`relative flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
+          isDragging ? 'opacity-50' : ''
+        }`}
+      >
+
         {/* Checkbox */}
         <button
           onClick={() => toggleDone(task.id)}
@@ -165,11 +166,11 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           {task.title}
         </span>
 
-        {/* Actions menu */}
-        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity relative">
+        {/* Actions menu - show as modal on mobile */}
+        <div className="flex-shrink-0 transition-opacity relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-calm-400 hover:text-calm-600 transition-colors"
+            className="p-1 text-calm-400 hover:text-calm-600 transition-colors md:opacity-0 md:group-hover:opacity-100"
             aria-label="More options"
           >
             <svg
@@ -221,7 +222,6 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
             </>
           )}
         </div>
-      </div>
       </div>
 
       {/* Recurring Interval Modal */}
