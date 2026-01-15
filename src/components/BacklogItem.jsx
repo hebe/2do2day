@@ -177,42 +177,32 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
   }
 
   return (
-    <div 
-      {...(type !== 'done' ? swipeHandlers : {})}
-      draggable={!isEditing && type === 'backlog'}
-      onDragStart={(e) => {
-        if (type === 'backlog' && onDragStart) {
-          setIsDragging(true)
-          onDragStart(e, index)
-        }
-      }}
-      onDragEnd={(e) => {
-        if (type === 'backlog' && onDragEnd) {
-          setIsDragging(false)
-          onDragEnd(e)
-        }
-      }}
-      onDragOver={(e) => type === 'backlog' && onDragOver && onDragOver(e, index)}
-      onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
-      style={{
-        transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-        transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
-      }}
-      className={`relative flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
-        isDragging ? 'opacity-50' : ''
-      }`}
-    >
-      {/* Swipe indicator */}
-      {type !== 'done' && swipeOffset > 50 && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
-          → Today
-        </div>
-      )}
-      {type !== 'done' && swipeOffset < -50 && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-calm-500 text-sm">
-          Menu ←
-        </div>
-      )}
+    <div className="relative overflow-hidden" style={{ backgroundColor: '#DFD8C7' }}>
+      <div
+        {...(type !== 'done' ? swipeHandlers : {})}
+        draggable={!isEditing && type === 'backlog'}
+        onDragStart={(e) => {
+          if (type === 'backlog' && onDragStart) {
+            setIsDragging(true)
+            onDragStart(e, index)
+          }
+        }}
+        onDragEnd={(e) => {
+          if (type === 'backlog' && onDragEnd) {
+            setIsDragging(false)
+            onDragEnd(e)
+          }
+        }}
+        onDragOver={(e) => type === 'backlog' && onDragOver && onDragOver(e, index)}
+        onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
+        style={{
+          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
+          transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+        }}
+        className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
+          isDragging ? 'opacity-50' : ''
+        }`}
+      >
 
       {/* Task title */}
       <div className="flex-1 min-w-0">
@@ -326,6 +316,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           onCancel={() => setShowRecurringModal(false)}
         />
       )}
+      </div>
     </div>
   )
 }

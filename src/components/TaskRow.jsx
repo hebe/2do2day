@@ -111,7 +111,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#F0A500' }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#DFD8C7' }}>
         <div
           {...swipeHandlers}
           draggable={!isEditing}
