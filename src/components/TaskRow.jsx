@@ -16,11 +16,9 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   // Swipe gestures
   const { handlers: swipeHandlers, swipeOffset } = useSwipeGesture({
     onSwipeRight: () => {
-      // Swipe right = move to backlog
       moveToBacklog(task.id)
     },
     onSwipeLeft: () => {
-      // Swipe left = show menu
       setShowMenu(true)
     },
     threshold: 80
@@ -82,7 +80,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   if (isEditing) {
     return (
       <div className="flex items-center gap-3 p-4 bg-calm-50">
-        <div className="flex-shrink-0 w-5 h-5" /> {/* Spacer for checkbox */}
+        <div className="flex-shrink-0 w-5 h-5" />
         <input
           ref={inputRef}
           type="text"
@@ -93,14 +91,14 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           className="flex-1 px-3 py-1 text-base border border-calm-300 rounded focus:outline-none focus:border-calm-600 transition-colors"
         />
         <button
-          onMouseDown={(e) => e.preventDefault()} // Prevent blur
+          onMouseDown={(e) => e.preventDefault()}
           onClick={handleSaveEdit}
           className="px-3 py-1 text-xs bg-calm-700 text-white rounded hover:bg-calm-600 transition-colors font-medium"
         >
           Save
         </button>
         <button
-          onMouseDown={(e) => e.preventDefault()} // Prevent blur
+          onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancelEdit}
           className="px-3 py-1 text-xs text-calm-600 hover:text-calm-700 transition-colors"
         >
@@ -112,117 +110,71 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div 
-        {...swipeHandlers}
-        draggable={!isEditing}
-        onDragStart={(e) => {
-          setIsDragging(true)
-          onDragStart(e, index)
-        }}
-        onDragEnd={(e) => {
-          setIsDragging(false)
-          onDragEnd(e)
-        }}
-        onDragOver={(e) => onDragOver(e, index)}
-        onDrop={(e) => onDrop(e, index)}
-        style={{
-          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-          transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
-        }}
-        className={`relative flex items-center gap-3 p-4 hover:bg-calm-50 transition-colors group ${
-          isDragging ? 'opacity-50' : ''
-        }`}
-      >
-
-        {/* Checkbox */}
-        <button
-          onClick={() => toggleDone(task.id)}
-          className="flex-shrink-0 w-5 h-5 rounded border-2 border-calm-300 hover:border-calm-600 transition-colors flex items-center justify-center"
-          aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
+      <div className="relative" style={{ backgroundColor: '#DFD8C7' }}>
+        <div
+          {...swipeHandlers}
+          draggable={!isEditing}
+          onDragStart={(e) => {
+            setIsDragging(true)
+            onDragStart(e, index)
+          }}
+          onDragEnd={(e) => {
+            setIsDragging(false)
+            onDragEnd(e)
+          }}
+          onDragOver={(e) => onDragOver(e, index)}
+          onDrop={(e) => onDrop(e, index)}
+          style={{
+            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
+            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+          }}
+          className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
+            isDragging ? 'opacity-50' : ''
+          } cursor-grab active:cursor-grabbing`}
         >
-          {task.done && (
-            <svg
-              className="w-3 h-3 text-calm-600"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M5 13l4 4L19 7" />
-            </svg>
-          )}
-        </button>
-
-        {/* Task title */}
-        <span
-          className={`flex-1 text-base ${
-            task.done
-              ? 'line-through text-calm-400'
-              : 'text-calm-700'
-          } transition-all`}
-        >
-          {task.title}
-        </span>
-
-        {/* Actions menu - show as modal on mobile */}
-        <div className="flex-shrink-0 transition-opacity relative">
+          {/* Checkbox */}
           <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-calm-400 hover:text-calm-600 transition-colors md:opacity-0 md:group-hover:opacity-100"
-            aria-label="More options"
+            onClick={() => toggleDone(task.id)}
+            className="flex-shrink-0 w-5 h-5 rounded border-2 border-calm-300 hover:border-calm-600 transition-colors flex items-center justify-center"
+            aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
+            {task.done && (
+              <svg
+                className="w-3 h-3 text-calm-600"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            )}
           </button>
 
-          {/* Dropdown menu */}
-          {showMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
-              />
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-calm-200 py-1 z-20">
-                <button
-                  onClick={handleEdit}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={handleMakeRecurring}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  ↻ Make recurring
-                </button>
-                <button
-                  onClick={handleMoveToBacklog}
-                  className="w-full px-4 py-2 text-left text-sm text-calm-700 hover:bg-calm-50 transition-colors"
-                >
-                  📦 Move to backlog
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  🗑️ Delete
-                </button>
-              </div>
-            </>
-          )}
+          {/* Task title */}
+          <span
+            className={`flex-1 text-base pr-4 ${
+              task.done ? 'line-through text-calm-400' : 'text-calm-700'
+            } transition-all`}
+          >
+            {task.title}
+          </span>
         </div>
       </div>
+
+      {/* Mobile modal - always render when showMenu is true */}
+      {showMenu && (
+        <TaskActionsModal
+          task={task}
+          onEdit={handleEdit}
+          onMakeRecurring={handleMakeRecurring}
+          onMoveToBacklog={handleMoveToBacklog}
+          onDelete={handleDelete}
+          onClose={() => setShowMenu(false)}
+        />
+      )}
 
       {/* Recurring Interval Modal */}
       {showRecurringModal && (

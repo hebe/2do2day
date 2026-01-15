@@ -1,6 +1,19 @@
 import React from 'react'
 
-function TaskActionsModal({ task, onEdit, onMakeRecurring, onMoveToBacklog, onDelete, onClose }) {
+function TaskActionsModal({ 
+  task, 
+  onEdit, 
+  onMakeRecurring, 
+  onMoveToBacklog, 
+  onMoveToToday,
+  onDelete, 
+  onClose,
+  type = 'today'
+}) {
+  const isToday = type === 'today'
+  const isBacklog = type === 'backlog'
+  const isRecurring = type === 'recurring'
+
   return (
     <>
       {/* Backdrop */}
@@ -10,20 +23,24 @@ function TaskActionsModal({ task, onEdit, onMakeRecurring, onMoveToBacklog, onDe
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
-        <div className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl border-t md:border border-calm-200 w-full md:max-w-md animate-slideUp">
+      <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
+        <div className="bg-white rounded-t-3xl shadow-xl border-t border-calm-200 w-full max-w-2xl animate-slideUp overflow-y-auto" style={{ maxHeight: '75vh' }}>
           {/* Header */}
-          <div className="px-6 py-4 border-b border-calm-200">
+          <div className="px-6 py-5 border-b border-calm-200">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-calm-500 uppercase tracking-wide mb-1">Task Options</p>
-                <h2 className="text-base font-medium text-calm-700 truncate">
+                <p className="text-xs text-calm-500 uppercase tracking-wide mb-1">
+                  {isToday && 'Task Options'}
+                  {isBacklog && 'Backlog Task'}
+                  {isRecurring && 'Recurring Task'}
+                </p>
+                <h2 className="text-base font-medium text-calm-700 line-clamp-2">
                   {task.title}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="flex-shrink-0 text-calm-400 hover:text-calm-600 transition-colors"
+                className="flex-shrink-0 text-calm-400 hover:text-calm-600 transition-colors -mt-1"
                 aria-label="Close"
               >
                 <svg
@@ -42,37 +59,71 @@ function TaskActionsModal({ task, onEdit, onMakeRecurring, onMoveToBacklog, onDe
           </div>
 
           {/* Actions */}
-          <div className="p-4 space-y-2">
+          <div className="p-6 space-y-3">
             <button
               onClick={onEdit}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-calm-700 hover:bg-calm-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
             >
-              <span className="text-xl">✏️</span>
+              <span className="text-2xl">✏️</span>
               <span className="text-base font-medium">Edit</span>
             </button>
 
-            <button
-              onClick={onMakeRecurring}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-calm-700 hover:bg-calm-50 rounded-lg transition-colors"
-            >
-              <span className="text-xl">↻</span>
-              <span className="text-base font-medium">Make recurring</span>
-            </button>
+            {isToday && onMakeRecurring && (
+              <button
+                onClick={onMakeRecurring}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">↻</span>
+                <span className="text-base font-medium">Make recurring</span>
+              </button>
+            )}
 
-            <button
-              onClick={onMoveToBacklog}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left text-calm-700 hover:bg-calm-50 rounded-lg transition-colors"
-            >
-              <span className="text-xl">📦</span>
-              <span className="text-base font-medium">Move to backlog</span>
-            </button>
+            {isBacklog && onMakeRecurring && (
+              <button
+                onClick={onMakeRecurring}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">↻</span>
+                <span className="text-base font-medium">Mark as recurring</span>
+              </button>
+            )}
+
+            {isRecurring && onMakeRecurring && (
+              <button
+                onClick={onMakeRecurring}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">🔄</span>
+                <span className="text-base font-medium">Change interval</span>
+              </button>
+            )}
+
+            {isToday && onMoveToBacklog && (
+              <button
+                onClick={onMoveToBacklog}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">📦</span>
+                <span className="text-base font-medium">Move to backlog</span>
+              </button>
+            )}
+
+            {(isBacklog || isRecurring) && onMoveToToday && (
+              <button
+                onClick={onMoveToToday}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 hover:bg-calm-50 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">→</span>
+                <span className="text-base font-medium">Add to Today</span>
+              </button>
+            )}
 
             {/* Category section - placeholder for future */}
-            <div className="pt-2 border-t border-calm-100">
-              <p className="text-xs text-calm-500 uppercase tracking-wide px-4 py-2">
+            <div className="pt-3 border-t border-calm-100">
+              <p className="text-xs text-calm-500 uppercase tracking-wide px-5 py-2">
                 Category (coming soon)
               </p>
-              <div className="flex gap-2 px-4 py-2">
+              <div className="flex gap-2 px-5 py-2">
                 <button className="flex-1 px-3 py-2 rounded-lg border-2 border-calm-200 text-xs text-calm-400">
                   Work
                 </button>
@@ -86,26 +137,19 @@ function TaskActionsModal({ task, onEdit, onMakeRecurring, onMoveToBacklog, onDe
             </div>
 
             {/* Delete button - separated */}
-            <div className="pt-2">
+            <div className="pt-3">
               <button
                 onClick={onDelete}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-red-600 hover:bg-red-50 rounded-xl transition-colors"
               >
-                <span className="text-xl">🗑️</span>
+                <span className="text-2xl">🗑️</span>
                 <span className="text-base font-medium">Delete</span>
               </button>
             </div>
           </div>
 
-          {/* Cancel button for mobile */}
-          <div className="p-4 pt-0 md:hidden">
-            <button
-              onClick={onClose}
-              className="w-full px-4 py-3 text-center text-calm-600 font-medium"
-            >
-              Cancel
-            </button>
-          </div>
+          {/* Bottom padding for safe area */}
+          <div className="h-8"></div>
         </div>
       </div>
 
