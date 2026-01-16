@@ -3,10 +3,12 @@ import TodayView from './components/TodayView'
 import BacklogView from './components/BacklogView'
 import SettingsView from './components/SettingsView'
 import useStore from './store/useStore'
+import useDarkMode from './hooks/useDarkMode'
 
 function App() {
   const [currentView, setCurrentView] = useState('today')
   const { checkAndResetDay } = useStore()
+  useDarkMode() // Initialize dark mode
 
   // Check for day reset on mount and every minute
   useEffect(() => {
@@ -20,17 +22,17 @@ function App() {
   }, [checkAndResetDay])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-calm-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-calm-50 dark:from-gray-900 dark:to-gray-800 transition-colors">
       {/* Navigation */}
-      <nav className="border-b border-calm-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <nav className="border-b border-calm-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex gap-6 md:gap-8">
             <button
               onClick={() => setCurrentView('today')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'today'
-                  ? 'border-[#F0A500] text-calm-700'
-                  : 'border-transparent text-calm-600 hover:text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
+                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
               }`}
             >
               Today
@@ -39,8 +41,8 @@ function App() {
               onClick={() => setCurrentView('backlog')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'backlog'
-                  ? 'border-[#F0A500] text-calm-700'
-                  : 'border-transparent text-calm-600 hover:text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
+                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
               }`}
             >
               Backlog
@@ -49,8 +51,8 @@ function App() {
               onClick={() => setCurrentView('settings')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'settings'
-                  ? 'border-[#F0A500] text-calm-700'
-                  : 'border-transparent text-calm-600 hover:text-calm-700'
+                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
+                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
               }`}
             >
               Settings

@@ -128,19 +128,19 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
             transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
           }}
-          className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
+          className={`relative flex items-center gap-3 p-4 bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700 transition-colors group ${
             isDragging ? 'opacity-50' : ''
           } cursor-grab active:cursor-grabbing`}
         >
           {/* Checkbox */}
           <button
             onClick={() => toggleDone(task.id)}
-            className="flex-shrink-0 w-5 h-5 rounded border-2 border-calm-300 hover:border-calm-600 transition-colors flex items-center justify-center"
+            className="flex-shrink-0 w-5 h-5 rounded border-2 border-calm-300 dark:border-gray-600 hover:border-calm-600 dark:hover:border-gray-400 transition-colors flex items-center justify-center"
             aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
           >
             {task.done && (
               <svg
-                className="w-3 h-3 text-calm-600"
+                className="w-3 h-3 text-calm-600 dark:text-gray-400"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -156,11 +156,32 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           {/* Task title */}
           <span
             className={`flex-1 text-base pr-4 ${
-              task.done ? 'line-through text-calm-400' : 'text-calm-700'
+              task.done ? 'line-through text-calm-400 dark:text-gray-500' : 'text-calm-700 dark:text-gray-200'
             } transition-all`}
           >
             {task.title}
           </span>
+
+          {/* Desktop menu button - hidden on mobile */}
+          <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1 text-calm-400 dark:text-gray-500 hover:text-calm-600 dark:hover:text-gray-400 transition-colors"
+              aria-label="More options"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 

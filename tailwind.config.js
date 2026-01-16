@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,jsx}",
   ],
+  darkMode: 'class', // Add this line!
   theme: {
     extend: {
       colors: {
@@ -13,7 +14,7 @@ export default {
           200: '#e5e7eb',
           300: '#d1d5db',
           600: '#6b7280',
-          700: '#4b5563',
+          700: '#9baabf',
         }
       }
     },

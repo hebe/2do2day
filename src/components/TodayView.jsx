@@ -155,13 +155,13 @@ function TodayView() {
           )}
 
           {/* Task list */}
-          <div className="bg-white rounded-lg shadow-sm border border-calm-200">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700">
             {today.length === 0 ? (
-              <div className="p-8 text-center text-calm-600">
+              <div className="p-8 text-center text-calm-600 dark:text-gray-400">
                 <p className="text-sm">Your list is empty. Add your first task below.</p>
               </div>
             ) : (
-              <div className="divide-y divide-calm-100">
+              <div className="divide-y divide-calm-100 dark:divide-gray-700">
                 {today.map((task, index) => (
                   <TaskRow 
                     key={task.id} 
