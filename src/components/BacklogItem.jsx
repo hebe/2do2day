@@ -198,14 +198,14 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
             transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
           }}
-          className={`relative flex items-center gap-3 p-4 bg-white hover:bg-calm-50 transition-colors group ${
+          className={`relative flex items-center gap-3 p-4 bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700 transition-colors group ${
             isDragging ? 'opacity-50' : ''
           } ${type === 'backlog' && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''}`}
         >
           {/* Task title */}
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-calm-700 block">
+              <span className="text-sm text-calm-700 dark:text-gray-200 block">
                 {task.title}
                 {type === 'recurring' && task.interval && (
                   <span className="ml-2 text-xs text-calm-500">
@@ -238,10 +238,31 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleAddToToday}
-              className="px-2 py-1 text-xs text-calm-700 bg-calm-100 hover:bg-calm-200 rounded transition-colors font-medium whitespace-nowrap"
+              className="px-2 py-1 text-xs text-calm-700 dark:text-gray-300 bg-calm-100 dark:bg-gray-700 hover:bg-calm-200 dark:hover:bg-gray-600 rounded transition-colors font-medium whitespace-nowrap"
             >
               ← Today
             </button>
+
+            {/* Desktop menu button - hidden on mobile */}
+            <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1 text-calm-400 dark:text-gray-500 hover:text-calm-600 dark:hover:text-gray-400 transition-colors"
+                aria-label="More options"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

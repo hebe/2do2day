@@ -14,6 +14,7 @@ const useStore = create(
         snoozeOptions: [2, 5, 60, 'Tonight'],
         lastDayReset: null,
         backlogSortBy: 'recent', // 'recent', 'postponed', 'oldest'
+        colorMode: 'auto', // 'light', 'dark', or 'auto'
       },
 
       // Today actions

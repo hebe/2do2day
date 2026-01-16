@@ -4,10 +4,11 @@ import useStore from '../store/useStore'
 function SettingsView() {
   const { settings, updateSettings } = useStore()
   const [dayStart, setDayStart] = useState(settings.dayStart)
+  const [colorMode, setColorMode] = useState(settings.colorMode || 'auto')
   const [isSaved, setIsSaved] = useState(false)
 
   const handleSave = () => {
-    updateSettings({ dayStart })
+    updateSettings({ dayStart, colorMode })
     setIsSaved(true)
     setTimeout(() => setIsSaved(false), 2000)
   }
