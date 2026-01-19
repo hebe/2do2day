@@ -79,7 +79,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   // Editing mode
   if (isEditing) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-calm-50">
+      <div className="flex items-center gap-3 p-4 bg-calm-50 dark:bg-gray-700">
         <div className="flex-shrink-0 w-5 h-5" />
         <input
           ref={inputRef}
@@ -88,19 +88,19 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSaveEdit}
-          className="flex-1 px-3 py-1 text-base border border-calm-300 rounded focus:outline-none focus:border-calm-600 transition-colors"
+          className="flex-1 px-3 py-1 text-base border border-calm-300 dark:border-gray-600 rounded focus:outline-none focus:border-calm-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
         />
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSaveEdit}
-          className="px-3 py-1 text-xs bg-calm-700 text-white rounded hover:bg-calm-600 transition-colors font-medium"
+          className="px-3 py-1 text-xs bg-calm-700 dark:bg-gray-600 text-white rounded hover:bg-calm-600 dark:hover:bg-gray-500 transition-colors font-medium"
         >
           Save
         </button>
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancelEdit}
-          className="px-3 py-1 text-xs text-calm-600 hover:text-calm-700 transition-colors"
+          className="px-3 py-1 text-xs text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors"
         >
           Cancel
         </button>
@@ -110,7 +110,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div className="relative" style={{ backgroundColor: '#DFD8C7' }}>
+      <div className="relative bg-gray-300 dark:bg-gray-600">
         <div
           {...swipeHandlers}
           draggable={!isEditing}
@@ -135,12 +135,12 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           {/* Checkbox */}
           <button
             onClick={() => toggleDone(task.id)}
-            className="flex-shrink-0 w-5 h-5 rounded border-2 border-calm-300 dark:border-gray-600 hover:border-calm-600 dark:hover:border-gray-400 transition-colors flex items-center justify-center"
+            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-400 transition-colors flex items-center justify-center"
             aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
           >
             {task.done && (
               <svg
-                className="w-3 h-3 text-calm-600 dark:text-gray-400"
+                className="w-3 h-3 text-gray-600 dark:text-gray-400"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -156,7 +156,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           {/* Task title */}
           <span
             className={`flex-1 text-base pr-4 ${
-              task.done ? 'line-through text-calm-400 dark:text-gray-500' : 'text-calm-700 dark:text-gray-200'
+              task.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
             } transition-all`}
           >
             {task.title}
@@ -166,7 +166,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-calm-400 dark:text-gray-500 hover:text-calm-600 dark:hover:text-gray-400 transition-colors"
+              className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
               aria-label="More options"
             >
               <svg
