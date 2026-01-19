@@ -81,21 +81,21 @@ function BacklogView() {
         return (
           <div>
             {backlog.length === 0 ? (
-              <div className="p-8 text-center text-calm-600">
+              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
                 <p className="text-sm">Your backlog is empty.</p>
-                <p className="text-xs mt-2 text-calm-500">
+                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
                   Add tasks here that you want to do someday, but not necessarily today.
                 </p>
               </div>
             ) : (
               <>
                 {/* Sort dropdown */}
-                <div className="p-4 border-b border-calm-100 flex items-center justify-between">
-                  <span className="text-xs text-calm-600">Sort by:</span>
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Sort by:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => handleSortChange(e.target.value)}
-                    className="text-xs px-3 py-1 border border-calm-200 rounded focus:outline-none focus:border-calm-600 transition-colors"
+                    className="text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   >
                     <option value="recent">Recently added</option>
                     <option value="postponed">Most postponed</option>
@@ -103,7 +103,7 @@ function BacklogView() {
                   </select>
                 </div>
 
-                <div className="divide-y divide-calm-100">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
                   {visibleBacklog.map((task, index) => (
                     <BacklogItem 
                       key={task.id} 
@@ -118,10 +118,10 @@ function BacklogView() {
                   ))}
                 </div>
                 {backlog.length > 6 && !showAll && (
-                  <div className="p-4 text-center border-t border-calm-100">
+                  <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
                     <button
                       onClick={() => setShowAll(true)}
-                      className="text-sm text-calm-600 hover:text-calm-700 transition-colors font-medium"
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
                     >
                       Show all ({backlog.length} tasks)
                     </button>
@@ -136,14 +136,14 @@ function BacklogView() {
         return (
           <div>
             {recurring.length === 0 ? (
-              <div className="p-8 text-center text-calm-600">
+              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
                 <p className="text-sm">No recurring tasks yet.</p>
-                <p className="text-xs mt-2 text-calm-500">
+                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
                   Mark tasks as recurring from your backlog.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-calm-100">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
                 {recurring.map((task) => (
                   <BacklogItem key={task.id} task={task} type="recurring" />
                 ))}
@@ -157,20 +157,20 @@ function BacklogView() {
         return (
           <div>
             {done.length === 0 ? (
-              <div className="p-8 text-center text-calm-600">
+              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
                 <p className="text-sm">No completed tasks yet.</p>
-                <p className="text-xs mt-2 text-calm-500">
+                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
                   Keep going! Your completed tasks will appear here. 🎉
                 </p>
               </div>
             ) : (
               <>
-                <div className="p-4 bg-calm-50 border-b border-calm-200 text-center">
-                  <p className="text-sm text-calm-700">
+                <div className="p-4 bg-calm-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700/50 text-center">
+                  <p className="text-sm text-gray-900 dark:text-gray-100">
                     🎉 <strong>{done.length}</strong> {done.length === 1 ? 'task' : 'tasks'} completed!
                   </p>
                 </div>
-                <div className="divide-y divide-calm-100">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
                   {recentDone.map((task) => (
                     <BacklogItem key={task.id} task={task} type="done" />
                   ))}
@@ -190,8 +190,8 @@ function BacklogView() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-light text-calm-700">Backlog</h1>
-          <p className="text-sm text-calm-600 mt-1">
+          <h1 className="text-2xl font-light text-gray-900 dark:text-gray-100">Backlog</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Tasks you'll get to someday, recurring tasks, and your wins.
           </p>
         </div>
@@ -207,14 +207,14 @@ function BacklogView() {
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-[#F0A500] text-white text-sm rounded-lg hover:bg-[#D89400] transition-colors font-medium shadow-sm"
+            className="px-6 py-3 bg-[#F0A500] text-black text-sm rounded-lg hover:bg-[#D89400] transition-colors font-medium shadow-sm"
           >
             Add
           </button>
         </form>
 
         {/* Subtabs */}
-        <div className="flex gap-4 border-b border-calm-200">
+        <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => {
               setActiveTab('backlog')
@@ -222,8 +222,8 @@ function BacklogView() {
             }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'backlog'
-                ? 'border-calm-700 text-calm-700'
-                : 'border-transparent text-calm-600 hover:text-calm-700'
+                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Backlog {backlog.length > 0 && `(${backlog.length})`}
@@ -232,8 +232,8 @@ function BacklogView() {
             onClick={() => setActiveTab('recurring')}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'recurring'
-                ? 'border-calm-700 text-calm-700'
-                : 'border-transparent text-calm-600 hover:text-calm-700'
+                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Recurring {recurring.length > 0 && `(${recurring.length})`}
@@ -242,8 +242,8 @@ function BacklogView() {
             onClick={() => setActiveTab('done')}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'done'
-                ? 'border-calm-700 text-calm-700'
-                : 'border-transparent text-calm-600 hover:text-calm-700'
+                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             Done! {done.length > 0 && `(${done.length})`}
@@ -251,7 +251,7 @@ function BacklogView() {
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-600">
           {renderContent()}
         </div>
       </div>
