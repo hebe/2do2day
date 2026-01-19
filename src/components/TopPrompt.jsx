@@ -16,7 +16,7 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Add a task..."
-          className="w-full px-4 py-4 text-lg border-2 border-calm-200 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors"
+          className="w-full px-4 py-4 text-lg border-2 border-calm-200 rounded-lg dark:bg-gray-700 focus:outline-none focus:border-[#F0A500] transition-colors"
         />
       </form>
 
