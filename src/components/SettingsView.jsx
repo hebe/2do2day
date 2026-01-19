@@ -8,7 +8,7 @@ function SettingsView() {
   const [isSaved, setIsSaved] = useState(false)
 
   const handleSave = () => {
-    updateSettings({ dayStart, colorMode })
+    updateSettings({ dayStart })
     setIsSaved(true)
     setTimeout(() => setIsSaved(false), 2000)
   }
@@ -30,6 +30,11 @@ function SettingsView() {
     { value: 'dark', label: 'Dark', icon: '🌙', description: 'Always use dark mode' },
     { value: 'auto', label: 'Auto', icon: '⚙️', description: 'Match system preference' },
   ]
+
+  const handleColorModeChange = (newMode) => {
+    setColorMode(newMode)
+    updateSettings({ colorMode: newMode })
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -56,7 +61,7 @@ function SettingsView() {
               {colorModeOptions.map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => setColorMode(option.value)}
+                  onClick={() => handleColorModeChange(option.value)}
                   className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
                     colorMode === option.value
                       ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
