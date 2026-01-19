@@ -1,4 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
+import useStore from '../store/useStore'
+import CategoryPicker from './CategoryPicker'
 
 function TaskActionsModal({ 
   task, 
@@ -10,9 +12,34 @@ function TaskActionsModal({
   onClose,
   type = 'today'
 }) {
+  const { toggleUrgent, updateTaskCategory, updateBacklogCategory, settings } = useStore()
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
   const isToday = type === 'today'
   const isBacklog = type === 'backlog'
   const isRecurring = type === 'recurring'
+
+  const handleToggleUrgent = () => {
+    if (isToday) {
+      toggleUrgent(task.id)
+    }
+    onClose()
+  }
+
+  const handleCategorySelect = (categoryId) => {
+    if (isToday) {
+      updateTaskCategory(task.id, categoryId)
+    } else if (isBacklog) {
+      updateBacklogCategory(task.id, categoryId)
+    }
+    setShowCategoryPicker(false)
+    onClose()
+  }
+
+  const getCategoryName = () => {
+    if (!task.category) return 'None'
+    const category = settings.categories?.find(c => c.id === task.category)
+    return category?.name || 'None'
+  }
 
   return (
     <>
@@ -24,23 +51,23 @@ function TaskActionsModal({
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
-        <div className="bg-white dark:bg-gray-800 rounded-t-3xl shadow-xl border-t border-calm-200 dark:border-gray-700 w-full max-w-2xl animate-slideUp overflow-y-auto" style={{ maxHeight: '75vh' }}>
+        <div className="bg-white dark:bg-gray-800 rounded-t-3xl shadow-xl border-t border-gray-200 dark:border-gray-700 w-full max-w-2xl animate-slideUp overflow-y-auto" style={{ maxHeight: '75vh' }}>
           {/* Header */}
-          <div className="px-6 py-5 border-b border-calm-200 dark:border-gray-700">
+          <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-calm-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                   {isToday && 'Task Options'}
                   {isBacklog && 'Backlog Task'}
                   {isRecurring && 'Recurring Task'}
                 </p>
-                <h2 className="text-base font-medium text-calm-700 dark:text-gray-100 line-clamp-2">
+                <h2 className="text-base font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
                   {task.title}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="flex-shrink-0 text-calm-400 dark:text-gray-500 hover:text-calm-600 dark:hover:text-gray-300 transition-colors -mt-1"
+                className="flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors -mt-1"
                 aria-label="Close"
               >
                 <svg
@@ -62,16 +89,52 @@ function TaskActionsModal({
           <div className="p-6 space-y-3">
             <button
               onClick={onEdit}
-              className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+              className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
             >
               <span className="text-2xl">✏️</span>
               <span className="text-base font-medium">Edit</span>
             </button>
 
+            {/* Category button - for today and backlog tasks */}
+            {(isToday || isBacklog) && (
+              <button
+                onClick={() => setShowCategoryPicker(true)}
+                className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">🏷️</span>
+                  <span className="text-base font-medium">Category</span>
+                </div>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {getCategoryName()}
+                </span>
+              </button>
+            )}
+
+            {/* Urgent toggle - only for today tasks */}
+            {isToday && (
+              <button
+                onClick={handleToggleUrgent}
+                className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl">🔥</span>
+                  <span className="text-base font-medium">Mark as urgent</span>
+                </div>
+                <div className={`w-12 h-6 rounded-full transition-colors ${
+                  task.urgent ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
+                }`}>
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${
+                    task.urgent ? 'translate-x-6' : 'translate-x-0.5'
+                  }`} />
+                </div>
+              </button>
+            )}
+
             {isToday && onMakeRecurring && (
               <button
                 onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <span className="text-2xl">↻</span>
                 <span className="text-base font-medium">Make recurring</span>
@@ -81,7 +144,7 @@ function TaskActionsModal({
             {isBacklog && onMakeRecurring && (
               <button
                 onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <span className="text-2xl">↻</span>
                 <span className="text-base font-medium">Mark as recurring</span>
@@ -91,7 +154,7 @@ function TaskActionsModal({
             {isRecurring && onMakeRecurring && (
               <button
                 onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <span className="text-2xl">🔄</span>
                 <span className="text-base font-medium">Change interval</span>
@@ -101,7 +164,7 @@ function TaskActionsModal({
             {isToday && onMoveToBacklog && (
               <button
                 onClick={onMoveToBacklog}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <span className="text-2xl">📦</span>
                 <span className="text-base font-medium">Move to backlog</span>
@@ -111,36 +174,18 @@ function TaskActionsModal({
             {(isBacklog || isRecurring) && onMoveToToday && (
               <button
                 onClick={onMoveToToday}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-calm-700 dark:text-gray-200 hover:bg-calm-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
                 <span className="text-2xl">→</span>
                 <span className="text-base font-medium">Add to Today</span>
               </button>
             )}
 
-            {/* Category section - placeholder for future */}
-            <div className="pt-3 border-t border-calm-100 dark:border-gray-700">
-              <p className="text-xs text-calm-500 dark:text-gray-400 uppercase tracking-wide px-5 py-2">
-                Category (coming soon)
-              </p>
-              <div className="flex gap-2 px-5 py-2">
-                <button className="flex-1 px-3 py-2 rounded-lg border-2 border-calm-200 dark:border-gray-600 text-xs text-calm-400 dark:text-gray-500">
-                  Work
-                </button>
-                <button className="flex-1 px-3 py-2 rounded-lg border-2 border-calm-200 dark:border-gray-600 text-xs text-calm-400 dark:text-gray-500">
-                  Personal
-                </button>
-                <button className="flex-1 px-3 py-2 rounded-lg border-2 border-calm-200 dark:border-gray-600 text-xs text-calm-400 dark:text-gray-500">
-                  Urgent
-                </button>
-              </div>
-            </div>
-
             {/* Delete button - separated */}
             <div className="pt-3">
               <button
                 onClick={onDelete}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
               >
                 <span className="text-2xl">🗑️</span>
                 <span className="text-base font-medium">Delete</span>
@@ -152,6 +197,15 @@ function TaskActionsModal({
           <div className="h-8"></div>
         </div>
       </div>
+
+      {/* Category Picker Modal */}
+      {showCategoryPicker && (
+        <CategoryPicker
+          selectedCategory={task.category}
+          onSelect={handleCategorySelect}
+          onClose={() => setShowCategoryPicker(false)}
+        />
+      )}
 
       <style>{`
         @keyframes fadeIn {

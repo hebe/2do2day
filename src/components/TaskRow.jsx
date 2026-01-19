@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
+import CategoryPicker from './CategoryPicker'
 import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
 function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
-  const { toggleDone, moveToBacklog, moveTodayToRecurring } = useStore()
+  const { toggleDone, toggleUrgent, updateTaskCategory, moveToBacklog, moveTodayToRecurring, settings } = useStore()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
@@ -76,6 +78,13 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
     }
   }
 
+  const getCategory = (categoryId) => {
+  if (!categoryId) return null
+  return settings.categories?.find(c => c.id === categoryId) || null
+}
+
+const category = getCategory(task.category)
+
   // Editing mode
   if (isEditing) {
     return (
@@ -110,7 +119,10 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      <div className="relative bg-gray-300 dark:bg-gray-600">
+        <div 
+         className="relative bg-gray-200 dark:bg-gray-600"
+         style={category ? { backgroundColor: category.color } : {}}
+        >
         <div
           {...swipeHandlers}
           draggable={!isEditing}
@@ -153,14 +165,60 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
             )}
           </button>
 
-          {/* Task title */}
-          <span
-            className={`flex-1 text-base pr-4 ${
-              task.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
-            } transition-all`}
-          >
-            {task.title}
-          </span>
+          {/* Task title with urgent indicator */}
+          <div className="flex-1 flex items-center gap-2 pr-4">
+            {/* Urgent fire emoji */}
+            {task.urgent && (
+              <span className="text-lg flex-shrink-0" title="Urgent">
+                🔥
+              </span>
+            )}
+            
+            <span
+              className={`flex-1 text-base ${
+                task.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
+              } transition-all`}
+            >
+              {task.title}
+            </span>
+          </div>
+
+          {/* Quick action buttons - visible on hover */}
+          <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Category button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowCategoryPicker(true)
+              }}
+              className="p-1.5 rounded hover:bg-white/50 dark:hover:bg-gray-900/50 transition-colors"
+              title="Set category"
+            >
+              <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </button>
+            
+            {/* Urgent button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleUrgent(task.id)
+              }}
+              className={`p-1.5 rounded transition-colors ${
+                task.urgent
+                  ? 'bg-orange-200 dark:bg-orange-900/50'
+                  : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
+              }`}
+              title={task.urgent ? "Remove urgent" : "Mark as urgent"}
+            >
+              {task.urgent ? '🔥' : (
+                <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              )}
+            </button>
+          </div>
 
           {/* Desktop menu button - hidden on mobile */}
           <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -205,6 +263,17 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           onCancel={() => setShowRecurringModal(false)}
         />
       )}
+
+      {/* Category Picker Modal */}
+      {showCategoryPicker && (
+        <CategoryPicker
+          selectedCategory={task.category}
+          onSelect={(categoryId) => updateTaskCategory(task.id, categoryId)}
+          onClose={() => setShowCategoryPicker(false)}
+        />
+      )}
+
+
     </>
   )
 }
