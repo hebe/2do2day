@@ -143,21 +143,20 @@ function SettingsView() {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Save Button */}
-        <div>
-          <button
-            onClick={handleSave}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              isSaved
-                ? 'bg-green-600 text-white'
-                : 'bg-[#F0A500] text-white hover:bg-[#D89400] shadow-sm'
-            }`}
-          >
-            {isSaved ? '✓ Saved!' : 'Save Changes'}
-          </button>
+            <div className="pt-4">
+              <button
+                onClick={handleSave}
+                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                  isSaved
+                    ? 'bg-green-600 text-white'
+                    : 'bg-[#F0A500] text-white hover:bg-[#D89400] shadow-sm'
+                }`}
+              >
+                {isSaved ? '✓ Saved!' : 'Set time'}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Info Box */}
