@@ -4,6 +4,17 @@ import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
+// Map category IDs to CSS class names
+const getCategoryRowClass = (categoryId) => {
+  const classMap = {
+    'work': 'cat-row-work',
+    'personal': 'cat-row-personal',
+    'health': 'cat-row-health',
+    'hobby': 'cat-row-hobby',
+  }
+  return classMap[categoryId] || ''
+}
+
 function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
   const { 
     addFromBacklog, 
@@ -51,6 +62,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
   }
 
   const category = getCategory(task.category)
+  const categoryClass = getCategoryRowClass(task.category)
 
   const handleAddToToday = () => {
     if (type === 'backlog') {
@@ -125,22 +137,13 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
     return date.toLocaleDateString()
   }
 
-  // Build background style - category tint or default
-  const getRowBackgroundStyle = () => {
-    if (category) {
-      return {
-        backgroundColor: category.color,
-      }
-    }
-    return {}
-  }
-
   // Done tasks are read-only
   if (type === 'done') {
     return (
       <div 
-        className="flex items-center gap-3 p-4"
-        style={getRowBackgroundStyle()}
+        className={`flex items-center gap-3 p-4 ${
+          categoryClass || 'bg-white dark:bg-gray-800'
+        }`}
       >
         <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
           <svg
@@ -156,7 +159,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           </svg>
         </div>
         <div className="flex-1">
-          <span className={`text-sm ${category ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'}`}>
+          <span className="text-sm text-gray-900 dark:text-gray-100">
             {task.title}
           </span>
           {task.completedAt && (
@@ -223,12 +226,13 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           style={{
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
             transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
-            ...getRowBackgroundStyle()
           }}
           className={`relative flex items-center gap-3 p-4 transition-colors group ${
             isDragging ? 'opacity-50' : ''
           } ${type === 'backlog' && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''} ${
-            !category ? 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700' : 'hover:brightness-95'
+            categoryClass 
+              ? categoryClass 
+              : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
           }`}
         >
           {/* Task title */}
@@ -241,7 +245,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
                 </span>
               )}
               
-              <span className={`text-sm block ${category ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'}`}>
+              <span className="text-sm block text-gray-900 dark:text-gray-100">
                 {task.title}
                 {type === 'recurring' && task.interval && (
                   <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
@@ -274,11 +278,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleAddToToday}
-              className={`px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap ${
-                category 
-                  ? 'text-gray-800 bg-white/50 hover:bg-white/70' 
-                  : 'text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className="px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
             >
               ← Today
             </button>

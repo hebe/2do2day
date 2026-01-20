@@ -1,6 +1,17 @@
 import React from 'react'
 import useStore from '../store/useStore'
 
+// Map category IDs to CSS chip class names
+const getCategoryChipClass = (categoryId) => {
+  const classMap = {
+    'work': 'cat-chip-work',
+    'personal': 'cat-chip-personal',
+    'health': 'cat-chip-health',
+    'hobby': 'cat-chip-hobby',
+  }
+  return classMap[categoryId] || ''
+}
+
 function TaskActionsModal({ 
   task, 
   onEdit, 
@@ -121,24 +132,25 @@ function TaskActionsModal({
                   None
                 </button>
                 
-                {/* Category chips */}
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategorySelect(category.id)}
-                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      task.category === category.id
-                        ? 'ring-2 ring-gray-500 dark:ring-gray-400'
-                        : 'hover:opacity-80'
-                    }`}
-                    style={{ 
-                      backgroundColor: category.color,
-                      color: '#374151' // Gray-700 for good contrast on pastel colors
-                    }}
-                  >
-                    {category.name}
-                  </button>
-                ))}
+                {/* Category chips - using CSS classes */}
+                {categories.map((category) => {
+                  const chipClass = getCategoryChipClass(category.id)
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategorySelect(category.id)}
+                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        chipClass || 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200'
+                      } ${
+                        task.category === category.id
+                          ? 'ring-2 ring-gray-500 dark:ring-gray-400'
+                          : 'hover:opacity-80'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
