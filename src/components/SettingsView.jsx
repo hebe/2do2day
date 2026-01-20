@@ -2,15 +2,58 @@ import React, { useState } from 'react'
 import useStore from '../store/useStore'
 
 function SettingsView() {
-  const { settings, updateSettings } = useStore()
+  // Get settings and actions from store - this will re-render when settings change
+  const settings = useStore((state) => state.settings)
+  const updateSettings = useStore((state) => state.updateSettings)
+  const addCategory = useStore((state) => state.addCategory)
+  const updateCategory = useStore((state) => state.updateCategory)
+  const deleteCategory = useStore((state) => state.deleteCategory)
+  const done = useStore((state) => state.done)
+  const backlog = useStore((state) => state.backlog)
+  const recurring = useStore((state) => state.recurring)
+
   const [dayStart, setDayStart] = useState(settings.dayStart)
   const [colorMode, setColorMode] = useState(settings.colorMode || 'auto')
   const [isSaved, setIsSaved] = useState(false)
+  const [editingCategory, setEditingCategory] = useState(null)
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryColor, setNewCategoryColor] = useState('#E0F2F1')
+
+  // Get categories directly from settings (reactive)
+  const categories = settings.categories || []
 
   const handleSave = () => {
     updateSettings({ dayStart })
     setIsSaved(true)
     setTimeout(() => setIsSaved(false), 2000)
+  }
+
+  const handleColorModeChange = (newMode) => {
+    setColorMode(newMode)
+    updateSettings({ colorMode: newMode })
+  }
+
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      addCategory(newCategoryName.trim(), newCategoryColor)
+      setNewCategoryName('')
+      setNewCategoryColor('#E0F2F1')
+      setShowAddCategory(false)
+    }
+  }
+
+  const handleUpdateCategory = (id) => {
+    if (editingCategory && editingCategory.name.trim()) {
+      updateCategory(id, editingCategory.name.trim(), editingCategory.color)
+      setEditingCategory(null)
+    }
+  }
+
+  const handleDeleteCategory = (id) => {
+    if (confirm('Delete this category? It will be removed from all tasks.')) {
+      deleteCategory(id)
+    }
   }
 
   const timeOptions = [
@@ -31,10 +74,16 @@ function SettingsView() {
     { value: 'auto', label: 'Auto', icon: '⚙️', description: 'Match system preference' },
   ]
 
-  const handleColorModeChange = (newMode) => {
-    setColorMode(newMode)
-    updateSettings({ colorMode: newMode })
-  }
+  const colorPresets = [
+    '#E0F2F1', // Teal
+    '#F3E5F5', // Purple
+    '#FFCDD2', // Salmon pink
+    '#FFF9C4', // Yellow
+    '#FFE0B2', // Orange
+    '#C8E6C9', // Green
+    '#BBDEFB', // Blue
+    '#F8BBD0', // Pink
+  ]
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -45,6 +94,166 @@ function SettingsView() {
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Customize how Today's ToDos works for you.
           </p>
+        </div>
+
+        {/* Categories Management */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Categories</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Organize your tasks with custom categories
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddCategory(!showAddCategory)}
+                className="px-3 py-1.5 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+              >
+                + Add
+              </button>
+            </div>
+
+            {/* Add Category Form */}
+            {showAddCategory && (
+              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Category name..."
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddCategory()
+                  }}
+                  autoFocus
+                />
+                
+                <div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Choose color:</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {colorPresets.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setNewCategoryColor(color)}
+                        className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                          newCategoryColor === color
+                            ? 'border-[#F0A500] scale-110'
+                            : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddCategory}
+                    className="px-4 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                  >
+                    Add Category
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddCategory(false)
+                      setNewCategoryName('')
+                      setNewCategoryColor('#E0F2F1')
+                    }}
+                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Categories List */}
+            <div className="space-y-2">
+              {categories.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                  No categories yet. Add one to get started!
+                </p>
+              ) : (
+                categories.map((category) => (
+                  <div
+                    key={category.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                  >
+                    {editingCategory?.id === category.id ? (
+                      // Edit mode
+                      <>
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={editingCategory.name}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateCategory(category.id)
+                              if (e.key === 'Escape') setEditingCategory(null)
+                            }}
+                            autoFocus
+                          />
+                          <div className="flex gap-1 flex-wrap">
+                            {colorPresets.map((color) => (
+                              <button
+                                key={color}
+                                onClick={() => setEditingCategory({ ...editingCategory, color })}
+                                className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                  editingCategory.color === color
+                                    ? 'border-[#F0A500] scale-110'
+                                    : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                                }`}
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateCategory(category.id)}
+                            className="px-3 py-1.5 text-xs bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingCategory(null)}
+                            className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      // View mode
+                      <>
+                        <div
+                          className="w-8 h-8 rounded-lg flex-shrink-0"
+                          style={{ backgroundColor: category.color }}
+                        />
+                        <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {category.name}
+                        </span>
+                        <button
+                          onClick={() => setEditingCategory({ id: category.id, name: category.name, color: category.color })}
+                          className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors whitespace-nowrap"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Color Mode Setting */}
@@ -184,19 +393,19 @@ function SettingsView() {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                {useStore.getState().done.length}
+                {done.length}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Tasks Completed</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                {useStore.getState().backlog.length}
+                {backlog.length}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">In Backlog</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-                {useStore.getState().recurring.length}
+                {recurring.length}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Recurring Tasks</div>
             </div>

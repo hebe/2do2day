@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
-import CategoryPicker from './CategoryPicker'
 import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
@@ -10,7 +9,6 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
@@ -79,11 +77,11 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   }
 
   const getCategory = (categoryId) => {
-  if (!categoryId) return null
-  return settings.categories?.find(c => c.id === categoryId) || null
-}
+    if (!categoryId) return null
+    return settings.categories?.find(c => c.id === categoryId) || null
+  }
 
-const category = getCategory(task.category)
+  const category = getCategory(task.category)
 
   // Editing mode
   if (isEditing) {
@@ -117,12 +115,21 @@ const category = getCategory(task.category)
     )
   }
 
+  // Build background style - category tint or default
+  const getRowBackgroundStyle = () => {
+    if (category) {
+      // Mix category color with white/dark for subtle tint
+      return {
+        backgroundColor: category.color,
+      }
+    }
+    return {}
+  }
+
   return (
     <>
-        <div 
-         className="relative bg-gray-200 dark:bg-gray-600"
-         style={category ? { backgroundColor: category.color } : {}}
-        >
+      {/* Swipe reveal background - shows on swipe */}
+      <div className="relative bg-gray-300 dark:bg-gray-600">
         <div
           {...swipeHandlers}
           draggable={!isEditing}
@@ -138,21 +145,24 @@ const category = getCategory(task.category)
           onDrop={(e) => onDrop(e, index)}
           style={{
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
+            ...getRowBackgroundStyle()
           }}
-          className={`relative flex items-center gap-3 p-4 bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700 transition-colors group ${
+          className={`relative flex items-center gap-3 p-4 transition-colors group ${
             isDragging ? 'opacity-50' : ''
-          } cursor-grab active:cursor-grabbing`}
+          } cursor-grab active:cursor-grabbing ${
+            !category ? 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700' : 'hover:brightness-95'
+          }`}
         >
           {/* Checkbox */}
           <button
             onClick={() => toggleDone(task.id)}
-            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-400 transition-colors flex items-center justify-center"
+            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
             aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
           >
             {task.done && (
               <svg
-                className="w-3 h-3 text-gray-600 dark:text-gray-400"
+                className="w-3 h-3 text-gray-600 dark:text-gray-300"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -176,29 +186,19 @@ const category = getCategory(task.category)
             
             <span
               className={`flex-1 text-base ${
-                task.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
+                task.done 
+                  ? 'line-through text-gray-500 dark:text-gray-400' 
+                  : category 
+                    ? 'text-gray-800' // Darker text on colored backgrounds
+                    : 'text-gray-900 dark:text-gray-100'
               } transition-all`}
             >
               {task.title}
             </span>
           </div>
 
-          {/* Quick action buttons - visible on hover */}
+          {/* Quick action buttons - visible on hover (desktop) */}
           <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {/* Category button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowCategoryPicker(true)
-              }}
-              className="p-1.5 rounded hover:bg-white/50 dark:hover:bg-gray-900/50 transition-colors"
-              title="Set category"
-            >
-              <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-              </svg>
-            </button>
-            
             {/* Urgent button */}
             <button
               onClick={(e) => {
@@ -224,7 +224,7 @@ const category = getCategory(task.category)
           <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               aria-label="More options"
             >
               <svg
@@ -263,17 +263,6 @@ const category = getCategory(task.category)
           onCancel={() => setShowRecurringModal(false)}
         />
       )}
-
-      {/* Category Picker Modal */}
-      {showCategoryPicker && (
-        <CategoryPicker
-          selectedCategory={task.category}
-          onSelect={(categoryId) => updateTaskCategory(task.id, categoryId)}
-          onClose={() => setShowCategoryPicker(false)}
-        />
-      )}
-
-
     </>
   )
 }

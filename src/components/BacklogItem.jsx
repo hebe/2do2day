@@ -12,7 +12,9 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
     moveBacklogToRecurring,
     updateRecurringInterval,
     addFromRecurring,
-    deleteRecurringTask
+    deleteRecurringTask,
+    editRecurringTask,
+    settings
   } = useStore()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -42,6 +44,13 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
       inputRef.current.select()
     }
   }, [isEditing])
+
+  const getCategory = (categoryId) => {
+    if (!categoryId) return null
+    return settings.categories?.find(c => c.id === categoryId) || null
+  }
+
+  const category = getCategory(task.category)
 
   const handleAddToToday = () => {
     if (type === 'backlog') {
@@ -83,6 +92,8 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
     if (editValue.trim() && editValue !== task.title) {
       if (type === 'backlog') {
         editBacklogTask(task.id, editValue.trim())
+      } else if (type === 'recurring') {
+        editRecurringTask(task.id, editValue.trim())
       }
     }
     setIsEditing(false)
@@ -114,10 +125,23 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
     return date.toLocaleDateString()
   }
 
+  // Build background style - category tint or default
+  const getRowBackgroundStyle = () => {
+    if (category) {
+      return {
+        backgroundColor: category.color,
+      }
+    }
+    return {}
+  }
+
   // Done tasks are read-only
   if (type === 'done') {
     return (
-      <div className="flex items-center gap-3 p-4">
+      <div 
+        className="flex items-center gap-3 p-4"
+        style={getRowBackgroundStyle()}
+      >
         <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
           <svg
             className="w-3 h-3 text-gray-600 dark:text-gray-400"
@@ -132,7 +156,9 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           </svg>
         </div>
         <div className="flex-1">
-          <span className="text-sm text-gray-900 dark:text-gray-100">{task.title}</span>
+          <span className={`text-sm ${category ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'}`}>
+            {task.title}
+          </span>
           {task.completedAt && (
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               Completed {formatDate(task.completedAt)}
@@ -196,16 +222,26 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
           style={{
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
+            ...getRowBackgroundStyle()
           }}
-          className={`relative flex items-center gap-3 p-4 bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700 transition-colors group ${
+          className={`relative flex items-center gap-3 p-4 transition-colors group ${
             isDragging ? 'opacity-50' : ''
-          } ${type === 'backlog' && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          } ${type === 'backlog' && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''} ${
+            !category ? 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700' : 'hover:brightness-95'
+          }`}
         >
           {/* Task title */}
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-900 dark:text-gray-100 block">
+              {/* Urgent fire emoji */}
+              {task.urgent && (
+                <span className="text-base flex-shrink-0" title="Urgent">
+                  🔥
+                </span>
+              )}
+              
+              <span className={`text-sm block ${category ? 'text-gray-800' : 'text-gray-900 dark:text-gray-100'}`}>
                 {task.title}
                 {type === 'recurring' && task.interval && (
                   <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
@@ -238,7 +274,11 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={handleAddToToday}
-              className="px-2 py-1 text-xs text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors font-medium whitespace-nowrap"
+              className={`px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap ${
+                category 
+                  ? 'text-gray-800 bg-white/50 hover:bg-white/70' 
+                  : 'text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
             >
               ← Today
             </button>
@@ -247,7 +287,7 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
             <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+                className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 aria-label="More options"
               >
                 <svg

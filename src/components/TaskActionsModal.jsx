@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
 import useStore from '../store/useStore'
-import CategoryPicker from './CategoryPicker'
 
 function TaskActionsModal({ 
   task, 
@@ -12,15 +11,29 @@ function TaskActionsModal({
   onClose,
   type = 'today'
 }) {
-  const { toggleUrgent, updateTaskCategory, updateBacklogCategory, settings } = useStore()
-  const [showCategoryPicker, setShowCategoryPicker] = useState(false)
+  const { 
+    toggleUrgent, 
+    toggleBacklogUrgent, 
+    toggleRecurringUrgent,
+    updateTaskCategory, 
+    updateBacklogCategory, 
+    updateRecurringCategory,
+    settings 
+  } = useStore()
+  
   const isToday = type === 'today'
   const isBacklog = type === 'backlog'
   const isRecurring = type === 'recurring'
 
+  const categories = settings.categories || []
+
   const handleToggleUrgent = () => {
     if (isToday) {
       toggleUrgent(task.id)
+    } else if (isBacklog) {
+      toggleBacklogUrgent(task.id)
+    } else if (isRecurring) {
+      toggleRecurringUrgent(task.id)
     }
     onClose()
   }
@@ -30,15 +43,9 @@ function TaskActionsModal({
       updateTaskCategory(task.id, categoryId)
     } else if (isBacklog) {
       updateBacklogCategory(task.id, categoryId)
+    } else if (isRecurring) {
+      updateRecurringCategory(task.id, categoryId)
     }
-    setShowCategoryPicker(false)
-    onClose()
-  }
-
-  const getCategoryName = () => {
-    if (!task.category) return 'None'
-    const category = settings.categories?.find(c => c.id === task.category)
-    return category?.name || 'None'
   }
 
   return (
@@ -95,41 +102,63 @@ function TaskActionsModal({
               <span className="text-base font-medium">Edit</span>
             </button>
 
-            {/* Category button - for today and backlog tasks */}
-            {(isToday || isBacklog) && (
-              <button
-                onClick={() => setShowCategoryPicker(true)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl">🏷️</span>
-                  <span className="text-base font-medium">Category</span>
-                </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {getCategoryName()}
-                </span>
-              </button>
-            )}
+            {/* Category inline picker - horizontal scrollable chips */}
+            <div className="px-5 py-4 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+              <div className="flex items-center gap-4 mb-3">
+                <span className="text-2xl">🏷️</span>
+                <span className="text-base font-medium text-gray-900 dark:text-gray-100">Category</span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {/* No category option */}
+                <button
+                  onClick={() => handleCategorySelect(null)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    !task.category
+                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 ring-2 ring-gray-400 dark:ring-gray-500'
+                      : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                  }`}
+                >
+                  None
+                </button>
+                
+                {/* Category chips */}
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategorySelect(category.id)}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      task.category === category.id
+                        ? 'ring-2 ring-gray-500 dark:ring-gray-400'
+                        : 'hover:opacity-80'
+                    }`}
+                    style={{ 
+                      backgroundColor: category.color,
+                      color: '#374151' // Gray-700 for good contrast on pastel colors
+                    }}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            {/* Urgent toggle - only for today tasks */}
-            {isToday && (
-              <button
-                onClick={handleToggleUrgent}
-                className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl">🔥</span>
-                  <span className="text-base font-medium">Mark as urgent</span>
-                </div>
-                <div className={`w-12 h-6 rounded-full transition-colors ${
-                  task.urgent ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
-                }`}>
-                  <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${
-                    task.urgent ? 'translate-x-6' : 'translate-x-0.5'
-                  }`} />
-                </div>
-              </button>
-            )}
+            {/* Urgent toggle - available for all task types */}
+            <button
+              onClick={handleToggleUrgent}
+              className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">🔥</span>
+                <span className="text-base font-medium">Mark as urgent</span>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                task.urgent ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
+              }`}>
+                <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${
+                  task.urgent ? 'translate-x-6' : 'translate-x-0.5'
+                }`} />
+              </div>
+            </button>
 
             {isToday && onMakeRecurring && (
               <button
@@ -198,15 +227,6 @@ function TaskActionsModal({
         </div>
       </div>
 
-      {/* Category Picker Modal */}
-      {showCategoryPicker && (
-        <CategoryPicker
-          selectedCategory={task.category}
-          onSelect={handleCategorySelect}
-          onClose={() => setShowCategoryPicker(false)}
-        />
-      )}
-
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -227,6 +247,13 @@ function TaskActionsModal({
         }
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </>
