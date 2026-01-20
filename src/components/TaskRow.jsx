@@ -5,7 +5,7 @@ import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
 function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
-  const { toggleDone, moveToBacklog, moveTodayToRecurring } = useStore()
+  const { toggleDone, toggleUrgent, updateTaskCategory, moveToBacklog, moveTodayToRecurring, settings } = useStore()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
@@ -76,6 +76,13 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
     }
   }
 
+  const getCategory = (categoryId) => {
+    if (!categoryId) return null
+    return settings.categories?.find(c => c.id === categoryId) || null
+  }
+
+  const category = getCategory(task.category)
+
   // Editing mode
   if (isEditing) {
     return (
@@ -108,8 +115,20 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
     )
   }
 
+  // Build background style - category tint or default
+  const getRowBackgroundStyle = () => {
+    if (category) {
+      // Mix category color with white/dark for subtle tint
+      return {
+        backgroundColor: category.color,
+      }
+    }
+    return {}
+  }
+
   return (
     <>
+      {/* Swipe reveal background - shows on swipe */}
       <div className="relative bg-gray-300 dark:bg-gray-600">
         <div
           {...swipeHandlers}
@@ -126,21 +145,24 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           onDrop={(e) => onDrop(e, index)}
           style={{
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none'
+            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
+            ...getRowBackgroundStyle()
           }}
-          className={`relative flex items-center gap-3 p-4 bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700 transition-colors group ${
+          className={`relative flex items-center gap-3 p-4 transition-colors group ${
             isDragging ? 'opacity-50' : ''
-          } cursor-grab active:cursor-grabbing`}
+          } cursor-grab active:cursor-grabbing ${
+            !category ? 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700' : 'hover:brightness-95'
+          }`}
         >
           {/* Checkbox */}
           <button
             onClick={() => toggleDone(task.id)}
-            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-600 hover:border-gray-600 dark:hover:border-gray-400 transition-colors flex items-center justify-center"
+            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
             aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
           >
             {task.done && (
               <svg
-                className="w-3 h-3 text-gray-600 dark:text-gray-400"
+                className="w-3 h-3 text-gray-600 dark:text-gray-300"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -153,20 +175,56 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
             )}
           </button>
 
-          {/* Task title */}
-          <span
-            className={`flex-1 text-base pr-4 ${
-              task.done ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
-            } transition-all`}
-          >
-            {task.title}
-          </span>
+          {/* Task title with urgent indicator */}
+          <div className="flex-1 flex items-center gap-2 pr-4">
+            {/* Urgent fire emoji */}
+            {task.urgent && (
+              <span className="text-lg flex-shrink-0" title="Urgent">
+                🔥
+              </span>
+            )}
+            
+            <span
+              className={`flex-1 text-base ${
+                task.done 
+                  ? 'line-through text-gray-500 dark:text-gray-400' 
+                  : category 
+                    ? 'text-gray-800' // Darker text on colored backgrounds
+                    : 'text-gray-900 dark:text-gray-100'
+              } transition-all`}
+            >
+              {task.title}
+            </span>
+          </div>
+
+          {/* Quick action buttons - visible on hover (desktop) */}
+          <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Urgent button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleUrgent(task.id)
+              }}
+              className={`p-1.5 rounded transition-colors ${
+                task.urgent
+                  ? 'bg-orange-200 dark:bg-orange-900/50'
+                  : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
+              }`}
+              title={task.urgent ? "Remove urgent" : "Mark as urgent"}
+            >
+              {task.urgent ? '🔥' : (
+                <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              )}
+            </button>
+          </div>
 
           {/* Desktop menu button - hidden on mobile */}
           <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               aria-label="More options"
             >
               <svg

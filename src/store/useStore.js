@@ -1,9 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+const DEFAULT_CATEGORIES = [
+  { id: 'work', name: 'Work', color: '#E0F2F1' },      // Faded teal-green
+  { id: 'personal', name: 'Personal', color: '#F3E5F5' }, // Faded purple  
+  { id: 'health', name: 'Health', color: '#FFCDD2' },  // Faded salmon pink
+  { id: 'hobby', name: 'Hobby', color: '#FFF9C4' },    // Faded yellow
+]
+
 const useStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       // State
       today: [],
       backlog: [],
@@ -15,10 +22,11 @@ const useStore = create(
         lastDayReset: null,
         backlogSortBy: 'recent', // 'recent', 'postponed', 'oldest'
         colorMode: 'auto', // 'light', 'dark', or 'auto'
+        categories: DEFAULT_CATEGORIES, // User's custom categories
       },
 
       // Today actions
-      addTodayTask: (title) => {
+      addTodayTask: (title, category = null, urgent = false) => {
         const newTask = {
           id: Date.now().toString(),
           title,
@@ -26,6 +34,8 @@ const useStore = create(
           prio: false,
           note: '',
           snoozeUntil: null,
+          category, // New field
+          urgent, // New field
           createdAt: new Date().toISOString()
         }
         set((state) => ({
@@ -37,6 +47,40 @@ const useStore = create(
         set((state) => ({
           today: state.today.map((task) =>
             task.id === id ? { ...task, done: !task.done } : task
+          )
+        }))
+      },
+
+      toggleUrgent: (id) => {
+        set((state) => ({
+          today: state.today.map((task) =>
+            task.id === id ? { ...task, urgent: !task.urgent } : task
+          )
+        }))
+      },
+
+      // Toggle urgent for backlog items
+      toggleBacklogUrgent: (id) => {
+        set((state) => ({
+          backlog: state.backlog.map((task) =>
+            task.id === id ? { ...task, urgent: !task.urgent } : task
+          )
+        }))
+      },
+
+      // Toggle urgent for recurring items
+      toggleRecurringUrgent: (id) => {
+        set((state) => ({
+          recurring: state.recurring.map((task) =>
+            task.id === id ? { ...task, urgent: !task.urgent } : task
+          )
+        }))
+      },
+
+      updateTaskCategory: (id, category) => {
+        set((state) => ({
+          today: state.today.map((task) =>
+            task.id === id ? { ...task, category } : task
           )
         }))
       },
@@ -92,6 +136,8 @@ const useStore = create(
               backlog: [...state.backlog, { 
                 id: task.id, 
                 title: task.title,
+                category: task.category, // Preserve category
+                urgent: task.urgent || false, // Preserve urgent status
                 isRecurring: false,
                 createdAt: task.createdAt || new Date().toISOString(),
                 addedToBacklogCount: 1,
@@ -103,10 +149,12 @@ const useStore = create(
       },
 
       // Backlog actions
-      addBacklogTask: (title) => {
+      addBacklogTask: (title, category = null, urgent = false) => {
         const newTask = {
           id: Date.now().toString(),
           title,
+          category,
+          urgent, // Add urgent field
           isRecurring: false,
           createdAt: new Date().toISOString(),
           addedToBacklogCount: 1,
@@ -125,9 +173,11 @@ const useStore = create(
           const newTodayTask = {
             id: Date.now().toString(),
             title: backlogTask.title,
+            category: backlogTask.category, // Preserve category
             done: false,
             prio: false,
             note: '',
+            urgent: backlogTask.urgent || false, // Preserve urgent status
             snoozeUntil: null,
             createdAt: new Date().toISOString(),
             originalBacklogId: backlogTask.id // Track original backlog item
@@ -154,6 +204,22 @@ const useStore = create(
         }))
       },
 
+      updateBacklogCategory: (id, category) => {
+        set((state) => ({
+          backlog: state.backlog.map((task) =>
+            task.id === id ? { ...task, category } : task
+          )
+        }))
+      },
+
+      updateRecurringCategory: (id, category) => {
+        set((state) => ({
+          recurring: state.recurring.map((task) =>
+            task.id === id ? { ...task, category } : task
+          )
+        }))
+      },
+
       toggleRecurring: (id) => {
         set((state) => ({
           backlog: state.backlog.map((task) =>
@@ -172,6 +238,8 @@ const useStore = create(
             recurring: [...state.recurring, {
               id: task.id,
               title: task.title,
+              category: task.category, // Preserve category
+              urgent: task.urgent || false, // Preserve urgent
               rule: interval ? 'interval' : 'manual',
               interval: interval || null,
               createdAt: task.createdAt
@@ -190,6 +258,8 @@ const useStore = create(
             recurring: [...state.recurring, {
               id: task.id,
               title: task.title,
+              category: task.category, // Preserve category
+              urgent: task.urgent || false, // Preserve urgent
               rule: 'interval',
               interval: interval,
               createdAt: task.createdAt || new Date().toISOString()
@@ -214,9 +284,11 @@ const useStore = create(
           const newTodayTask = {
             id: Date.now().toString(),
             title: recurringTask.title,
+            category: recurringTask.category, // Preserve category
             done: false,
             prio: false,
             note: '',
+            urgent: recurringTask.urgent || false, // Preserve urgent
             snoozeUntil: null,
             createdAt: new Date().toISOString()
           }
@@ -233,6 +305,14 @@ const useStore = create(
         }))
       },
 
+      editRecurringTask: (id, newTitle) => {
+        set((state) => ({
+          recurring: state.recurring.map((task) =>
+            task.id === id ? { ...task, title: newTitle } : task
+          )
+        }))
+      },
+
       // Archive completed task
       archiveTask: (id) => {
         set((state) => {
@@ -244,6 +324,7 @@ const useStore = create(
             done: [...state.done, {
               id: task.id,
               title: task.title,
+              category: task.category, // Preserve category
               completedAt: new Date().toISOString()
             }]
           }
@@ -267,6 +348,53 @@ const useStore = create(
           result.splice(endIndex, 0, removed)
           return { backlog: result }
         })
+      },
+
+      // Category management
+      addCategory: (name, color) => {
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            categories: [
+              ...(state.settings.categories || DEFAULT_CATEGORIES),
+              {
+                id: Date.now().toString(),
+                name,
+                color
+              }
+            ]
+          }
+        }))
+      },
+
+      updateCategory: (id, name, color) => {
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            categories: state.settings.categories.map((cat) =>
+              cat.id === id ? { ...cat, name, color } : cat
+            )
+          }
+        }))
+      },
+
+      deleteCategory: (id) => {
+        set((state) => ({
+          settings: {
+            ...state.settings,
+            categories: state.settings.categories.filter((cat) => cat.id !== id)
+          },
+          // Remove category from all tasks
+          today: state.today.map((task) =>
+            task.category === id ? { ...task, category: null } : task
+          ),
+          backlog: state.backlog.map((task) =>
+            task.category === id ? { ...task, category: null } : task
+          ),
+          recurring: state.recurring.map((task) =>
+            task.category === id ? { ...task, category: null } : task
+          )
+        }))
       },
 
       // Settings
@@ -308,8 +436,12 @@ const useStore = create(
             .map(task => ({
               id: task.id,
               title: task.title,
+              category: task.category, // Preserve category
+              urgent: task.urgent || false, // Preserve urgent
               isRecurring: false,
-              createdAt: task.createdAt
+              createdAt: task.createdAt,
+              addedToBacklogCount: 1,
+              lastAddedToBacklog: new Date().toISOString()
             }))
           
           const completedTasks = state.today
@@ -317,6 +449,7 @@ const useStore = create(
             .map(task => ({
               id: task.id,
               title: task.title,
+              category: task.category, // Preserve category
               completedAt: new Date().toISOString()
             }))
           
