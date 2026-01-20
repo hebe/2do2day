@@ -4,6 +4,17 @@ import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
 import useSwipeGesture from '../hooks/useSwipeGesture'
 
+// Map category IDs to CSS class names
+const getCategoryRowClass = (categoryId) => {
+  const classMap = {
+    'work': 'cat-row-work',
+    'personal': 'cat-row-personal',
+    'health': 'cat-row-health',
+    'hobby': 'cat-row-hobby',
+  }
+  return classMap[categoryId] || ''
+}
+
 function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
   const { toggleDone, toggleUrgent, updateTaskCategory, moveToBacklog, moveTodayToRecurring, settings } = useStore()
   const [showMenu, setShowMenu] = useState(false)
@@ -82,6 +93,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
   }
 
   const category = getCategory(task.category)
+  const categoryClass = getCategoryRowClass(task.category)
 
   // Editing mode
   if (isEditing) {
@@ -115,17 +127,6 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
     )
   }
 
-  // Build background style - category tint or default
-  const getRowBackgroundStyle = () => {
-    if (category) {
-      // Mix category color with white/dark for subtle tint
-      return {
-        backgroundColor: category.color,
-      }
-    }
-    return {}
-  }
-
   return (
     <>
       {/* Swipe reveal background - shows on swipe */}
@@ -146,12 +147,13 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
           style={{
             transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
             transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
-            ...getRowBackgroundStyle()
           }}
           className={`relative flex items-center gap-3 p-4 transition-colors group ${
             isDragging ? 'opacity-50' : ''
           } cursor-grab active:cursor-grabbing ${
-            !category ? 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700' : 'hover:brightness-95'
+            categoryClass 
+              ? categoryClass 
+              : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
           }`}
         >
           {/* Checkbox */}
@@ -188,9 +190,7 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
               className={`flex-1 text-base ${
                 task.done 
                   ? 'line-through text-gray-500 dark:text-gray-400' 
-                  : category 
-                    ? 'text-gray-800' // Darker text on colored backgrounds
-                    : 'text-gray-900 dark:text-gray-100'
+                  : 'text-gray-900 dark:text-gray-100'
               } transition-all`}
             >
               {task.title}

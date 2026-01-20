@@ -20,3 +20,145 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* ===========================================
+   OKLCH Category Color System
+   =========================================== */
+
+:root {
+  /* Base surfaces in OKLCH */
+  --surface-task: oklch(0.99 0.003 260);  /* Near white, slight cool tint */
+  
+  /* Category hues - calm, low-chroma colors */
+  --cat-work: oklch(0.75 0.08 175);       /* Soft teal */
+  --cat-personal: oklch(0.75 0.10 300);   /* Soft violet */
+  --cat-health: oklch(0.78 0.10 25);      /* Soft coral/rose */
+  --cat-hobby: oklch(0.85 0.10 85);       /* Soft amber/gold */
+  
+  /* Mix ratios for light mode */
+  --cat-bg-mix: 8%;      /* Background tint strength */
+  --cat-border-mix: 22%; /* Border strength */
+}
+
+.dark {
+  /* Dark mode surface */
+  --surface-task: oklch(0.25 0.015 260);  /* Dark gray with slight cool tint */
+  
+  /* Slightly adjust category colors for dark mode visibility */
+  --cat-work: oklch(0.65 0.10 175);
+  --cat-personal: oklch(0.65 0.12 300);
+  --cat-health: oklch(0.68 0.12 25);
+  --cat-hobby: oklch(0.75 0.12 85);
+  
+  /* Higher mix ratios for dark mode visibility */
+  --cat-bg-mix: 12%;
+  --cat-border-mix: 30%;
+}
+
+/* Category row styles - background tint + left border accent */
+
+/* Work category */
+.cat-row-work {
+  background: color-mix(in oklch, var(--surface-task) 92%, var(--cat-work) 8%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 78%, var(--cat-work) 22%);
+}
+.dark .cat-row-work {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-work) 12%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 70%, var(--cat-work) 30%);
+}
+
+/* Personal category */
+.cat-row-personal {
+  background: color-mix(in oklch, var(--surface-task) 92%, var(--cat-personal) 8%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 78%, var(--cat-personal) 22%);
+}
+.dark .cat-row-personal {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-personal) 12%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 70%, var(--cat-personal) 30%);
+}
+
+/* Health category */
+.cat-row-health {
+  background: color-mix(in oklch, var(--surface-task) 92%, var(--cat-health) 8%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 78%, var(--cat-health) 22%);
+}
+.dark .cat-row-health {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-health) 12%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 70%, var(--cat-health) 30%);
+}
+
+/* Hobby category */
+.cat-row-hobby {
+  background: color-mix(in oklch, var(--surface-task) 92%, var(--cat-hobby) 8%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 78%, var(--cat-hobby) 22%);
+}
+.dark .cat-row-hobby {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-hobby) 12%);
+  border-left: 3px solid color-mix(in oklch, var(--surface-task) 70%, var(--cat-hobby) 30%);
+}
+
+/* Hover states - slightly more visible */
+.cat-row-work:hover {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-work) 12%);
+}
+.dark .cat-row-work:hover {
+  background: color-mix(in oklch, var(--surface-task) 84%, var(--cat-work) 16%);
+}
+
+.cat-row-personal:hover {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-personal) 12%);
+}
+.dark .cat-row-personal:hover {
+  background: color-mix(in oklch, var(--surface-task) 84%, var(--cat-personal) 16%);
+}
+
+.cat-row-health:hover {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-health) 12%);
+}
+.dark .cat-row-health:hover {
+  background: color-mix(in oklch, var(--surface-task) 84%, var(--cat-health) 16%);
+}
+
+.cat-row-hobby:hover {
+  background: color-mix(in oklch, var(--surface-task) 88%, var(--cat-hobby) 12%);
+}
+.dark .cat-row-hobby:hover {
+  background: color-mix(in oklch, var(--surface-task) 84%, var(--cat-hobby) 16%);
+}
+
+/* Category chips/badges (for modals, pickers) - more saturated */
+.cat-chip-work {
+  background: color-mix(in oklch, white 70%, var(--cat-work) 30%);
+  color: oklch(0.35 0.05 175);
+}
+.dark .cat-chip-work {
+  background: color-mix(in oklch, oklch(0.3 0.02 260) 65%, var(--cat-work) 35%);
+  color: oklch(0.85 0.08 175);
+}
+
+.cat-chip-personal {
+  background: color-mix(in oklch, white 70%, var(--cat-personal) 30%);
+  color: oklch(0.35 0.08 300);
+}
+.dark .cat-chip-personal {
+  background: color-mix(in oklch, oklch(0.3 0.02 260) 65%, var(--cat-personal) 35%);
+  color: oklch(0.85 0.10 300);
+}
+
+.cat-chip-health {
+  background: color-mix(in oklch, white 70%, var(--cat-health) 30%);
+  color: oklch(0.35 0.08 25);
+}
+.dark .cat-chip-health {
+  background: color-mix(in oklch, oklch(0.3 0.02 260) 65%, var(--cat-health) 35%);
+  color: oklch(0.85 0.10 25);
+}
+
+.cat-chip-hobby {
+  background: color-mix(in oklch, white 70%, var(--cat-hobby) 30%);
+  color: oklch(0.35 0.08 85);
+}
+.dark .cat-chip-hobby {
+  background: color-mix(in oklch, oklch(0.3 0.02 260) 65%, var(--cat-hobby) 35%);
+  color: oklch(0.85 0.10 85);
+}
