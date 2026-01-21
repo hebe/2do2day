@@ -14,7 +14,7 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
         />
         <button
           type="submit"
-          className="px-6 py-3 bg-[#F0A500] text-white text-sm rounded-lg hover:bg-[#D89400] transition-colors font-medium shadow-sm"
+          className="px-6 py-3 bg-[#F0A500] text-gray-800 text-sm rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm"
         >
           Add
         </button>

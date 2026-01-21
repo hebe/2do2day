@@ -30,15 +30,9 @@
     /* Borders / dividers */
     --row-border: oklch(0.90 0.01 260);
 
-    /* Category accents (keep moderate chroma) */
-    --cat-work: oklch(0.74 0.12 230);    /* sky */
-    --cat-personal: oklch(0.78 0.12 155);/* mint */
-    --cat-health: oklch(0.82 0.14 95);   /* amber */
-    --cat-hobby: oklch(0.72 0.12 300);   /* violet */
-
     /* Mix strengths — LIGHT */
-    --cat-bg-mix: 8%;       /* background tint strength */
-    --cat-border-mix: 26%;  /* border tint strength */
+    --cat-bg-mix: 15%;       /* background tint strength */
+    --cat-border-mix: 32%;  /* border tint strength */
     --cat-edge-mix: 65%;    /* (mostly unused in light) */
   }
 
@@ -74,27 +68,14 @@
     background: var(--row-hover);
   }
 
-  /* ---------- Category rows (used when TaskRow chooses categoryClass) ----------
-     TaskRow maps:
-       work     -> cat-row-work
-       personal -> cat-row-personal
-       health   -> cat-row-health
-       hobby    -> cat-row-hobby
-     (see TaskRow.jsx)
+  /* ---------- Category rows (dynamic via inline --accent variable) ----------
+     Components set --accent inline based on category color
+     This allows any user-defined category to work with the OKLab mixing
   */
-
-  /* Shared rule: set an --accent per row */
-  .cat-row-work { --accent: var(--cat-work); }
-  .cat-row-personal { --accent: var(--cat-personal); }
-  .cat-row-health { --accent: var(--cat-health); }
-  .cat-row-hobby { --accent: var(--cat-hobby); }
 
   /* Preferred implementation (modern browsers): perceptual mix */
   @supports (background: color-mix(in oklab, white, black)) {
-    .cat-row-work,
-    .cat-row-personal,
-    .cat-row-health,
-    .cat-row-hobby {
+    .cat-row {
       /* Background tint */
       background: color-mix(
         in oklab,
@@ -111,10 +92,7 @@
     }
 
     /* Hover: a touch stronger tint so it feels interactive */
-    .cat-row-work:hover,
-    .cat-row-personal:hover,
-    .cat-row-health:hover,
-    .cat-row-hobby:hover {
+    .cat-row:hover {
       background: color-mix(
         in oklab,
         var(--row-hover) calc(100% - (var(--cat-bg-mix) + 4%)),
@@ -123,17 +101,11 @@
     }
 
     /* Dark-mode scan aid: tiny ink edge (keeps background subtle) */
-    .dark .cat-row-work,
-    .dark .cat-row-personal,
-    .dark .cat-row-health,
-    .dark .cat-row-hobby {
+    .dark .cat-row {
       position: relative;
     }
 
-    .dark .cat-row-work::before,
-    .dark .cat-row-personal::before,
-    .dark .cat-row-health::before,
-    .dark .cat-row-hobby::before {
+    .dark .cat-row::before {
       content: "";
       position: absolute;
       inset-block: 10px;
@@ -152,19 +124,52 @@
 
   /* Fallback for older browsers: still pleasant, just less fancy */
   @supports not (background: color-mix(in oklab, white, black)) {
-    .cat-row-work,
-    .cat-row-personal,
-    .cat-row-health,
-    .cat-row-hobby {
+    .cat-row {
       background: var(--row-surface);
       border-color: var(--row-border);
     }
 
     /* If you want a fallback hint, uncomment a left border:
-    .dark .cat-row-work, .dark .cat-row-personal, .dark .cat-row-health, .dark .cat-row-hobby {
+    .dark .cat-row {
       border-left: 3px solid rgba(255,255,255,0.08);
     }
     */
+  }
+
+  /* Category chip styles for modals (uses same --accent variable) */
+  @supports (background: color-mix(in oklab, white, black)) {
+    .cat-chip {
+      background: color-mix(
+        in oklab,
+        var(--row-surface) calc(100% - 35%),
+        var(--accent) 35%
+      );
+      color: color-mix(
+        in oklab,
+        black 70%,
+        var(--accent) 30%
+      );
+    }
+
+    .dark .cat-chip {
+      background: color-mix(
+        in oklab,
+        var(--row-surface) calc(100% - 45%),
+        var(--accent) 45%
+      );
+      color: color-mix(
+        in oklab,
+        white 85%,
+        var(--accent) 15%
+      );
+    }
+  }
+
+  @supports not (background: color-mix(in oklab, white, black)) {
+    .cat-chip {
+      background: var(--row-surface);
+      color: var(--text-primary);
+    }
   }
 }
 
