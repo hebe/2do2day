@@ -5,12 +5,27 @@ import TaskRow from './TaskRow'
 import FooterActions from './FooterActions'
 import BacklogQuickPicker from './BacklogQuickPicker'
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
+
 function TodayView() {
   const { today, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
-  const [draggedIndex, setDraggedIndex] = useState(null)
   const [showResetMessage, setShowResetMessage] = useState(false)
   const inputRef = useRef(null)
   const lastResetRef = useRef(settings.lastDayReset)
@@ -18,6 +33,24 @@ function TodayView() {
   const doneCount = today.filter(t => t.done).length
   const undoneCount = today.filter(t => !t.done).length
   const showCounter = today.length > 5
+
+  // dnd-kit sensors configuration
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms hold before drag starts on touch
+        tolerance: 8, // Allow 8px movement during the delay
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // Show list if there are any tasks
   useEffect(() => {
@@ -63,26 +96,19 @@ function TodayView() {
     setShowBacklogPicker(true)
   }
 
-  const handleDragStart = (e, index) => {
-    setDraggedIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null)
-  }
-
-  const handleDragOver = (e, index) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault()
-    if (draggedIndex !== null && draggedIndex !== dropIndex) {
-      reorderTodayTasks(draggedIndex, dropIndex)
+  const handleDragEnd = (event) => {
+    const { active, over } = event
+    
+    if (!over || active.id === over.id) {
+      return
     }
-    setDraggedIndex(null)
+
+    const oldIndex = today.findIndex((t) => t.id === active.id)
+    const newIndex = today.findIndex((t) => t.id === over.id)
+    
+    if (oldIndex !== -1 && newIndex !== -1) {
+      reorderTodayTasks(oldIndex, newIndex)
+    }
   }
 
   return (
@@ -155,27 +181,34 @@ function TodayView() {
           )}
 
           {/* Task list */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 overflow-hidden">
             {today.length === 0 ? (
               <div className="p-8 text-center text-gray-600 dark:text-gray-400">
                 <p className="text-sm">Your list is empty. Add your first task below.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
-                {today.map((task, index) => (
-                  <TaskRow 
-                    key={task.id} 
-                    task={task}
-                    index={index}
-                    onDelete={deleteTask}
-                    onEdit={editTask}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  />
-                ))}
-              </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+              >
+                <SortableContext
+                  items={today.map((t) => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+                    {today.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onDelete={deleteTask}
+                        onEdit={editTask}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
 

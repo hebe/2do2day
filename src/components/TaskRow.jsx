@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
-import useSwipeGesture from '../hooks/useSwipeGesture'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 // Map category IDs to CSS class names
 const getCategoryRowClass = (categoryId) => {
@@ -15,25 +16,28 @@ const getCategoryRowClass = (categoryId) => {
   return classMap[categoryId] || ''
 }
 
-function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
-  const { toggleDone, toggleUrgent, updateTaskCategory, moveToBacklog, moveTodayToRecurring, settings } = useStore()
+function TaskRow({ task, onDelete, onEdit }) {
+  const { toggleDone, toggleUrgent, moveToBacklog, moveTodayToRecurring, settings } = useStore()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
 
-  // Swipe gestures
-  const { handlers: swipeHandlers, swipeOffset } = useSwipeGesture({
-    onSwipeRight: () => {
-      moveToBacklog(task.id)
-    },
-    onSwipeLeft: () => {
-      setShowMenu(true)
-    },
-    threshold: 80
-  })
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, disabled: isEditing })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -129,117 +133,120 @@ function TaskRow({ task, onDelete, onEdit, index, onDragStart, onDragEnd, onDrag
 
   return (
     <>
-      {/* Swipe reveal background - shows on swipe */}
-      <div className="relative bg-gray-300 dark:bg-gray-600">
-        <div
-          {...swipeHandlers}
-          draggable={!isEditing}
-          onDragStart={(e) => {
-            setIsDragging(true)
-            onDragStart(e, index)
-          }}
-          onDragEnd={(e) => {
-            setIsDragging(false)
-            onDragEnd(e)
-          }}
-          onDragOver={(e) => onDragOver(e, index)}
-          onDrop={(e) => onDrop(e, index)}
-          style={{
-            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
-          }}
-          className={`relative flex items-center gap-3 p-4 transition-colors group ${
-            isDragging ? 'opacity-50' : ''
-          } cursor-grab active:cursor-grabbing ${
-            categoryClass 
-              ? categoryClass 
-              : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
-          }`}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`relative flex items-center gap-3 p-4 transition-colors group ${
+          isDragging ? 'opacity-50 shadow-lg z-10' : ''
+        } ${
+          categoryClass 
+            ? categoryClass 
+            : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
+        }`}
+      >
+        {/* Drag handle - using activator pattern for touch-friendly dragging */}
+        <button
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+          className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
+          aria-label="Drag to reorder"
+          title="Drag to reorder"
         >
-          {/* Checkbox */}
-          <button
-            onClick={() => toggleDone(task.id)}
-            className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
-            aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
+          <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400">
+            <path
+              fill="currentColor"
+              d="M7 4h2v2H7V4zm4 0h2v2h-2V4zM7 9h2v2H7V9zm4 0h2v2h-2V9zM7 14h2v2H7v-2zm4 0h2v2h-2v-2z"
+            />
+          </svg>
+        </button>
+
+        {/* Checkbox */}
+        <button
+          onClick={() => toggleDone(task.id)}
+          className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
+          aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
+        >
+          {task.done && (
+            <svg
+              className="w-3 h-3 text-gray-600 dark:text-gray-300"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+        </button>
+
+        {/* Task title with urgent indicator */}
+        <div 
+          className="flex-1 flex items-center gap-2 pr-4 cursor-pointer"
+          onClick={() => setShowMenu(true)}
+        >
+          {/* Urgent fire emoji */}
+          {task.urgent && (
+            <span className="text-lg flex-shrink-0" title="Urgent">
+              🔥
+            </span>
+          )}
+          
+          <span
+            className={`flex-1 text-base ${
+              task.done 
+                ? 'line-through text-gray-500 dark:text-gray-400' 
+                : 'text-gray-900 dark:text-gray-100'
+            } transition-all`}
           >
-            {task.done && (
-              <svg
-                className="w-3 h-3 text-gray-600 dark:text-gray-300"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M5 13l4 4L19 7" />
+            {task.title}
+          </span>
+        </div>
+
+        {/* Quick action buttons - visible on hover (desktop) */}
+        <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Urgent button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleUrgent(task.id)
+            }}
+            className={`p-1.5 rounded transition-colors ${
+              task.urgent
+                ? 'bg-orange-200 dark:bg-orange-900/50'
+                : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
+            }`}
+            title={task.urgent ? "Remove urgent" : "Mark as urgent"}
+          >
+            {task.urgent ? '🔥' : (
+              <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             )}
           </button>
+        </div>
 
-          {/* Task title with urgent indicator */}
-          <div className="flex-1 flex items-center gap-2 pr-4">
-            {/* Urgent fire emoji */}
-            {task.urgent && (
-              <span className="text-lg flex-shrink-0" title="Urgent">
-                🔥
-              </span>
-            )}
-            
-            <span
-              className={`flex-1 text-base ${
-                task.done 
-                  ? 'line-through text-gray-500 dark:text-gray-400' 
-                  : 'text-gray-900 dark:text-gray-100'
-              } transition-all`}
+        {/* Desktop menu button - hidden on mobile */}
+        <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            aria-label="More options"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {task.title}
-            </span>
-          </div>
-
-          {/* Quick action buttons - visible on hover (desktop) */}
-          <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {/* Urgent button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                toggleUrgent(task.id)
-              }}
-              className={`p-1.5 rounded transition-colors ${
-                task.urgent
-                  ? 'bg-orange-200 dark:bg-orange-900/50'
-                  : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
-              }`}
-              title={task.urgent ? "Remove urgent" : "Mark as urgent"}
-            >
-              {task.urgent ? '🔥' : (
-                <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              )}
-            </button>
-          </div>
-
-          {/* Desktop menu button - hidden on mobile */}
-          <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-              aria-label="More options"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-          </div>
+              <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+          </button>
         </div>
       </div>
 

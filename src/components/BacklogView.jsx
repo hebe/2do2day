@@ -2,13 +2,46 @@ import React, { useState } from 'react'
 import useStore from '../store/useStore'
 import BacklogItem from './BacklogItem'
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
+
 function BacklogView() {
   const { backlog, recurring, done, addBacklogTask, reorderBacklogTasks, updateSettings, settings } = useStore()
   const [activeTab, setActiveTab] = useState('backlog')
   const [showAll, setShowAll] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const [draggedIndex, setDraggedIndex] = useState(null)
-  const [sortBy, setSortBy] = useState(settings.backlogSortBy || 'recent')
+  const [sortBy, setSortBy] = useState(settings.backlogSortBy || 'manual')
+
+  // dnd-kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const handleAddTask = (e) => {
     e.preventDefault()
@@ -23,30 +56,29 @@ function BacklogView() {
     updateSettings({ backlogSortBy: newSort })
   }
 
-  const handleDragStart = (e, index) => {
-    setDraggedIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null)
-  }
-
-  const handleDragOver = (e, index) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
-
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault()
-    if (draggedIndex !== null && draggedIndex !== dropIndex) {
-      reorderBacklogTasks(draggedIndex, dropIndex)
+  const handleDragEnd = (event) => {
+    const { active, over } = event
+    
+    if (!over || active.id === over.id) {
+      return
     }
-    setDraggedIndex(null)
+
+    // Find indices in the full backlog array (not the sorted/visible subset)
+    const oldIndex = backlog.findIndex((t) => t.id === active.id)
+    const newIndex = backlog.findIndex((t) => t.id === over.id)
+    
+    if (oldIndex !== -1 && newIndex !== -1) {
+      reorderBacklogTasks(oldIndex, newIndex)
+    }
   }
 
   // Sort backlog based on current preference
   const getSortedBacklog = () => {
+    // For manual sorting, return as-is (maintains user's order)
+    if (sortBy === 'manual') {
+      return backlog
+    }
+    
     const sorted = [...backlog]
     
     switch (sortBy) {
@@ -73,64 +105,95 @@ function BacklogView() {
   }
 
   const sortedBacklog = getSortedBacklog()
+  const visibleBacklog = getVisibleItems(sortedBacklog)
+  
+  // Drag is only enabled in manual sort mode
+  const isDragEnabled = sortBy === 'manual'
+
+  const renderBacklogList = () => {
+    if (backlog.length === 0) {
+      return (
+        <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+          <p className="text-sm">Your backlog is empty.</p>
+          <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+            Add tasks here that you want to do someday, but not necessarily today.
+          </p>
+        </div>
+      )
+    }
+
+    return (
+      <>
+        {/* Sort dropdown */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
+          <span className="text-xs text-gray-600 dark:text-gray-400">Sort by:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => handleSortChange(e.target.value)}
+            className="text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          >
+            <option value="manual">Manual (drag to reorder)</option>
+            <option value="recent">Recently added</option>
+            <option value="postponed">Most postponed</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        {/* Task list with optional drag context */}
+        {isDragEnabled ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          >
+            <SortableContext
+              items={visibleBacklog.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+                {visibleBacklog.map((task) => (
+                  <BacklogItem
+                    key={task.id}
+                    task={task}
+                    type="backlog"
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+            {visibleBacklog.map((task) => (
+              <BacklogItem
+                key={task.id}
+                task={task}
+                type="backlog"
+                isDragDisabled={true}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Show all button */}
+        {backlog.length > 6 && !showAll && (
+          <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
+            <button
+              onClick={() => setShowAll(true)}
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
+            >
+              Show all ({backlog.length} tasks)
+            </button>
+          </div>
+        )}
+      </>
+    )
+  }
 
   const renderContent = () => {
     switch (activeTab) {
       case 'backlog':
-        const visibleBacklog = getVisibleItems(sortedBacklog)
-        return (
-          <div>
-            {backlog.length === 0 ? (
-              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
-                <p className="text-sm">Your backlog is empty.</p>
-                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
-                  Add tasks here that you want to do someday, but not necessarily today.
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Sort dropdown */}
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">Sort by:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => handleSortChange(e.target.value)}
-                    className="text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  >
-                    <option value="recent">Recently added</option>
-                    <option value="postponed">Most postponed</option>
-                    <option value="oldest">Oldest first</option>
-                  </select>
-                </div>
-
-                <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
-                  {visibleBacklog.map((task, index) => (
-                    <BacklogItem 
-                      key={task.id} 
-                      task={task} 
-                      type="backlog"
-                      index={index}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                    />
-                  ))}
-                </div>
-                {backlog.length > 6 && !showAll && (
-                  <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
-                    <button
-                      onClick={() => setShowAll(true)}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
-                    >
-                      Show all ({backlog.length} tasks)
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )
+        return renderBacklogList()
 
       case 'recurring':
         return (
@@ -251,7 +314,7 @@ function BacklogView() {
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-600 overflow-hidden">
           {renderContent()}
         </div>
       </div>
