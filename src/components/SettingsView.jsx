@@ -96,6 +96,61 @@ function SettingsView() {
           </p>
         </div>
 
+
+        {/* Color Mode Setting */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Appearance</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Choose how Today's ToDos looks.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {colorModeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleColorModeChange(option.value)}
+                  className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
+                    colorMode === option.value
+                      ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.icon}</span>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {option.label}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                          {option.description}
+                        </div>
+                      </div>
+                    </div>
+                    {colorMode === option.value && (
+                      <svg
+                        className="w-5 h-5 text-[#F0A500]"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+
         {/* Categories Management */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
           <div className="space-y-4">
@@ -252,59 +307,6 @@ function SettingsView() {
                   </div>
                 ))
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Color Mode Setting */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Appearance</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Choose how Today's ToDos looks.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {colorModeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleColorModeChange(option.value)}
-                  className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
-                    colorMode === option.value
-                      ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.icon}</span>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {option.label}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                          {option.description}
-                        </div>
-                      </div>
-                    </div>
-                    {colorMode === option.value && (
-                      <svg
-                        className="w-5 h-5 text-[#F0A500]"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
         </div>
