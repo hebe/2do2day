@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import useStore from '../store/useStore'
+import { CATEGORY_COLOR_PALETTE } from '../utils/colorUtils'
 
 function SettingsView() {
   // Get settings and actions from store - this will re-render when settings change
@@ -18,7 +19,7 @@ function SettingsView() {
   const [editingCategory, setEditingCategory] = useState(null)
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [newCategoryColor, setNewCategoryColor] = useState('#E0F2F1')
+  const [newCategoryColor, setNewCategoryColor] = useState(CATEGORY_COLOR_PALETTE[0])
   const [categoriesExpanded, setCategoriesExpanded] = useState(false)
 
   // Get categories directly from settings (reactive)
@@ -39,7 +40,7 @@ function SettingsView() {
     if (newCategoryName.trim()) {
       addCategory(newCategoryName.trim(), newCategoryColor)
       setNewCategoryName('')
-      setNewCategoryColor('#E0F2F1')
+      setNewCategoryColor(CATEGORY_COLOR_PALETTE[0])
       setShowAddCategory(false)
     }
   }
@@ -75,16 +76,8 @@ function SettingsView() {
     { value: 'auto', label: 'Auto', icon: '⚙️', description: 'Match system preference' },
   ]
 
-  const colorPresets = [
-    '#E0F2F1', // Teal
-    '#F3E5F5', // Purple
-    '#FFCDD2', // Salmon pink
-    '#FFF9C4', // Yellow
-    '#FFE0B2', // Orange
-    '#C8E6C9', // Green
-    '#BBDEFB', // Blue
-    '#F8BBD0', // Pink
-  ]
+  // Use the palette from colorUtils
+  const colorPresets = CATEGORY_COLOR_PALETTE
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -228,7 +221,7 @@ function SettingsView() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateCategory(category.id)}
-                                className="px-3 py-1.5 text-xs bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                                className="px-3 py-1.5 text-xs bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
                               >
                                 Save
                               </button>
@@ -273,7 +266,7 @@ function SettingsView() {
                 <div className="pt-2">
                   <button
                     onClick={() => setShowAddCategory(!showAddCategory)}
-                    className="w-full px-3 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                    className="w-full px-3 py-2 text-sm bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
                   >
                     + Add Category
                   </button>
@@ -315,7 +308,7 @@ function SettingsView() {
                     <div className="flex gap-2">
                       <button
                         onClick={handleAddCategory}
-                        className="px-4 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                        className="px-4 py-2 text-sm bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
                       >
                         Add Category
                       </button>
@@ -323,7 +316,7 @@ function SettingsView() {
                         onClick={() => {
                           setShowAddCategory(false)
                           setNewCategoryName('')
-                          setNewCategoryColor('#E0F2F1')
+                          setNewCategoryColor(CATEGORY_COLOR_PALETTE[0])
                         }}
                         className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
                       >
@@ -384,10 +377,10 @@ function SettingsView() {
             <div className="pt-4">
               <button
                 onClick={handleSave}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                   isSaved
                     ? 'bg-green-600 text-white'
-                    : 'bg-[#F0A500] text-white hover:bg-[#D89400] shadow-sm'
+                    : 'bg-[#F0A500] text-gray-800 hover:bg-[#D89400] shadow-sm'
                 }`}
               >
                 {isSaved ? '✓ Saved!' : 'Set time'}

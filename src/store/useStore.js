@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { CATEGORY_COLOR_PALETTE } from '../utils/colorUtils'
 
 const DEFAULT_CATEGORIES = [
-  { id: 'work', name: 'Work', color: '#E0F2F1' },      // Faded teal-green
-  { id: 'personal', name: 'Personal', color: '#F3E5F5' }, // Faded purple  
-  { id: 'health', name: 'Health', color: '#FFCDD2' },  // Faded salmon pink
-  { id: 'hobby', name: 'Hobby', color: '#FFF9C4' },    // Faded yellow
+  { id: 'personal', name: 'Personal', color: CATEGORY_COLOR_PALETTE[1] }, // Mint Green
+  { id: 'work', name: 'Work', color: CATEGORY_COLOR_PALETTE[0] },      // Sky Blue
+  { id: 'hobby', name: 'Hobby', color: CATEGORY_COLOR_PALETTE[3] },    // Violet
+  { id: 'health', name: 'Health', color: CATEGORY_COLOR_PALETTE[2] },  // Amber
 ]
 
 const useStore = create(

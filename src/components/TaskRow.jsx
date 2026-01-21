@@ -4,17 +4,7 @@ import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-
-// Map category IDs to CSS class names
-const getCategoryRowClass = (categoryId) => {
-  const classMap = {
-    'work': 'cat-row-work',
-    'personal': 'cat-row-personal',
-    'health': 'cat-row-health',
-    'hobby': 'cat-row-hobby',
-  }
-  return classMap[categoryId] || ''
-}
+import { getCategoryOKLab } from '../utils/colorUtils'
 
 function TaskRow({ task, onDelete, onEdit }) {
   const { toggleDone, toggleUrgent, moveToBacklog, moveTodayToRecurring, settings } = useStore()
@@ -97,7 +87,7 @@ function TaskRow({ task, onDelete, onEdit }) {
   }
 
   const category = getCategory(task.category)
-  const categoryClass = getCategoryRowClass(task.category)
+  const categoryOKLab = category ? getCategoryOKLab(category.color) : null
 
   // Editing mode
   if (isEditing) {
@@ -135,12 +125,15 @@ function TaskRow({ task, onDelete, onEdit }) {
     <>
       <div
         ref={setNodeRef}
-        style={style}
+        style={{
+          ...style,
+          ...(categoryOKLab && { '--accent': categoryOKLab })
+        }}
         className={`relative flex items-center gap-3 p-4 transition-colors group ${
           isDragging ? 'opacity-50 shadow-lg z-10' : ''
         } ${
-          categoryClass 
-            ? categoryClass 
+          categoryOKLab
+            ? 'cat-row'
             : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
         }`}
       >

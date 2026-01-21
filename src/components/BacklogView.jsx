@@ -270,7 +270,7 @@ function BacklogView() {
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-[#F0A500] text-black text-sm rounded-lg hover:bg-[#D89400] transition-colors font-medium shadow-sm"
+            className="px-6 py-3 bg-[#F0A500] text-gray-800 text-sm rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm"
           >
             Add
           </button>
@@ -286,7 +286,7 @@ function BacklogView() {
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'backlog'
                 ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
             }`}
           >
             Backlog {backlog.length > 0 && `(${backlog.length})`}
@@ -296,7 +296,7 @@ function BacklogView() {
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'recurring'
                 ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
             }`}
           >
             Recurring {recurring.length > 0 && `(${recurring.length})`}
@@ -306,7 +306,7 @@ function BacklogView() {
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'done'
                 ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
             }`}
           >
             Done! {done.length > 0 && `(${done.length})`}

@@ -1,16 +1,6 @@
 import React from 'react'
 import useStore from '../store/useStore'
-
-// Map category IDs to CSS chip class names
-const getCategoryChipClass = (categoryId) => {
-  const classMap = {
-    'work': 'cat-chip-work',
-    'personal': 'cat-chip-personal',
-    'health': 'cat-chip-health',
-    'hobby': 'cat-chip-hobby',
-  }
-  return classMap[categoryId] || ''
-}
+import { getCategoryOKLab } from '../utils/colorUtils'
 
 function TaskActionsModal({ 
   task, 
@@ -119,7 +109,7 @@ function TaskActionsModal({
                 <span className="text-2xl">🏷️</span>
                 <span className="text-base font-medium text-gray-900 dark:text-gray-100">Category</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-2 pt-2 -mx-1 px-1 scrollbar-hide">
                 {/* No category option */}
                 <button
                   onClick={() => handleCategorySelect(null)}
@@ -132,16 +122,17 @@ function TaskActionsModal({
                   None
                 </button>
                 
-                {/* Category chips - using CSS classes */}
+                {/* Category chips - using dynamic colors */}
                 {categories.map((category) => {
-                  const chipClass = getCategoryChipClass(category.id)
+                  const categoryOKLab = getCategoryOKLab(category.color)
                   return (
                     <button
                       key={category.id}
                       onClick={() => handleCategorySelect(category.id)}
-                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        chipClass || 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200'
-                      } ${
+                      style={{
+                        '--accent': categoryOKLab
+                      }}
+                      className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all cat-chip ${
                         task.category === category.id
                           ? 'ring-2 ring-gray-500 dark:ring-gray-400'
                           : 'hover:opacity-80'

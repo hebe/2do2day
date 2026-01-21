@@ -4,17 +4,7 @@ import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-
-// Map category IDs to CSS class names
-const getCategoryRowClass = (categoryId) => {
-  const classMap = {
-    'work': 'cat-row-work',
-    'personal': 'cat-row-personal',
-    'health': 'cat-row-health',
-    'hobby': 'cat-row-hobby',
-  }
-  return classMap[categoryId] || ''
-}
+import { getCategoryOKLab } from '../utils/colorUtils'
 
 function BacklogItem({ task, type, isDragDisabled = false }) {
   const { 
@@ -70,7 +60,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
   }
 
   const category = getCategory(task.category)
-  const categoryClass = getCategoryRowClass(task.category)
+  const categoryOKLab = category ? getCategoryOKLab(category.color) : null
 
   const handleAddToToday = () => {
     if (type === 'backlog') {
@@ -148,9 +138,12 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
   // Done tasks are read-only
   if (type === 'done') {
     return (
-      <div 
+      <div
+        style={{
+          ...(categoryOKLab && { '--accent': categoryOKLab })
+        }}
         className={`flex items-center gap-3 p-4 ${
-          categoryClass || 'bg-white dark:bg-gray-800'
+          categoryOKLab ? 'cat-row' : 'bg-white dark:bg-gray-800'
         }`}
       >
         <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
@@ -215,12 +208,15 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
     <>
       <div
         ref={setNodeRef}
-        style={style}
+        style={{
+          ...style,
+          ...(categoryOKLab && { '--accent': categoryOKLab })
+        }}
         className={`relative flex items-center gap-3 p-4 transition-colors group ${
           isDragging ? 'opacity-50 shadow-lg z-10' : ''
         } ${
-          categoryClass 
-            ? categoryClass 
+          categoryOKLab
+            ? 'cat-row'
             : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
         }`}
       >

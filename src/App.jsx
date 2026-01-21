@@ -31,8 +31,8 @@ function App() {
               onClick={() => setCurrentView('today')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'today'
-                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
-                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
+                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
+                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
               }`}
             >
               Today
@@ -41,8 +41,8 @@ function App() {
               onClick={() => setCurrentView('backlog')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'backlog'
-                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
-                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
+                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
+                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
               }`}
             >
               Backlog
@@ -51,8 +51,8 @@ function App() {
               onClick={() => setCurrentView('settings')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'settings'
-                  ? 'border-[#F0A500] text-calm-700 dark:text-gray-100'
-                  : 'border-transparent text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300'
+                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
+                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
               }`}
             >
               Settings
