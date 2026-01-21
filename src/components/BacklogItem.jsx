@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import useStore from '../store/useStore'
 import RecurringIntervalModal from './RecurringIntervalModal'
 import TaskActionsModal from './TaskActionsModal'
-import useSwipeGesture from '../hooks/useSwipeGesture'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 // Map category IDs to CSS class names
 const getCategoryRowClass = (categoryId) => {
@@ -15,7 +16,7 @@ const getCategoryRowClass = (categoryId) => {
   return classMap[categoryId] || ''
 }
 
-function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, onDrop }) {
+function BacklogItem({ task, type, isDragDisabled = false }) {
   const { 
     addFromBacklog, 
     deleteBacklogTask, 
@@ -25,29 +26,36 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
     addFromRecurring,
     deleteRecurringTask,
     editRecurringTask,
+    toggleBacklogUrgent,
+    toggleRecurringUrgent,
     settings
   } = useStore()
   const [showMenu, setShowMenu] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
 
-  // Swipe gestures for backlog items
-  const { handlers: swipeHandlers, swipeOffset } = useSwipeGesture({
-    onSwipeRight: () => {
-      if (type === 'backlog') {
-        addFromBacklog(task.id)
-      } else if (type === 'recurring') {
-        addFromRecurring(task.id)
-      }
-    },
-    onSwipeLeft: () => {
-      setShowMenu(true)
-    },
-    threshold: 80
+  // Only enable sorting for backlog items when not editing and not disabled
+  const sortableEnabled = type === 'backlog' && !isEditing && !isDragDisabled
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ 
+    id: task.id, 
+    disabled: !sortableEnabled 
   })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -205,104 +213,106 @@ function BacklogItem({ task, type, index, onDragStart, onDragEnd, onDragOver, on
 
   return (
     <>
-      <div className="relative bg-gray-300 dark:bg-gray-600">
-        <div
-          {...(type !== 'done' ? swipeHandlers : {})}
-          draggable={!isEditing && type === 'backlog'}
-          onDragStart={(e) => {
-            if (type === 'backlog' && onDragStart) {
-              setIsDragging(true)
-              onDragStart(e, index)
-            }
-          }}
-          onDragEnd={(e) => {
-            if (type === 'backlog' && onDragEnd) {
-              setIsDragging(false)
-              onDragEnd(e)
-            }
-          }}
-          onDragOver={(e) => type === 'backlog' && onDragOver && onDragOver(e, index)}
-          onDrop={(e) => type === 'backlog' && onDrop && onDrop(e, index)}
-          style={{
-            transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : 'none',
-            transition: swipeOffset === 0 ? 'transform 0.3s ease' : 'none',
-          }}
-          className={`relative flex items-center gap-3 p-4 transition-colors group ${
-            isDragging ? 'opacity-50' : ''
-          } ${type === 'backlog' && !isEditing ? 'cursor-grab active:cursor-grabbing' : ''} ${
-            categoryClass 
-              ? categoryClass 
-              : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
-          }`}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`relative flex items-center gap-3 p-4 transition-colors group ${
+          isDragging ? 'opacity-50 shadow-lg z-10' : ''
+        } ${
+          categoryClass 
+            ? categoryClass 
+            : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
+        }`}
+      >
+        {/* Drag handle - only for backlog items when sorting is enabled */}
+        {sortableEnabled && (
+          <button
+            ref={setActivatorNodeRef}
+            {...attributes}
+            {...listeners}
+            className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
+            aria-label="Drag to reorder"
+            title="Drag to reorder"
+          >
+            <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400">
+              <path
+                fill="currentColor"
+                d="M7 4h2v2H7V4zm4 0h2v2h-2V4zM7 9h2v2H7V9zm4 0h2v2h-2V9zM7 14h2v2H7v-2zm4 0h2v2h-2v-2z"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* Task title - clickable to open menu */}
+        <div 
+          className="flex-1 min-w-0 pr-4 cursor-pointer"
+          onClick={() => setShowMenu(true)}
         >
-          {/* Task title */}
-          <div className="flex-1 min-w-0 pr-4">
-            <div className="flex items-center gap-2">
-              {/* Urgent fire emoji */}
-              {task.urgent && (
-                <span className="text-base flex-shrink-0" title="Urgent">
-                  🔥
-                </span>
-              )}
-              
-              <span className="text-sm block text-gray-900 dark:text-gray-100">
-                {task.title}
-                {type === 'recurring' && task.interval && (
-                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                    ↻ {task.interval === 'daily' && 'Daily'}
-                    {task.interval === 'weekdays' && 'Weekdays'}
-                    {task.interval === 'weekly' && 'Weekly'}
-                    {task.interval === 'biweekly' && 'Biweekly'}
-                    {task.interval === 'monthly' && 'Monthly'}
-                    {task.interval === 'manual' && 'Manual'}
-                  </span>
-                )}
-                {type === 'recurring' && !task.interval && (
-                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">↻</span>
-                )}
+          <div className="flex items-center gap-2">
+            {/* Urgent fire emoji */}
+            {task.urgent && (
+              <span className="text-base flex-shrink-0" title="Urgent">
+                🔥
               </span>
-              {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount >= 3 && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
-                  Postponed {task.addedToBacklogCount}x
+            )}
+            
+            <span className="text-sm block text-gray-900 dark:text-gray-100">
+              {task.title}
+              {type === 'recurring' && task.interval && (
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                  ↻ {task.interval === 'daily' && 'Daily'}
+                  {task.interval === 'weekdays' && 'Weekdays'}
+                  {task.interval === 'weekly' && 'Weekly'}
+                  {task.interval === 'biweekly' && 'Biweekly'}
+                  {task.interval === 'monthly' && 'Monthly'}
+                  {task.interval === 'manual' && 'Manual'}
                 </span>
               )}
-            </div>
-            {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount < 3 && task.addedToBacklogCount > 1 && (
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                Postponed {task.addedToBacklogCount} times
-              </p>
+              {type === 'recurring' && !task.interval && (
+                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">↻</span>
+              )}
+            </span>
+            {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount >= 3 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
+                Postponed {task.addedToBacklogCount}x
+              </span>
             )}
           </div>
+          {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount < 3 && task.addedToBacklogCount > 1 && (
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Postponed {task.addedToBacklogCount} times
+            </p>
+          )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleAddToToday}
+            className="px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            ← Today
+          </button>
+
+          {/* Desktop menu button - hidden on mobile */}
+          <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
             <button
-              onClick={handleAddToToday}
-              className="px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              aria-label="More options"
             >
-              ← Today
-            </button>
-
-            {/* Desktop menu button - hidden on mobile */}
-            <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                aria-label="More options"
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                </svg>
-              </button>
-            </div>
+                <path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
