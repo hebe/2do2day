@@ -19,6 +19,7 @@ function SettingsView() {
   const [showAddCategory, setShowAddCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryColor, setNewCategoryColor] = useState('#E0F2F1')
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false)
 
   // Get categories directly from settings (reactive)
   const categories = settings.categories || []
@@ -162,152 +163,177 @@ function SettingsView() {
                 </p>
               </div>
               <button
-                onClick={() => setShowAddCategory(!showAddCategory)}
-                className="px-3 py-1.5 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                aria-label={categoriesExpanded ? "Collapse categories" : "Expand categories"}
               >
-                + Add
+                <svg
+                  className={`w-5 h-5 transition-transform ${categoriesExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
 
-            {/* Add Category Form */}
-            {showAddCategory && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
-                <input
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="Category name..."
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddCategory()
-                  }}
-                  autoFocus
-                />
-                
-                <div>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Choose color:</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {colorPresets.map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setNewCategoryColor(color)}
-                        className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                          newCategoryColor === color
-                            ? 'border-[#F0A500] scale-110'
-                            : 'border-gray-300 dark:border-gray-600 hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAddCategory}
-                    className="px-4 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
-                  >
-                    Add Category
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowAddCategory(false)
-                      setNewCategoryName('')
-                      setNewCategoryColor('#E0F2F1')
-                    }}
-                    className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Categories List */}
-            <div className="space-y-2">
-              {categories.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                  No categories yet. Add one to get started!
-                </p>
-              ) : (
-                categories.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
-                  >
-                    {editingCategory?.id === category.id ? (
-                      // Edit mode
-                      <>
-                        <div className="flex-1 space-y-2">
-                          <input
-                            type="text"
-                            value={editingCategory.name}
-                            onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleUpdateCategory(category.id)
-                              if (e.key === 'Escape') setEditingCategory(null)
-                            }}
-                            autoFocus
-                          />
-                          <div className="flex gap-1 flex-wrap">
-                            {colorPresets.map((color) => (
-                              <button
-                                key={color}
-                                onClick={() => setEditingCategory({ ...editingCategory, color })}
-                                className={`w-8 h-8 rounded-lg border-2 transition-all ${
-                                  editingCategory.color === color
-                                    ? 'border-[#F0A500] scale-110'
-                                    : 'border-gray-300 dark:border-gray-600 hover:scale-105'
-                                }`}
-                                style={{ backgroundColor: color }}
+            {categoriesExpanded && (
+              <>
+                {/* Categories List */}
+                <div className="space-y-2">
+                  {categories.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                      No categories yet. Add one to get started!
+                    </p>
+                  ) : (
+                    categories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                      >
+                        {editingCategory?.id === category.id ? (
+                          // Edit mode
+                          <>
+                            <div className="flex-1 space-y-2">
+                              <input
+                                type="text"
+                                value={editingCategory.name}
+                                onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                                className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleUpdateCategory(category.id)
+                                  if (e.key === 'Escape') setEditingCategory(null)
+                                }}
+                                autoFocus
                               />
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
+                              <div className="flex gap-1 flex-wrap">
+                                {colorPresets.map((color) => (
+                                  <button
+                                    key={color}
+                                    onClick={() => setEditingCategory({ ...editingCategory, color })}
+                                    className={`w-8 h-8 rounded-lg border-2 transition-all ${
+                                      editingCategory.color === color
+                                        ? 'border-[#F0A500] scale-110'
+                                        : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                                    }`}
+                                    style={{ backgroundColor: color }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleUpdateCategory(category.id)}
+                                className="px-3 py-1.5 text-xs bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingCategory(null)}
+                                className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          // View mode
+                          <>
+                            <div
+                              className="w-8 h-8 rounded-lg flex-shrink-0"
+                              style={{ backgroundColor: category.color }}
+                            />
+                            <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {category.name}
+                            </span>
+                            <button
+                              onClick={() => setEditingCategory({ id: category.id, name: category.name, color: category.color })}
+                              className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(category.id)}
+                              className="px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors whitespace-nowrap"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Category Button */}
+                <div className="pt-2">
+                  <button
+                    onClick={() => setShowAddCategory(!showAddCategory)}
+                    className="w-full px-3 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                  >
+                    + Add Category
+                  </button>
+                </div>
+
+                {/* Add Category Form */}
+                {showAddCategory && (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Category name..."
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddCategory()
+                      }}
+                      autoFocus
+                    />
+
+                    <div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Choose color:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {colorPresets.map((color) => (
                           <button
-                            onClick={() => handleUpdateCategory(category.id)}
-                            className="px-3 py-1.5 text-xs bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingCategory(null)}
-                            className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      // View mode
-                      <>
-                        <div
-                          className="w-8 h-8 rounded-lg flex-shrink-0"
-                          style={{ backgroundColor: category.color }}
-                        />
-                        <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {category.name}
-                        </span>
-                        <button
-                          onClick={() => setEditingCategory({ id: category.id, name: category.name, color: category.color })}
-                          className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCategory(category.id)}
-                          className="px-3 py-1.5 text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors whitespace-nowrap"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
+                            key={color}
+                            onClick={() => setNewCategoryColor(color)}
+                            className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                              newCategoryColor === color
+                                ? 'border-[#F0A500] scale-110'
+                                : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleAddCategory}
+                        className="px-4 py-2 text-sm bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors font-medium"
+                      >
+                        Add Category
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAddCategory(false)
+                          setNewCategoryName('')
+                          setNewCategoryColor('#E0F2F1')
+                        }}
+                        className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                ))
-              )}
-            </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
