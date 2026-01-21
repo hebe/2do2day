@@ -78,22 +78,35 @@ function BacklogView() {
     if (sortBy === 'manual') {
       return backlog
     }
-    
+
     const sorted = [...backlog]
-    
+
     switch (sortBy) {
       case 'recent':
-        return sorted.sort((a, b) => 
+        return sorted.sort((a, b) =>
           new Date(b.lastAddedToBacklog || b.createdAt) - new Date(a.lastAddedToBacklog || a.createdAt)
         )
       case 'postponed':
-        return sorted.sort((a, b) => 
+        return sorted.sort((a, b) =>
           (b.addedToBacklogCount || 0) - (a.addedToBacklogCount || 0)
         )
       case 'oldest':
-        return sorted.sort((a, b) => 
+        return sorted.sort((a, b) =>
           new Date(a.createdAt) - new Date(b.createdAt)
         )
+      case 'category':
+        return sorted.sort((a, b) => {
+          // Tasks without category go to the end
+          if (!a.category && !b.category) return 0
+          if (!a.category) return 1
+          if (!b.category) return -1
+
+          // Find category names for sorting
+          const catA = settings.categories?.find(c => c.id === a.category)?.name || a.category
+          const catB = settings.categories?.find(c => c.id === b.category)?.name || b.category
+
+          return catA.localeCompare(catB)
+        })
       default:
         return sorted
     }
@@ -136,6 +149,7 @@ function BacklogView() {
             <option value="recent">Recently added</option>
             <option value="postponed">Most postponed</option>
             <option value="oldest">Oldest first</option>
+            <option value="category">Category</option>
           </select>
         </div>
 
