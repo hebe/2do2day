@@ -137,6 +137,9 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
 
   // Done tasks are read-only
   if (type === 'done') {
+    const isRecurring = task.isRecurringCompletion
+    const completionDate = task.lastCompletedAt || task.completedAt
+
     return (
       <div
         style={{
@@ -160,12 +163,25 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           </svg>
         </div>
         <div className="flex-1">
-          <span className="text-sm text-gray-900 dark:text-gray-100">
-            {task.title}
-          </span>
-          {task.completedAt && (
+          <div className="flex items-center gap-2">
+            {isRecurring && (
+              <span className="text-base flex-shrink-0" title="Recurring task">
+                💫
+              </span>
+            )}
+            <span className="text-sm text-gray-900 dark:text-gray-100">
+              {task.title}
+              {isRecurring && task.completionCount && (
+                <span className="ml-1 text-gray-600 dark:text-gray-400">
+                  ×{task.completionCount}
+                </span>
+              )}
+            </span>
+          </div>
+          {completionDate && (
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              Completed {formatDate(task.completedAt)}
+              {isRecurring ? 'Last: ' : 'Completed '}
+              {formatDate(completionDate)}
             </p>
           )}
         </div>

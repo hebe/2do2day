@@ -28,7 +28,7 @@ const EMPTY_STATE_MESSAGES = [
   "Take a breath. What's next?",
 ]
 
-function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBacklog, inputRef }) {
+function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBacklog, handleAddFromRecurring, recurringCount, inputRef }) {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -56,13 +56,28 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
         />
       </form>
 
-      {/* Subtle backlog button */}
-      <button
-        onClick={handleAddFromBacklog}
-        className="text-sm text-calm-600 hover:text-calm-700 transition-colors underline underline-offset-2"
-      >
-        Add from backlog
-      </button>
+      {/* Subtle action buttons */}
+      <div className="flex items-center justify-center gap-3 text-sm">
+        <button
+          onClick={handleAddFromBacklog}
+          className="text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
+        >
+          Add from backlog
+        </button>
+
+        {recurringCount > 0 && (
+          <>
+            <span className="text-gray-300 dark:text-gray-600">•</span>
+            <button
+              onClick={handleAddFromRecurring}
+              className="text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors underline underline-offset-2 flex items-center gap-1"
+            >
+              <span>💫</span>
+              <span>{recurringCount} {recurringCount === 1 ? 'recurring task ready' : 'recurring tasks ready'}</span>
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Placeholder for recurring task indicator */}
       {/* Will be implemented later:
