@@ -230,7 +230,14 @@ function BacklogView() {
         )
 
       case 'done':
-        const recentDone = done.slice(-20).reverse()
+        // Sort by completion date (most recent first), using lastCompletedAt for recurring tasks
+        const sortedDone = [...done].sort((a, b) => {
+          const dateA = new Date(a.lastCompletedAt || a.completedAt)
+          const dateB = new Date(b.lastCompletedAt || b.completedAt)
+          return dateB - dateA // Most recent first
+        })
+        const recentDone = sortedDone.slice(0, 20)
+
         return (
           <div>
             {done.length === 0 ? (

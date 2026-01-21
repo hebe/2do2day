@@ -175,22 +175,32 @@ function TaskRow({ task, onDelete, onEdit }) {
           )}
         </button>
 
-        {/* Task title with urgent indicator */}
-        <div 
+        {/* Task title with indicators */}
+        <div
           className="flex-1 flex items-center gap-2 pr-4 cursor-pointer"
           onClick={() => setShowMenu(true)}
         >
-          {/* Urgent fire emoji */}
-          {task.urgent && (
-            <span className="text-lg flex-shrink-0" title="Urgent">
-              🔥
-            </span>
-          )}
-          
+          {/* Status indicators */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Recurring star emoji */}
+            {task.fromRecurring && (
+              <span className="text-lg" title="From recurring task">
+                💫
+              </span>
+            )}
+
+            {/* Urgent fire emoji */}
+            {task.urgent && (
+              <span className="text-lg" title="Urgent">
+                🔥
+              </span>
+            )}
+          </div>
+
           <span
             className={`flex-1 text-base ${
-              task.done 
-                ? 'line-through text-gray-500 dark:text-gray-400' 
+              task.done
+                ? 'line-through text-gray-500 dark:text-gray-400'
                 : 'text-gray-900 dark:text-gray-100'
             } transition-all`}
           >

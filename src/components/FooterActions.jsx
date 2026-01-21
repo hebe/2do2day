@@ -1,6 +1,6 @@
 import React from 'react'
 
-function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFromBacklog }) {
+function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFromBacklog, handleAddFromRecurring, recurringCount }) {
   return (
     <div className="space-y-3">
       {/* Quick add input */}
@@ -24,11 +24,21 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
       <div className="flex gap-3 justify-center">
         <button
           onClick={handleAddFromBacklog}
-          className="text-sm text-calm-600 hover:text-calm-700 transition-colors flex items-center gap-1"
+          className="text-sm text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
         >
           <span>📋</span>
-          <span>Add from backlog</span>
+          <span>From backlog</span>
         </button>
+
+        {recurringCount > 0 && (
+          <button
+            onClick={handleAddFromRecurring}
+            className="text-sm text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+          >
+            <span>💫</span>
+            <span>{recurringCount} ready</span>
+          </button>
+        )}
       </div>
     </div>
   )

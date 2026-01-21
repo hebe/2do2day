@@ -4,6 +4,8 @@ import TopPrompt from './TopPrompt'
 import TaskRow from './TaskRow'
 import FooterActions from './FooterActions'
 import BacklogQuickPicker from './BacklogQuickPicker'
+import RecurringQuickPicker from './RecurringQuickPicker'
+import { getReadyRecurringTasks } from '../utils/recurringUtils'
 
 import {
   DndContext,
@@ -22,10 +24,11 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function TodayView() {
-  const { today, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings } = useStore()
+  const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
+  const [showRecurringPicker, setShowRecurringPicker] = useState(false)
   const [showResetMessage, setShowResetMessage] = useState(false)
   const inputRef = useRef(null)
   const lastResetRef = useRef(settings.lastDayReset)
@@ -33,6 +36,9 @@ function TodayView() {
   const doneCount = today.filter(t => t.done).length
   const undoneCount = today.filter(t => !t.done).length
   const showCounter = today.length > 5
+
+  // Get ready recurring tasks
+  const readyRecurringTasks = getReadyRecurringTasks(recurring, settings.dayStart)
 
   // dnd-kit sensors configuration
   const sensors = useSensors(
@@ -96,6 +102,10 @@ function TodayView() {
     setShowBacklogPicker(true)
   }
 
+  const handleAddFromRecurring = () => {
+    setShowRecurringPicker(true)
+  }
+
   const handleDragEnd = (event) => {
     const { active, over } = event
     
@@ -142,11 +152,13 @@ function TodayView() {
 
       {/* Blank state */}
       {!showList && (
-        <TopPrompt 
+        <TopPrompt
           inputValue={inputValue}
           setInputValue={setInputValue}
           handleAddTask={handleAddTask}
           handleAddFromBacklog={handleAddFromBacklog}
+          handleAddFromRecurring={handleAddFromRecurring}
+          recurringCount={readyRecurringTasks.length}
           inputRef={inputRef}
         />
       )}
@@ -213,11 +225,13 @@ function TodayView() {
           </div>
 
           {/* Footer actions */}
-          <FooterActions 
+          <FooterActions
             inputValue={inputValue}
             setInputValue={setInputValue}
             handleAddTask={handleAddTask}
             handleAddFromBacklog={handleAddFromBacklog}
+            handleAddFromRecurring={handleAddFromRecurring}
+            recurringCount={readyRecurringTasks.length}
           />
         </div>
       )}
@@ -225,6 +239,14 @@ function TodayView() {
       {/* Backlog Quick Picker Modal */}
       {showBacklogPicker && (
         <BacklogQuickPicker onClose={() => setShowBacklogPicker(false)} />
+      )}
+
+      {/* Recurring Task Picker Modal */}
+      {showRecurringPicker && readyRecurringTasks.length > 0 && (
+        <RecurringQuickPicker
+          readyTasks={readyRecurringTasks}
+          onClose={() => setShowRecurringPicker(false)}
+        />
       )}
 
       {/* Animation for reset message */}

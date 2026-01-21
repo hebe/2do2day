@@ -229,7 +229,7 @@ const useStore = create(
         }))
       },
 
-      moveBacklogToRecurring: (id, interval) => {
+      moveBacklogToRecurring: (id, recurrencePattern, recurrenceDays = []) => {
         set((state) => {
           const task = state.backlog.find((t) => t.id === id)
           if (!task) return state
@@ -239,17 +239,19 @@ const useStore = create(
             recurring: [...state.recurring, {
               id: task.id,
               title: task.title,
-              category: task.category, // Preserve category
-              urgent: task.urgent || false, // Preserve urgent
-              rule: interval ? 'interval' : 'manual',
-              interval: interval || null,
+              category: task.category,
+              urgent: task.urgent || false,
+              note: '',
+              recurrencePattern, // 'daily', 'weekly', 'monthly'
+              recurrenceDays, // For weekly: [0-6], for monthly: [1-31]
+              lastAddedToToday: null,
               createdAt: task.createdAt
             }]
           }
         })
       },
 
-      moveTodayToRecurring: (id, interval) => {
+      moveTodayToRecurring: (id, recurrencePattern, recurrenceDays = []) => {
         set((state) => {
           const task = state.today.find((t) => t.id === id)
           if (!task) return state
@@ -259,20 +261,22 @@ const useStore = create(
             recurring: [...state.recurring, {
               id: task.id,
               title: task.title,
-              category: task.category, // Preserve category
-              urgent: task.urgent || false, // Preserve urgent
-              rule: 'interval',
-              interval: interval,
+              category: task.category,
+              urgent: task.urgent || false,
+              note: task.note || '',
+              recurrencePattern,
+              recurrenceDays,
+              lastAddedToToday: null,
               createdAt: task.createdAt || new Date().toISOString()
             }]
           }
         })
       },
 
-      updateRecurringInterval: (id, interval) => {
+      updateRecurringPattern: (id, recurrencePattern, recurrenceDays) => {
         set((state) => ({
           recurring: state.recurring.map((task) =>
-            task.id === id ? { ...task, interval, rule: 'interval' } : task
+            task.id === id ? { ...task, recurrencePattern, recurrenceDays } : task
           )
         }))
       },
@@ -285,17 +289,22 @@ const useStore = create(
           const newTodayTask = {
             id: Date.now().toString(),
             title: recurringTask.title,
-            category: recurringTask.category, // Preserve category
+            category: recurringTask.category,
             done: false,
             prio: false,
-            note: '',
-            urgent: recurringTask.urgent || false, // Preserve urgent
+            note: recurringTask.note || '',
+            urgent: recurringTask.urgent || false,
             snoozeUntil: null,
+            fromRecurring: true, // Mark that this came from recurring
+            recurringId: recurringTask.id, // Track which recurring task it came from
             createdAt: new Date().toISOString()
           }
 
           return {
-            today: [...state.today, newTodayTask]
+            today: [...state.today, newTodayTask],
+            recurring: state.recurring.map((t) =>
+              t.id === id ? { ...t, lastAddedToToday: new Date().toISOString() } : t
+            )
           }
         })
       },
@@ -320,14 +329,52 @@ const useStore = create(
           const task = state.today.find((t) => t.id === id && t.done)
           if (!task) return state
 
-          return {
-            today: state.today.filter((t) => t.id !== id),
-            done: [...state.done, {
-              id: task.id,
-              title: task.title,
-              category: task.category, // Preserve category
-              completedAt: new Date().toISOString()
-            }]
+          // Check if this is a recurring task completion
+          if (task.recurringId) {
+            // Find existing done entry for this recurring task
+            const existingDoneEntry = state.done.find((d) => d.recurringId === task.recurringId)
+
+            if (existingDoneEntry) {
+              // Update existing entry: increment counter and update timestamp
+              return {
+                today: state.today.filter((t) => t.id !== id),
+                done: state.done.map((d) =>
+                  d.recurringId === task.recurringId
+                    ? {
+                        ...d,
+                        completionCount: (d.completionCount || 1) + 1,
+                        lastCompletedAt: new Date().toISOString()
+                      }
+                    : d
+                )
+              }
+            } else {
+              // Create first done entry for this recurring task
+              return {
+                today: state.today.filter((t) => t.id !== id),
+                done: [...state.done, {
+                  id: `${task.recurringId}_done`,
+                  title: task.title,
+                  category: task.category,
+                  recurringId: task.recurringId,
+                  completionCount: 1,
+                  lastCompletedAt: new Date().toISOString(),
+                  firstCompletedAt: new Date().toISOString(),
+                  isRecurringCompletion: true
+                }]
+              }
+            }
+          } else {
+            // Regular one-time task completion
+            return {
+              today: state.today.filter((t) => t.id !== id),
+              done: [...state.done, {
+                id: task.id,
+                title: task.title,
+                category: task.category,
+                completedAt: new Date().toISOString()
+              }]
+            }
           }
         })
       },
