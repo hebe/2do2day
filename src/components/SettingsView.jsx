@@ -21,6 +21,7 @@ function SettingsView() {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryColor, setNewCategoryColor] = useState(CATEGORY_COLOR_PALETTE[0])
   const [categoriesExpanded, setCategoriesExpanded] = useState(false)
+  const [timeSettingExpanded, setTimeSettingExpanded] = useState(false)
 
   // Get categories directly from settings (reactive)
   const categories = settings.categories || []
@@ -333,59 +334,84 @@ function SettingsView() {
         {/* Day Start Setting */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
           <div className="space-y-4">
-            <div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">When does your day start?</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                At this time each day, your Today list will reset. Unfinished tasks move to the backlog, 
-                and completed tasks are archived.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {timeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setDayStart(option.value)}
-                  className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
-                    dayStart === option.value
-                      ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {option.label}
-                    </span>
-                    {dayStart === option.value && (
-                      <svg
-                        className="w-5 h-5 text-[#F0A500]"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">When does your day start?</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {timeSettingExpanded
+                    ? "At this time each day, your Today list will reset. Unfinished tasks move to the backlog, and completed tasks are archived."
+                    : `Currently: ${timeOptions.find(opt => opt.value === dayStart)?.label || dayStart}`
+                  }
+                </p>
+              </div>
               <button
-                onClick={handleSave}
-                className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                  isSaved
-                    ? 'bg-green-600 text-white'
-                    : 'bg-[#F0A500] text-gray-800 hover:bg-[#D89400] shadow-sm'
-                }`}
+                onClick={() => setTimeSettingExpanded(!timeSettingExpanded)}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                aria-label={timeSettingExpanded ? "Collapse time setting" : "Expand time setting"}
               >
-                {isSaved ? '✓ Saved!' : 'Set time'}
+                <svg
+                  className={`w-5 h-5 transition-transform ${timeSettingExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
             </div>
+
+            {timeSettingExpanded && (
+              <>
+                <div className="space-y-2">
+                  {timeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setDayStart(option.value)}
+                      className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
+                        dayStart === option.value
+                          ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
+                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {option.label}
+                        </span>
+                        {dayStart === option.value && (
+                          <svg
+                            className="w-5 h-5 text-[#F0A500]"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={handleSave}
+                    className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                      isSaved
+                        ? 'bg-green-600 text-white'
+                        : 'bg-[#F0A500] text-gray-800 hover:bg-[#D89400] shadow-sm'
+                    }`}
+                  >
+                    {isSaved ? '✓ Saved!' : 'Set time'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
