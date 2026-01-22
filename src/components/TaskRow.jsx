@@ -56,8 +56,8 @@ function TaskRow({ task, onDelete, onEdit }) {
     setShowMenu(false)
   }
 
-  const handleRecurringConfirm = (interval) => {
-    moveTodayToRecurring(task.id, interval)
+  const handleRecurringConfirm = (interval, recurrenceDays = []) => {
+    moveTodayToRecurring(task.id, interval, recurrenceDays)
     setShowRecurringModal(false)
   }
 

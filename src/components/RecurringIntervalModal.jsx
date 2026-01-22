@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 
 function RecurringIntervalModal({ task, onConfirm, onCancel }) {
   const [selectedInterval, setSelectedInterval] = useState('daily')
+  const [selectedDays, setSelectedDays] = useState([]) // For weekly/biweekly
+  const [selectedDate, setSelectedDate] = useState(1) // For monthly/yearly (1-31)
+  const [selectedMonth, setSelectedMonth] = useState(1) // For yearly (1-12)
 
   const intervals = [
     { value: 'daily', label: 'Daily', icon: '📅' },
@@ -9,13 +12,41 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
     { value: 'weekly', label: 'Weekly', icon: '📆' },
     { value: 'biweekly', label: 'Every 2 weeks', icon: '📊' },
     { value: 'monthly', label: 'Monthly', icon: '🗒️' },
+    { value: 'yearly', label: 'Yearly', icon: '🎂' },
     { value: 'manual', label: "Manual (I'll add it when needed)", icon: '✋' },
+  ]
+
+  const weekdays = [
+    { value: 1, label: 'Mon' },
+    { value: 2, label: 'Tue' },
+    { value: 3, label: 'Wed' },
+    { value: 4, label: 'Thu' },
+    { value: 5, label: 'Fri' },
+    { value: 6, label: 'Sat' },
+    { value: 0, label: 'Sun' },
+  ]
+
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
   const handleConfirm = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    onConfirm(selectedInterval)
+
+    let recurrenceDays = []
+
+    if (selectedInterval === 'weekly' || selectedInterval === 'biweekly') {
+      recurrenceDays = selectedDays.length > 0 ? selectedDays : [new Date().getDay()]
+    } else if (selectedInterval === 'monthly') {
+      recurrenceDays = [selectedDate]
+    } else if (selectedInterval === 'yearly') {
+      // Store as MMDD format (e.g., 1225 for Dec 25)
+      recurrenceDays = [selectedMonth * 100 + selectedDate]
+    }
+
+    onConfirm(selectedInterval, recurrenceDays)
   }
 
   const handleCancel = (e) => {
@@ -30,6 +61,17 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
     onCancel()
   }
 
+  const toggleDay = (day) => {
+    setSelectedDays(prev =>
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day].sort()
+    )
+  }
+
+  const needsDaySelection = selectedInterval === 'weekly' || selectedInterval === 'biweekly'
+  const needsDateSelection = selectedInterval === 'monthly' || selectedInterval === 'yearly'
+
   return (
     <>
       {/* Backdrop */}
@@ -39,71 +81,159 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl border border-calm-200 w-full max-w-md animate-slideUp">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-calm-200 dark:border-gray-700 w-full max-w-md animate-slideUp">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-calm-200">
-            <h2 className="text-lg font-medium text-calm-700">Make Recurring</h2>
-            <p className="text-sm text-calm-600 mt-1">
-              How often should &quot;{task.title}&quot; repeat?
-            </p>
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Make Recurring</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                How often should &quot;{task.title}&quot; repeat?
+              </p>
+            </div>
+            <button
+              onClick={handleCancel}
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              aria-label="Close"
+            >
+              <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-2 max-h-[60vh] overflow-y-auto">
-            {intervals.map((interval) => (
-              <button
-                key={interval.value}
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setSelectedInterval(interval.value)
-                }}
-                className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
-                  selectedInterval === interval.value
-                    ? 'border-calm-600 bg-calm-50'
-                    : 'border-calm-200 hover:border-calm-300 hover:bg-calm-50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{interval.icon}</span>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-calm-700">
-                      {interval.label}
+          <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+            {/* Interval Selection */}
+            <div className="space-y-2">
+              {intervals.map((interval) => (
+                <button
+                  key={interval.value}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setSelectedInterval(interval.value)
+                  }}
+                  className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
+                    selectedInterval === interval.value
+                      ? 'border-calm-600 bg-calm-50 dark:border-calm-500 dark:bg-calm-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{interval.icon}</span>
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {interval.label}
+                      </div>
                     </div>
+                    {selectedInterval === interval.value && (
+                      <svg className="w-5 h-5 text-calm-600 dark:text-calm-500" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </div>
-                  {selectedInterval === interval.value && (
-                    <svg
-                      className="w-5 h-5 text-calm-600"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                </button>
+              ))}
+            </div>
+
+            {/* Day Selection for Weekly/Biweekly */}
+            {needsDaySelection && (
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select day(s):
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {weekdays.map((day) => (
+                    <button
+                      key={day.value}
+                      type="button"
+                      onClick={() => toggleDay(day.value)}
+                      className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${
+                        selectedDays.includes(day.value)
+                          ? 'border-calm-600 bg-calm-50 text-calm-700 dark:border-calm-500 dark:bg-calm-900/20 dark:text-calm-400'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
                     >
-                      <path d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
+                      {day.label}
+                    </button>
+                  ))}
                 </div>
-              </button>
-            ))}
+                {selectedDays.length === 0 && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    No day selected. Will default to today's day of the week.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Date Selection for Monthly */}
+            {selectedInterval === 'monthly' && (
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select date:
+                </label>
+                <select
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                >
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Date and Month Selection for Yearly */}
+            {selectedInterval === 'yearly' && (
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select month:
+                  </label>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    {months.map((month, index) => (
+                      <option key={index + 1} value={index + 1}>{month}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select date:
+                  </label>
+                  <select
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>{day}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-calm-200 flex gap-3 justify-end">
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 flex gap-3 justify-end">
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 text-sm text-calm-600 hover:text-calm-700 transition-colors"
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              className="px-4 py-2 text-sm bg-calm-700 text-white rounded-lg hover:bg-calm-600 transition-colors font-medium"
+              className="px-4 py-2 text-sm bg-calm-700 dark:bg-calm-600 text-white rounded-lg hover:bg-calm-600 dark:hover:bg-calm-500 transition-colors font-medium"
             >
               Set Recurring
             </button>

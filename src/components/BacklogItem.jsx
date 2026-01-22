@@ -7,12 +7,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
 function BacklogItem({ task, type, isDragDisabled = false }) {
-  const { 
-    addFromBacklog, 
-    deleteBacklogTask, 
+  const {
+    addFromBacklog,
+    deleteBacklogTask,
     editBacklogTask,
     moveBacklogToRecurring,
-    updateRecurringInterval,
+    updateRecurringPattern,
     addFromRecurring,
     deleteRecurringTask,
     editRecurringTask,
@@ -75,11 +75,11 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
     setShowMenu(false)
   }
 
-  const handleRecurringConfirm = (interval) => {
+  const handleRecurringConfirm = (interval, recurrenceDays = []) => {
     if (type === 'backlog') {
-      moveBacklogToRecurring(task.id, interval)
+      moveBacklogToRecurring(task.id, interval, recurrenceDays)
     } else if (type === 'recurring') {
-      updateRecurringInterval(task.id, interval)
+      updateRecurringPattern(task.id, interval, recurrenceDays)
     }
     setShowRecurringModal(false)
   }

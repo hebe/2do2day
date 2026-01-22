@@ -18,7 +18,7 @@ function BacklogQuickPicker({ onClose }) {
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20">
+      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-calm-200 dark:border-gray-700 w-full max-w-md max-h-[80vh] flex flex-col animate-slideUp">
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
