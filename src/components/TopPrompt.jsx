@@ -26,6 +26,7 @@ const EMPTY_STATE_MESSAGES = [
   "What's been on your mind lately?",
   "No rush. What feels urgent to you?",
   "Take a breath. What's next?",
+  "What would make you sleep better tonight?",
 ]
 
 function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBacklog, handleAddFromRecurring, recurringCount, inputRef }) {
