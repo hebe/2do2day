@@ -17,13 +17,13 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
   ]
 
   const weekdays = [
-    { value: 1, label: 'Mon' },
-    { value: 2, label: 'Tue' },
-    { value: 3, label: 'Wed' },
-    { value: 4, label: 'Thu' },
-    { value: 5, label: 'Fri' },
-    { value: 6, label: 'Sat' },
-    { value: 0, label: 'Sun' },
+    { value: 1, label: 'Mo' },
+    { value: 2, label: 'Tu' },
+    { value: 3, label: 'We' },
+    { value: 4, label: 'Th' },
+    { value: 5, label: 'Fr' },
+    { value: 6, label: 'Sa' },
+    { value: 0, label: 'Su' },
   ]
 
   const months = [
@@ -103,12 +103,11 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
           </div>
 
           {/* Content */}
-          <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+          <div className="p-6 space-y-2 max-h-[60vh] overflow-y-auto">
             {/* Interval Selection */}
-            <div className="space-y-2">
-              {intervals.map((interval) => (
+            {intervals.map((interval) => (
+              <div key={interval.value}>
                 <button
-                  key={interval.value}
                   type="button"
                   onClick={(e) => {
                     e.preventDefault()
@@ -117,7 +116,7 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
                   }}
                   className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
                     selectedInterval === interval.value
-                      ? 'border-calm-600 bg-calm-50 dark:border-calm-500 dark:bg-calm-900/20'
+                      ? 'border-calm-600 bg-calm-50 dark:border-calm-500 dark:bg-gray-700'
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                   }`}
                 >
@@ -135,90 +134,74 @@ function RecurringIntervalModal({ task, onConfirm, onCancel }) {
                     )}
                   </div>
                 </button>
-              ))}
-            </div>
 
-            {/* Day Selection for Weekly/Biweekly */}
-            {needsDaySelection && (
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Select day(s):
-                </label>
-                <div className="flex gap-2 flex-wrap">
-                  {weekdays.map((day) => (
-                    <button
-                      key={day.value}
-                      type="button"
-                      onClick={() => toggleDay(day.value)}
-                      className={`px-3 py-2 text-sm rounded-lg border-2 transition-all ${
-                        selectedDays.includes(day.value)
-                          ? 'border-calm-600 bg-calm-50 text-calm-700 dark:border-calm-500 dark:bg-calm-900/20 dark:text-calm-400'
-                          : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                      }`}
+                {/* Day Selection for Weekly/Biweekly - shown right below the selected option */}
+                {selectedInterval === interval.value && (interval.value === 'weekly' || interval.value === 'biweekly') && (
+                  <div className="mt-2 ml-4 pb-2">
+                    <div className="flex gap-1.5">
+                      {weekdays.map((day) => (
+                        <button
+                          key={day.value}
+                          type="button"
+                          onClick={() => toggleDay(day.value)}
+                          className={`px-2.5 py-1.5 text-sm rounded-md border-2 transition-all ${
+                            selectedDays.includes(day.value)
+                              ? 'border-calm-600 bg-calm-50 text-calm-700 dark:border-calm-500 dark:bg-gray-700 dark:text-calm-400'
+                              : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedDays.length === 0 && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+                        No day selected. Will default to today's day of the week.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Date Selection for Monthly - shown right below the selected option */}
+                {selectedInterval === interval.value && interval.value === 'monthly' && (
+                  <div className="mt-2 ml-4 pb-2">
+                    <select
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(parseInt(e.target.value))}
+                      className="w-32 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     >
-                      {day.label}
-                    </button>
-                  ))}
-                </div>
-                {selectedDays.length === 0 && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    No day selected. Will default to today's day of the week.
-                  </p>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                        <option key={day} value={day}>{day}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Date and Month Selection for Yearly - shown right below the selected option */}
+                {selectedInterval === interval.value && interval.value === 'yearly' && (
+                  <div className="mt-2 ml-4 pb-2 flex gap-2">
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                      className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      {months.map((month, index) => (
+                        <option key={index + 1} value={index + 1}>{month}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(parseInt(e.target.value))}
+                      className="w-20 px-2 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    >
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                        <option key={day} value={day}>{day}</option>
+                      ))}
+                    </select>
+                  </div>
                 )}
               </div>
-            )}
-
-            {/* Date Selection for Monthly */}
-            {selectedInterval === 'monthly' && (
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Select date:
-                </label>
-                <select
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                >
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Date and Month Selection for Yearly */}
-            {selectedInterval === 'yearly' && (
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select month:
-                  </label>
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  >
-                    {months.map((month, index) => (
-                      <option key={index + 1} value={index + 1}>{month}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select date:
-                  </label>
-                  <select
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  >
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                      <option key={day} value={day}>{day}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
+            ))}
           </div>
 
           {/* Footer */}

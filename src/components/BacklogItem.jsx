@@ -5,6 +5,7 @@ import TaskActionsModal from './TaskActionsModal'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { getCategoryOKLab } from '../utils/colorUtils'
+import { getRecurrenceDescription } from '../utils/recurringUtils'
 
 function BacklogItem({ task, type, isDragDisabled = false }) {
   const {
@@ -268,22 +269,16 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
               </span>
             )}
             
-            <span className="text-sm block text-gray-900 dark:text-gray-100">
-              {task.title}
-              {type === 'recurring' && task.interval && (
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                  ↻ {task.interval === 'daily' && 'Daily'}
-                  {task.interval === 'weekdays' && 'Weekdays'}
-                  {task.interval === 'weekly' && 'Weekly'}
-                  {task.interval === 'biweekly' && 'Biweekly'}
-                  {task.interval === 'monthly' && 'Monthly'}
-                  {task.interval === 'manual' && 'Manual'}
+            <div className="flex-1 min-w-0">
+              <span className="text-sm block text-gray-900 dark:text-gray-100">
+                {task.title}
+              </span>
+              {type === 'recurring' && task.recurrencePattern && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">
+                  ↻ {getRecurrenceDescription(task)}
                 </span>
               )}
-              {type === 'recurring' && !task.interval && (
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">↻</span>
-              )}
-            </span>
+            </div>
             {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount >= 3 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
                 Postponed {task.addedToBacklogCount}x
