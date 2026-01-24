@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TodayView from './components/TodayView'
 import BacklogView from './components/BacklogView'
 import SettingsView from './components/SettingsView'
+import OfflineIndicator from './components/OfflineIndicator'
 import useStore from './store/useStore'
 import useDarkMode from './hooks/useDarkMode'
 
@@ -65,6 +66,9 @@ function App() {
       {currentView === 'today' && <TodayView />}
       {currentView === 'backlog' && <BacklogView />}
       {currentView === 'settings' && <SettingsView />}
+
+      {/* Offline Indicator */}
+      <OfflineIndicator />
     </div>
   )
 }

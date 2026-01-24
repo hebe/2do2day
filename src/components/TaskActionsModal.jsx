@@ -208,7 +208,7 @@ function TaskActionsModal({
                 onClick={onMoveToToday}
                 className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
               >
-                <span className="text-2xl">→</span>
+                <span className="text-2xl">←</span>
                 <span className="text-base font-medium">Add to Today</span>
               </button>
             )}
