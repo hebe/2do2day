@@ -512,6 +512,22 @@ const useStore = create(
           }
         })
       },
+
+      // Import data
+      importData: (importedData) => {
+        set({
+          today: importedData.today || [],
+          backlog: importedData.backlog || [],
+          recurring: importedData.recurring || [],
+          done: importedData.done || [],
+          settings: {
+            ...get().settings,
+            ...importedData.settings,
+            // Ensure categories exist
+            categories: importedData.settings?.categories || DEFAULT_CATEGORIES
+          }
+        })
+      },
     }),
     {
       name: 'todays-todos-storage',

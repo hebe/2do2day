@@ -12,6 +12,8 @@ function SettingsView() {
   const done = useStore((state) => state.done)
   const backlog = useStore((state) => state.backlog)
   const recurring = useStore((state) => state.recurring)
+  const today = useStore((state) => state.today)
+  const importData = useStore((state) => state.importData)
 
   const [dayStart, setDayStart] = useState(settings.dayStart)
   const [colorMode, setColorMode] = useState(settings.colorMode || 'auto')
@@ -22,6 +24,8 @@ function SettingsView() {
   const [newCategoryColor, setNewCategoryColor] = useState(CATEGORY_COLOR_PALETTE[0])
   const [categoriesExpanded, setCategoriesExpanded] = useState(false)
   const [timeSettingExpanded, setTimeSettingExpanded] = useState(false)
+  const [importError, setImportError] = useState('')
+  const [importSuccess, setImportSuccess] = useState(false)
 
   // Get categories directly from settings (reactive)
   const categories = settings.categories || []
@@ -57,6 +61,80 @@ function SettingsView() {
     if (confirm('Delete this category? It will be removed from all tasks.')) {
       deleteCategory(id)
     }
+  }
+
+  const handleExportData = () => {
+    const exportData = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      data: {
+        today,
+        backlog,
+        recurring,
+        done,
+        settings
+      }
+    }
+
+    const dataStr = JSON.stringify(exportData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `todays-todos-backup-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportData = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImportError('')
+    setImportSuccess(false)
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result
+        const parsed = JSON.parse(content)
+
+        // Validate the structure
+        if (!parsed.data) {
+          setImportError('Invalid backup file: missing data')
+          return
+        }
+
+        // Check if it's our format (should have version and data fields)
+        if (!parsed.version) {
+          setImportError('Invalid backup file: missing version')
+          return
+        }
+
+        // Confirm with user before importing
+        const confirmMsg = `This will replace all your current data with the backup from ${
+          parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString() : 'unknown date'
+        }. Are you sure?`
+
+        if (confirm(confirmMsg)) {
+          importData(parsed.data)
+          setImportSuccess(true)
+          setTimeout(() => setImportSuccess(false), 3000)
+        }
+      } catch (error) {
+        setImportError(`Failed to import: ${error.message}`)
+      }
+    }
+
+    reader.onerror = () => {
+      setImportError('Failed to read file')
+    }
+
+    reader.readAsText(file)
+    // Reset the input so the same file can be selected again
+    event.target.value = ''
   }
 
   const timeOptions = [
@@ -456,6 +534,63 @@ function SettingsView() {
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Recurring Tasks</div>
             </div>
+          </div>
+        </div>
+
+        {/* Export Data */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Export & Backup</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Download all your data as a JSON file for backup, or restore from a previous backup.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleExportData}
+                className="px-6 py-2 bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Backup
+              </button>
+
+              <label className="px-6 py-2 bg-gray-700 dark:bg-gray-600 text-white rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors font-semibold shadow-sm flex items-center gap-2 cursor-pointer">
+                <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L9 8m4-4v12" />
+                </svg>
+                Restore Backup
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportData}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Import Success Message */}
+            {importSuccess && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm text-green-800 dark:text-green-200">Data imported successfully!</span>
+              </div>
+            )}
+
+            {/* Import Error Message */}
+            {importError && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start gap-2">
+                <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm text-red-800 dark:text-red-200">{importError}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
