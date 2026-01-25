@@ -15,10 +15,16 @@ function AuthView() {
       setError(null)
       setMessage(null)
 
+      // Use production URL in production, localhost in development
+      const redirectUrl = import.meta.env.VITE_SITE_URL ||
+                         (window.location.hostname === 'localhost'
+                           ? window.location.origin
+                           : `https://${window.location.hostname}`)
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin
+          emailRedirectTo: redirectUrl
         }
       })
 
