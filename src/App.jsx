@@ -7,6 +7,7 @@ import OfflineIndicator from './components/OfflineIndicator'
 import AuthView from './components/AuthView'
 import useStore from './store/useStore'
 import useDarkMode from './hooks/useDarkMode'
+import { useCloudSync } from './hooks/useCloudSync'
 
 function App() {
   const [currentView, setCurrentView] = useState('today')
@@ -14,6 +15,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const { checkAndResetDay } = useStore()
   useDarkMode() // Initialize dark mode
+  useCloudSync(session) // Initialize cloud sync
 
   // Check for existing session and set up auth listener
   useEffect(() => {

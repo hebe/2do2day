@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { CATEGORY_COLOR_PALETTE } from '../utils/colorUtils'
+import { saveToCloud, loadFromCloud } from '../lib/cloudSync'
 
 const DEFAULT_CATEGORIES = [
   { id: 'personal', name: 'Personal', color: CATEGORY_COLOR_PALETTE[1] }, // Mint Green
@@ -527,6 +528,33 @@ const useStore = create(
             categories: importedData.settings?.categories || DEFAULT_CATEGORIES
           }
         })
+      },
+
+      // Cloud sync actions
+      syncToCloud: async () => {
+        const state = get()
+        const result = await saveToCloud(state)
+        return result
+      },
+
+      loadFromCloudAndMerge: async () => {
+        const result = await loadFromCloud()
+
+        if (result.success && result.data) {
+          set({
+            today: result.data.today || [],
+            backlog: result.data.backlog || [],
+            recurring: result.data.recurring || [],
+            done: result.data.done || [],
+            settings: {
+              ...get().settings,
+              ...result.data.settings,
+              categories: result.data.settings?.categories || DEFAULT_CATEGORIES
+            }
+          })
+        }
+
+        return result
       },
     }),
     {
