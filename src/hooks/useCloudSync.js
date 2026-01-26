@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import useStore from '../store/useStore'
 import { migrateLocalToCloud } from '../lib/cloudSync'
+import { supabase } from '../lib/supabase'
 
 /**
  * Custom hook to manage cloud synchronization
@@ -110,6 +111,38 @@ export function useCloudSync(session, debounceMs = 2000) {
       window.removeEventListener('online', handleOnline)
     }
   }, [session, syncToCloud])
+
+  // Real-time sync: Listen for changes from other devices
+  useEffect(() => {
+    if (!session) return
+
+    console.log('Setting up real-time sync for user:', session.user.id)
+
+    const channel = supabase
+      .channel('user_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_data',
+          filter: `user_id=eq.${session.user.id}`
+        },
+        (payload) => {
+          console.log('Received real-time update from another device:', payload)
+          // Only reload if we're not currently in the middle of initial load
+          if (!isInitialLoadRef.current) {
+            loadFromCloudAndMerge()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      console.log('Cleaning up real-time sync subscription')
+      supabase.removeChannel(channel)
+    }
+  }, [session, loadFromCloudAndMerge])
 
   // Return sync function for manual sync
   return {
