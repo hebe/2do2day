@@ -18,12 +18,21 @@ function AuthView() {
       setMessage(null)
 
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
         })
         if (error) throw error
-        setMessage('Account created! You can now sign in.')
+
+        // Check if email confirmation is required
+        if (data?.user && !data?.session) {
+          setMessage('Please check your email to confirm your account before signing in.')
+        } else {
+          setMessage('Account created! You can now sign in.')
+        }
         setMode('signin')
         setPassword('')
       } else {
@@ -176,6 +185,7 @@ function AuthView() {
                 <button
                   onClick={() => {
                     setMode('reset')
+                    setPassword('')
                     setError(null)
                     setMessage(null)
                   }}
@@ -188,6 +198,7 @@ function AuthView() {
                   <button
                     onClick={() => {
                       setMode('signup')
+                      setPassword('')
                       setError(null)
                       setMessage(null)
                     }}
@@ -202,6 +213,7 @@ function AuthView() {
               <button
                 onClick={() => {
                   setMode('signin')
+                  setPassword('')
                   setError(null)
                   setMessage(null)
                 }}
