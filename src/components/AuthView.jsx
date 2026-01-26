@@ -3,11 +3,13 @@ import { supabase } from '../lib/supabase'
 
 function AuthView() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
+  const [mode, setMode] = useState('signin') // 'signin', 'signup', 'reset'
 
-  const handleMagicLinkSignIn = async (e) => {
+  const handlePasswordAuth = async (e) => {
     e.preventDefault()
 
     try {
@@ -15,25 +17,55 @@ function AuthView() {
       setError(null)
       setMessage(null)
 
-      // Use production URL in production, localhost in development
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        })
+        if (error) throw error
+        setMessage('Account created! You can now sign in.')
+        setMode('signin')
+        setPassword('')
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (error) throw error
+        // Session will be handled by App.jsx's auth listener
+      }
+    } catch (error) {
+      console.error('Error with auth:', error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault()
+
+    try {
+      setLoading(true)
+      setError(null)
+      setMessage(null)
+
       const redirectUrl = import.meta.env.VITE_SITE_URL ||
                          (window.location.hostname === 'localhost'
                            ? window.location.origin
                            : `https://${window.location.hostname}`)
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectUrl
-        }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl
       })
 
       if (error) throw error
 
-      setMessage('Check your email for the magic link!')
+      setMessage('Check your email for the password reset link!')
       setEmail('')
+      setMode('signin')
     } catch (error) {
-      console.error('Error signing in:', error)
+      console.error('Error resetting password:', error)
       setError(error.message)
     } finally {
       setLoading(false)
@@ -56,10 +88,14 @@ function AuthView() {
         {/* Sign In Card */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-8">
           <h2 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2 text-center">
-            Sign in to sync your tasks
+            {mode === 'reset' ? 'Reset your password' : mode === 'signup' ? 'Create an account' : 'Sign in to sync your tasks'}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center">
-            We'll send you a magic link to sign in
+            {mode === 'reset'
+              ? "We'll send you a password reset link"
+              : mode === 'signup'
+              ? 'Your tasks will be synced across all your devices'
+              : 'Welcome back!'}
           </p>
 
           {message && (
@@ -74,7 +110,7 @@ function AuthView() {
             </div>
           )}
 
-          <form onSubmit={handleMagicLinkSignIn} className="space-y-4">
+          <form onSubmit={mode === 'reset' ? handlePasswordReset : handlePasswordAuth} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email address
@@ -91,26 +127,90 @@ function AuthView() {
               />
             </div>
 
+            {mode !== 'reset' && (
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  minLength={6}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                />
+                {mode === 'signup' && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Minimum 6 characters
+                  </p>
+                )}
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={loading || !email || (mode !== 'reset' && !password)}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Sending magic link...
+                  {mode === 'reset' ? 'Sending reset link...' : mode === 'signup' ? 'Creating account...' : 'Signing in...'}
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Send magic link
+                  {mode === 'reset' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Sign in'}
                 </>
               )}
             </button>
           </form>
+
+          {/* Mode switching */}
+          <div className="mt-4 text-center space-y-2">
+            {mode === 'signin' && (
+              <>
+                <button
+                  onClick={() => {
+                    setMode('reset')
+                    setError(null)
+                    setMessage(null)
+                  }}
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#F0A500] dark:hover:text-[#F0A500]"
+                >
+                  Forgot password?
+                </button>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Don't have an account?{' '}
+                  <button
+                    onClick={() => {
+                      setMode('signup')
+                      setError(null)
+                      setMessage(null)
+                    }}
+                    className="text-[#F0A500] hover:text-[#D89400] font-medium"
+                  >
+                    Sign up
+                  </button>
+                </div>
+              </>
+            )}
+            {(mode === 'signup' || mode === 'reset') && (
+              <button
+                onClick={() => {
+                  setMode('signin')
+                  setError(null)
+                  setMessage(null)
+                }}
+                className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#F0A500] dark:hover:text-[#F0A500]"
+              >
+                Back to sign in
+              </button>
+            )}
+          </div>
 
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
