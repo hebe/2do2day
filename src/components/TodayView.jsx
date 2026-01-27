@@ -24,14 +24,18 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function TodayView() {
-  const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings } = useStore()
+  const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
   const [showRecurringPicker, setShowRecurringPicker] = useState(false)
   const [showResetMessage, setShowResetMessage] = useState(false)
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false)
   const inputRef = useRef(null)
   const lastResetRef = useRef(settings.lastDayReset)
+  const pullStartY = useRef(0)
+  const pullCurrentY = useRef(0)
+  const isPulling = useRef(false)
 
   const doneCount = today.filter(t => t.done).length
   const undoneCount = today.filter(t => !t.done).length
@@ -89,6 +93,63 @@ function TodayView() {
     }
   }, [showList])
 
+  // Pull-to-refresh handlers
+  const handleTouchStart = (e) => {
+    // Only enable pull-to-refresh when scrolled to the top
+    if (window.scrollY === 0) {
+      pullStartY.current = e.touches[0].clientY
+      isPulling.current = true
+    }
+  }
+
+  const handleTouchMove = (e) => {
+    if (!isPulling.current || isPullRefreshing) return
+
+    pullCurrentY.current = e.touches[0].clientY
+    const pullDistance = pullCurrentY.current - pullStartY.current
+
+    // Only allow pulling down (positive distance) and when at top of page
+    if (pullDistance > 0 && window.scrollY === 0) {
+      // Prevent default scrolling while pulling
+      if (pullDistance > 10) {
+        e.preventDefault()
+      }
+    } else {
+      isPulling.current = false
+    }
+  }
+
+  const handleTouchEnd = async () => {
+    if (!isPulling.current || isPullRefreshing) {
+      isPulling.current = false
+      return
+    }
+
+    const pullDistance = pullCurrentY.current - pullStartY.current
+    const threshold = 80 // Minimum pull distance to trigger refresh
+
+    if (pullDistance > threshold) {
+      setIsPullRefreshing(true)
+      console.log('[PullRefresh] Triggering manual refresh...')
+
+      try {
+        await loadFromCloudAndMerge()
+        console.log('[PullRefresh] Refresh completed')
+      } catch (error) {
+        console.error('[PullRefresh] Error during refresh:', error)
+      } finally {
+        // Keep the indicator visible for a moment so user sees it completed
+        setTimeout(() => {
+          setIsPullRefreshing(false)
+        }, 500)
+      }
+    }
+
+    isPulling.current = false
+    pullStartY.current = 0
+    pullCurrentY.current = 0
+  }
+
   const handleAddTask = (e) => {
     e.preventDefault()
     if (inputValue.trim()) {
@@ -122,7 +183,25 @@ function TodayView() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 md:py-16">
+    <div
+      className="max-w-2xl mx-auto px-4 py-8 md:py-16"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      {isPullRefreshing && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-blue-500 text-white py-2 px-4 text-center text-sm font-medium shadow-lg">
+          <div className="flex items-center justify-center gap-2">
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Syncing with cloud...
+          </div>
+        </div>
+      )}
+
       {/* Day Reset Message */}
       {showResetMessage && (
         <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 animate-slideDown">
