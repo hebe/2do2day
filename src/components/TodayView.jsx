@@ -93,62 +93,75 @@ function TodayView() {
     }
   }, [showList])
 
-  // Pull-to-refresh handlers
-  const handleTouchStart = (e) => {
-    // Only enable pull-to-refresh when scrolled to the top
-    if (window.scrollY === 0) {
-      pullStartY.current = e.touches[0].clientY
-      isPulling.current = true
-    }
-  }
-
-  const handleTouchMove = (e) => {
-    if (!isPulling.current || isPullRefreshing) return
-
-    pullCurrentY.current = e.touches[0].clientY
-    const pullDistance = pullCurrentY.current - pullStartY.current
-
-    // Only allow pulling down (positive distance) and when at top of page
-    if (pullDistance > 0 && window.scrollY === 0) {
-      // Prevent default scrolling while pulling
-      if (pullDistance > 10) {
-        e.preventDefault()
-      }
-    } else {
-      isPulling.current = false
-    }
-  }
-
-  const handleTouchEnd = async () => {
-    if (!isPulling.current || isPullRefreshing) {
-      isPulling.current = false
-      return
-    }
-
-    const pullDistance = pullCurrentY.current - pullStartY.current
-    const threshold = 80 // Minimum pull distance to trigger refresh
-
-    if (pullDistance > threshold) {
-      setIsPullRefreshing(true)
-      console.log('[PullRefresh] Triggering manual refresh...')
-
-      try {
-        await loadFromCloudAndMerge()
-        console.log('[PullRefresh] Refresh completed')
-      } catch (error) {
-        console.error('[PullRefresh] Error during refresh:', error)
-      } finally {
-        // Keep the indicator visible for a moment so user sees it completed
-        setTimeout(() => {
-          setIsPullRefreshing(false)
-        }, 500)
+  // Pull-to-refresh with native event listeners (to avoid passive event warnings)
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      // Only enable pull-to-refresh when scrolled to the top
+      if (window.scrollY === 0) {
+        pullStartY.current = e.touches[0].clientY
+        isPulling.current = true
       }
     }
 
-    isPulling.current = false
-    pullStartY.current = 0
-    pullCurrentY.current = 0
-  }
+    const handleTouchMove = (e) => {
+      if (!isPulling.current || isPullRefreshing) return
+
+      pullCurrentY.current = e.touches[0].clientY
+      const pullDistance = pullCurrentY.current - pullStartY.current
+
+      // Only allow pulling down (positive distance) and when at top of page
+      if (pullDistance > 0 && window.scrollY === 0) {
+        // Prevent default scrolling while pulling
+        if (pullDistance > 10) {
+          e.preventDefault()
+        }
+      } else {
+        isPulling.current = false
+      }
+    }
+
+    const handleTouchEnd = async () => {
+      if (!isPulling.current || isPullRefreshing) {
+        isPulling.current = false
+        return
+      }
+
+      const pullDistance = pullCurrentY.current - pullStartY.current
+      const threshold = 80 // Minimum pull distance to trigger refresh
+
+      if (pullDistance > threshold) {
+        setIsPullRefreshing(true)
+        console.log('[PullRefresh] Triggering manual refresh...')
+
+        try {
+          await loadFromCloudAndMerge()
+          console.log('[PullRefresh] Refresh completed')
+        } catch (error) {
+          console.error('[PullRefresh] Error during refresh:', error)
+        } finally {
+          // Keep the indicator visible for a moment so user sees it completed
+          setTimeout(() => {
+            setIsPullRefreshing(false)
+          }, 500)
+        }
+      }
+
+      isPulling.current = false
+      pullStartY.current = 0
+      pullCurrentY.current = 0
+    }
+
+    // Add native event listeners with { passive: false } to allow preventDefault
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd, { passive: true })
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [isPullRefreshing, loadFromCloudAndMerge])
 
   const handleAddTask = (e) => {
     e.preventDefault()
@@ -183,12 +196,7 @@ function TodayView() {
   }
 
   return (
-    <div
-      className="max-w-2xl mx-auto px-4 py-8 md:py-16"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="max-w-2xl mx-auto px-4 py-8 md:py-16">
       {/* Pull-to-refresh indicator */}
       {isPullRefreshing && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-blue-500 text-white py-2 px-4 text-center text-sm font-medium shadow-lg">
