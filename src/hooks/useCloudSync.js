@@ -116,7 +116,10 @@ export function useCloudSync(session, debounceMs = 2000) {
   useEffect(() => {
     if (!session) return
 
-    console.log('Setting up real-time sync for user:', session.user.id)
+    console.log('[Realtime] Setting up real-time sync for user:', session.user.id)
+
+    // Debounce real-time updates to avoid rapid consecutive reloads
+    let realtimeTimeout = null
 
     const channel = supabase
       .channel('user_data_changes')
@@ -129,17 +132,47 @@ export function useCloudSync(session, debounceMs = 2000) {
           filter: `user_id=eq.${session.user.id}`
         },
         (payload) => {
-          console.log('Received real-time update from another device:', payload)
-          // Only reload if we're not currently in the middle of initial load
-          if (!isInitialLoadRef.current) {
-            loadFromCloudAndMerge()
+          console.log('[Realtime] Received real-time update from another device:', {
+            eventType: payload.eventType,
+            userId: payload.new?.user_id,
+            currentUser: session.user.id
+          })
+
+          // Verify the update is for the current user
+          if (payload.new?.user_id !== session.user.id) {
+            console.error('[Realtime] Ignoring update for different user!', {
+              updateUser: payload.new?.user_id,
+              currentUser: session.user.id
+            })
+            return
           }
+
+          // Only reload if we're not currently in the middle of initial load
+          if (isInitialLoadRef.current) {
+            console.log('[Realtime] Skipping reload during initial load')
+            return
+          }
+
+          // Debounce: wait 500ms before reloading in case multiple updates come in
+          if (realtimeTimeout) {
+            clearTimeout(realtimeTimeout)
+          }
+
+          realtimeTimeout = setTimeout(async () => {
+            console.log('[Realtime] Loading updated data from cloud')
+            await loadFromCloudAndMerge()
+          }, 500)
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('[Realtime] Subscription status:', status)
+      })
 
     return () => {
-      console.log('Cleaning up real-time sync subscription')
+      console.log('[Realtime] Cleaning up real-time sync subscription')
+      if (realtimeTimeout) {
+        clearTimeout(realtimeTimeout)
+      }
       supabase.removeChannel(channel)
     }
   }, [session, loadFromCloudAndMerge])

@@ -12,8 +12,15 @@ export async function saveToCloud(state) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+      console.warn('[CloudSync] saveToCloud: Not authenticated')
       return { success: false, error: 'Not authenticated' }
     }
+
+    console.log('[CloudSync] Saving to cloud for user:', user.id, {
+      todayCount: state.today?.length || 0,
+      backlogCount: state.backlog?.length || 0,
+      recurringCount: state.recurring?.length || 0
+    })
 
     // Prepare data for cloud storage
     const cloudData = {
@@ -36,13 +43,14 @@ export async function saveToCloud(state) {
       })
 
     if (error) {
-      console.error('Error saving to cloud:', error)
+      console.error('[CloudSync] Error saving to cloud:', error)
       return { success: false, error: error.message }
     }
 
+    console.log('[CloudSync] Successfully saved to cloud')
     return { success: true }
   } catch (error) {
-    console.error('Error in saveToCloud:', error)
+    console.error('[CloudSync] Error in saveToCloud:', error)
     return { success: false, error: error.message }
   }
 }
@@ -56,37 +64,58 @@ export async function loadFromCloud() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
+      console.warn('[CloudSync] loadFromCloud: Not authenticated')
       return { success: false, error: 'Not authenticated' }
     }
 
+    console.log('[CloudSync] Loading from cloud for user:', user.id)
+
     const { data, error } = await supabase
       .from('user_data')
-      .select('data, schema_version, updated_at')
+      .select('data, schema_version, updated_at, user_id')
       .eq('user_id', user.id)
       .single()
 
     if (error) {
       // If no data found, that's okay (new user)
       if (error.code === 'PGRST116') {
+        console.log('[CloudSync] No cloud data found (new user)')
         return { success: true, data: null }
       }
-      console.error('Error loading from cloud:', error)
+      console.error('[CloudSync] Error loading from cloud:', error)
       return { success: false, error: error.message }
     }
 
+    // CRITICAL: Verify the data belongs to the current user
+    if (data.user_id !== user.id) {
+      console.error('[CloudSync] DATA MISMATCH! Loaded data for wrong user!', {
+        currentUser: user.id,
+        dataUser: data.user_id
+      })
+      return { success: false, error: 'User ID mismatch' }
+    }
+
+    console.log('[CloudSync] Loaded from cloud:', {
+      todayCount: data.data.today?.length || 0,
+      backlogCount: data.data.backlog?.length || 0,
+      recurringCount: data.data.recurring?.length || 0,
+      updatedAt: data.updated_at
+    })
+
     // TODO: Handle schema migrations if schema_version differs
     if (data.schema_version !== SCHEMA_VERSION) {
-      console.warn('Schema version mismatch, migration needed')
+      console.warn('[CloudSync] Schema version mismatch, migration needed')
       // For now, just use the data as-is
     }
 
     return {
       success: true,
       data: data.data,
-      updatedAt: data.updated_at
+      updatedAt: data.updated_at,
+      userId: data.user_id
     }
   } catch (error) {
-    console.error('Error in loadFromCloud:', error)
+    console.error('[CloudSync] Error in loadFromCloud:', error)
     return { success: false, error: error.message }
   }
 }

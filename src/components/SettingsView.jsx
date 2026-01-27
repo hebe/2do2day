@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import useStore from '../store/useStore'
 import { CATEGORY_COLOR_PALETTE } from '../utils/colorUtils'
+import { supabase } from '../lib/supabase'
 
 function SettingsView() {
   // Get settings and actions from store - this will re-render when settings change
@@ -14,6 +15,14 @@ function SettingsView() {
   const recurring = useStore((state) => state.recurring)
   const today = useStore((state) => state.today)
   const importData = useStore((state) => state.importData)
+
+  // Get current user email
+  const [userEmail, setUserEmail] = useState(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserEmail(user?.email)
+    })
+  }, [])
 
   const [dayStart, setDayStart] = useState(settings.dayStart)
   const [colorMode, setColorMode] = useState(settings.colorMode || 'auto')
@@ -167,6 +176,11 @@ function SettingsView() {
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Customize how Today's ToDos works for you.
           </p>
+          {userEmail && (
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+              Logged in as <span className="font-medium">{userEmail}</span>
+            </p>
+          )}
         </div>
 
 
