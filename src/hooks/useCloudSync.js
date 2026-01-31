@@ -1,234 +1,263 @@
 import { useEffect, useRef, useCallback } from 'react'
 import useStore from '../store/useStore'
-import { migrateLocalToCloud } from '../lib/cloudSync'
-import { supabase } from '../lib/supabase'
+import { loadFromCloud, saveToCloud } from '../lib/cloudSync'
 
 /**
- * Custom hook to manage cloud synchronization
+ * Simplified cloud sync hook
  *
- * Key behaviors:
- * 1. On login: Load cloud data FIRST, then enable syncing
- * 2. On state changes: Sync to cloud (debounced) - but only after cloud load completed
- * 3. Real-time: Listen for changes from other devices and apply them
- * 4. Offline: Continue working locally, sync when back online
- *
- * @param {Object} session - Supabase session object
- * @param {number} debounceMs - Debounce delay in milliseconds (default: 2000)
+ * Key principles:
+ * 1. Cloud is source of truth - always load from cloud first on login
+ * 2. NEVER sync to cloud until after successful cloud load
+ * 3. Simple debounced sync for user changes after initial load
  */
-export function useCloudSync(session, debounceMs = 2000) {
-  // Select only the specific actions we need (not the whole store!)
-  const syncToCloud = useStore((state) => state.syncToCloud)
-  const loadFromCloudAndMerge = useStore((state) => state.loadFromCloudAndMerge)
+export function useCloudSync(session, debounceMs = 1500) {
+  const hasLoadedFromCloudRef = useRef(false)
+  const syncTimeoutRef = useRef(null)
+  const lastSyncedDataRef = useRef(null)
+  const isLoadingRef = useRef(false)
+  const skipNextSyncRef = useRef(false) // Skip sync right after loading
+
+  // Get store actions
   const setCloudSyncReady = useStore((state) => state.setCloudSyncReady)
   const cloudSyncReady = useStore((state) => state._cloudSyncReady)
 
-  // Select data arrays for change detection (but NOT the whole store object)
+  // Get data for change detection
   const today = useStore((state) => state.today)
   const backlog = useStore((state) => state.backlog)
   const recurring = useStore((state) => state.recurring)
   const done = useStore((state) => state.done)
   const settings = useStore((state) => state.settings)
 
-  // Track sync state
-  const syncTimeoutRef = useRef(null)
-  const hasMigratedRef = useRef(false)
-  const hasInitializedRef = useRef(false)
-  const isSyncingFromRealtimeRef = useRef(false)
+  // Load from cloud and apply to store
+  const loadAndApply = useCallback(async () => {
+    // Prevent concurrent loads
+    if (isLoadingRef.current) {
+      console.log('[useCloudSync] Already loading, skipping')
+      return false
+    }
 
-  // Debounced sync function
+    isLoadingRef.current = true
+    skipNextSyncRef.current = true // Prevent sync triggered by setState
+    console.log('[useCloudSync] Loading from cloud...')
+
+    try {
+      const result = await loadFromCloud()
+
+      if (!result.success) {
+        console.error('[useCloudSync] Failed to load:', result.error)
+        skipNextSyncRef.current = false
+        return false
+      }
+
+      if (result.data) {
+        console.log('[useCloudSync] Applying cloud data to store:', {
+          todayCount: result.data.today?.length || 0,
+          backlogCount: result.data.backlog?.length || 0
+        })
+
+        // Build the normalized data object
+        const normalizedData = {
+          today: result.data.today || [],
+          backlog: result.data.backlog || [],
+          recurring: result.data.recurring || [],
+          done: result.data.done || [],
+          settings: result.data.settings || {}
+        }
+
+        // Remember what we loaded BEFORE setting state
+        // This prevents the sync effect from thinking data changed
+        lastSyncedDataRef.current = JSON.stringify(normalizedData)
+
+        // Directly set the store state from cloud data
+        useStore.setState(normalizedData)
+
+        hasLoadedFromCloudRef.current = true
+
+        // Keep skip flag on for a moment to let React settle
+        setTimeout(() => {
+          skipNextSyncRef.current = false
+        }, 100)
+
+      } else if (result.isNewUser) {
+        console.log('[useCloudSync] New user - will sync current local data to cloud')
+        hasLoadedFromCloudRef.current = true
+        skipNextSyncRef.current = false
+
+        // For new users, sync current local state to cloud
+        const currentState = useStore.getState()
+        const dataToSync = {
+          today: currentState.today || [],
+          backlog: currentState.backlog || [],
+          recurring: currentState.recurring || [],
+          done: currentState.done || [],
+          settings: currentState.settings || {}
+        }
+
+        const saveResult = await saveToCloud(dataToSync)
+        if (saveResult.success) {
+          console.log('[useCloudSync] Initial data synced to cloud for new user')
+          lastSyncedDataRef.current = JSON.stringify(dataToSync)
+        }
+      }
+
+      return true
+    } finally {
+      isLoadingRef.current = false
+    }
+  }, [])
+
+  // Save current state to cloud
+  const syncCurrentState = useCallback(async () => {
+    // CRITICAL: Never sync before we've loaded from cloud
+    if (!hasLoadedFromCloudRef.current) {
+      console.log('[useCloudSync] BLOCKED: Cannot sync before loading from cloud')
+      return { success: false, error: 'Not loaded from cloud yet' }
+    }
+
+    // Skip if we just loaded (prevents sync loop)
+    if (skipNextSyncRef.current) {
+      console.log('[useCloudSync] BLOCKED: Skipping sync right after load')
+      return { success: false, error: 'Skipping post-load sync' }
+    }
+
+    const currentState = useStore.getState()
+
+    const dataToSync = {
+      today: currentState.today || [],
+      backlog: currentState.backlog || [],
+      recurring: currentState.recurring || [],
+      done: currentState.done || [],
+      settings: currentState.settings || {}
+    }
+
+    // Check if data actually changed from what we last synced
+    const currentDataString = JSON.stringify(dataToSync)
+    if (currentDataString === lastSyncedDataRef.current) {
+      console.log('[useCloudSync] Data unchanged, skipping sync')
+      return { success: true, skipped: true }
+    }
+
+    console.log('[useCloudSync] Syncing to cloud...', {
+      todayCount: dataToSync.today.length,
+      backlogCount: dataToSync.backlog.length
+    })
+
+    const result = await saveToCloud(dataToSync)
+
+    if (result.success) {
+      lastSyncedDataRef.current = currentDataString
+      console.log('[useCloudSync] Sync successful')
+    } else {
+      console.error('[useCloudSync] Sync failed:', result.error)
+    }
+
+    return result
+  }, [])
+
+  // Debounced sync
   const debouncedSync = useCallback(() => {
-    if (!session) return
+    // Extra safety checks
+    if (!hasLoadedFromCloudRef.current) {
+      console.log('[useCloudSync] BLOCKED debounced sync: not loaded yet')
+      return
+    }
 
-    // Clear existing timeout
+    if (skipNextSyncRef.current) {
+      console.log('[useCloudSync] BLOCKED debounced sync: skip flag set')
+      return
+    }
+
     if (syncTimeoutRef.current) {
       clearTimeout(syncTimeoutRef.current)
     }
 
-    // Set new timeout
-    syncTimeoutRef.current = setTimeout(async () => {
-      // Double-check we're still ready (state might have changed)
-      const currentState = useStore.getState()
-      if (!currentState._cloudSyncReady) {
-        console.log('[CloudSync] Skipping sync - not ready yet')
-        return
-      }
-
-      const result = await syncToCloud()
-      if (!result.success && result.error !== 'Cloud sync not ready') {
-        console.error('[CloudSync] Failed to sync to cloud:', result.error)
-      }
+    syncTimeoutRef.current = setTimeout(() => {
+      syncCurrentState()
     }, debounceMs)
-  }, [session, syncToCloud, debounceMs])
+  }, [syncCurrentState, debounceMs])
 
-  // Initial load on login - this MUST complete before any syncing happens
-  useEffect(() => {
-    if (!session || hasInitializedRef.current) return
-
-    const initializeCloudSync = async () => {
-      console.log('[CloudSync] Initializing cloud sync for user:', session.user.id)
-      hasInitializedRef.current = true
-
-      try {
-        // CRITICAL: Load from cloud FIRST
-        const loadResult = await loadFromCloudAndMerge()
-
-        if (loadResult.success && loadResult.data) {
-          console.log('[CloudSync] Successfully loaded data from cloud:', {
-            todayCount: loadResult.data.today?.length || 0,
-            backlogCount: loadResult.data.backlog?.length || 0
-          })
-        } else if (loadResult.success && !loadResult.data) {
-          // No cloud data exists - this is a new user or first sync
-          // Migrate local data to cloud
-          if (!hasMigratedRef.current) {
-            console.log('[CloudSync] No cloud data found, migrating local data...')
-            const currentState = useStore.getState()
-            const migrateResult = await migrateLocalToCloud(currentState)
-
-            if (migrateResult.success && migrateResult.migrated) {
-              console.log('[CloudSync] Successfully migrated local data to cloud')
-              hasMigratedRef.current = true
-            } else if (migrateResult.success && migrateResult.skipped) {
-              console.log('[CloudSync] Migration skipped:', migrateResult.reason)
-            }
-          }
-        } else {
-          console.error('[CloudSync] Failed to load from cloud:', loadResult.error)
-          // Even on error, we might want to allow local-only operation
-          // But we should NOT sync potentially stale local data to cloud
-        }
-      } catch (error) {
-        console.error('[CloudSync] Error initializing cloud sync:', error)
-      }
-    }
-
-    initializeCloudSync()
-  }, [session, loadFromCloudAndMerge])
-
-  // Reset initialization when session changes (logout/login)
+  // Initial load on login
   useEffect(() => {
     if (!session) {
-      hasInitializedRef.current = false
-      hasMigratedRef.current = false
+      // Reset everything on logout
+      hasLoadedFromCloudRef.current = false
+      lastSyncedDataRef.current = null
+      isLoadingRef.current = false
+      skipNextSyncRef.current = false
       setCloudSyncReady(false)
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current)
+        syncTimeoutRef.current = null
+      }
+      return
     }
-  }, [session, setCloudSyncReady])
 
-  // Sync on state changes (debounced) - ONLY after cloud load completed
+    // Only load once per session
+    if (hasLoadedFromCloudRef.current) return
+
+    const init = async () => {
+      console.log('[useCloudSync] Initializing for user:', session.user.id)
+
+      const success = await loadAndApply()
+
+      if (success) {
+        console.log('[useCloudSync] Cloud sync ready - syncing now enabled')
+        setCloudSyncReady(true)
+      }
+    }
+
+    init()
+  }, [session, loadAndApply, setCloudSyncReady])
+
+  // Sync on data changes (only after initial load)
   useEffect(() => {
-    // Skip if not logged in or cloud sync not ready
-    if (!session || !cloudSyncReady) {
-      return
-    }
-
-    // Skip if this change came from a real-time update (avoid sync loop)
-    if (isSyncingFromRealtimeRef.current) {
-      return
-    }
+    // Multiple safety checks
+    if (!session) return
+    if (!cloudSyncReady) return
+    if (!hasLoadedFromCloudRef.current) return
+    if (!lastSyncedDataRef.current) return
+    if (skipNextSyncRef.current) return // Don't sync right after load
 
     debouncedSync()
 
-    // Cleanup timeout on unmount
     return () => {
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current)
       }
     }
-  }, [today, backlog, recurring, done, settings, debouncedSync, session, cloudSyncReady])
+  }, [today, backlog, recurring, done, settings, session, cloudSyncReady, debouncedSync])
 
-  // Sync when going online
+  // Sync when coming back online
   useEffect(() => {
     if (!session) return
 
     const handleOnline = async () => {
-      console.log('[CloudSync] Back online')
-
-      // When coming back online, load from cloud first to get any updates
-      // that happened while we were offline
-      const loadResult = await loadFromCloudAndMerge()
-
-      if (loadResult.success) {
-        console.log('[CloudSync] Loaded latest data after coming online')
-        // After loading, sync our local changes (if any)
-        // The debounced sync will handle this naturally
-      }
+      console.log('[useCloudSync] Back online - reloading from cloud')
+      await loadAndApply()
     }
 
     window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [session, loadAndApply])
 
-    return () => {
-      window.removeEventListener('online', handleOnline)
-    }
-  }, [session, loadFromCloudAndMerge])
-
-  // Real-time sync: Listen for changes from other devices
+  // Handle visibility change (user returns to tab)
   useEffect(() => {
-    if (!session) return
+    if (!session || !cloudSyncReady) return
 
-    console.log('[Realtime] Setting up real-time sync for user:', session.user.id)
-
-    let realtimeTimeout = null
-
-    const channel = supabase
-      .channel('user_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'user_data',
-          filter: `user_id=eq.${session.user.id}`
-        },
-        (payload) => {
-          console.log('[Realtime] Received update:', {
-            eventType: payload.eventType,
-            userId: payload.new?.user_id
-          })
-
-          // Verify the update is for the current user
-          if (payload.new?.user_id !== session.user.id) {
-            console.error('[Realtime] Ignoring update for different user!')
-            return
-          }
-
-          // Debounce real-time updates
-          if (realtimeTimeout) {
-            clearTimeout(realtimeTimeout)
-          }
-
-          realtimeTimeout = setTimeout(async () => {
-            console.log('[Realtime] Applying update from another device')
-
-            // Mark that we're syncing from real-time to prevent sync loop
-            isSyncingFromRealtimeRef.current = true
-
-            try {
-              await loadFromCloudAndMerge()
-            } finally {
-              // Reset the flag after a short delay to allow the state to settle
-              setTimeout(() => {
-                isSyncingFromRealtimeRef.current = false
-              }, 100)
-            }
-          }, 500)
-        }
-      )
-      .subscribe((status) => {
-        console.log('[Realtime] Subscription status:', status)
-      })
-
-    return () => {
-      console.log('[Realtime] Cleaning up subscription')
-      if (realtimeTimeout) {
-        clearTimeout(realtimeTimeout)
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[useCloudSync] Tab became visible - checking for updates')
+        await loadAndApply()
       }
-      supabase.removeChannel(channel)
     }
-  }, [session, loadFromCloudAndMerge])
 
-  // Return sync function for manual sync
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [session, cloudSyncReady, loadAndApply])
+
   return {
-    manualSync: syncToCloud,
+    manualSync: syncCurrentState,
+    reload: loadAndApply,
     isReady: cloudSyncReady
   }
 }
