@@ -13,7 +13,8 @@ function App() {
   const [currentView, setCurrentView] = useState('today')
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
-  const { checkAndResetDay } = useStore()
+  const checkAndResetDay = useStore((state) => state.checkAndResetDay)
+  const cloudSyncReady = useStore((state) => state._cloudSyncReady)
   useDarkMode() // Initialize dark mode
   useCloudSync(session) // Initialize cloud sync
 
@@ -35,9 +36,10 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Check for day reset on mount and every minute (only when signed in)
+  // Check for day reset on mount and every minute
+  // IMPORTANT: Only run after cloud data is loaded to avoid resetting stale data
   useEffect(() => {
-    if (!session) return
+    if (!session || !cloudSyncReady) return
 
     checkAndResetDay()
 
@@ -46,7 +48,7 @@ function App() {
     }, 60000) // Check every minute
 
     return () => clearInterval(interval)
-  }, [checkAndResetDay, session])
+  }, [checkAndResetDay, session, cloudSyncReady])
 
   const handleSignOut = async () => {
     try {

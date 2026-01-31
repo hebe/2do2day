@@ -27,6 +27,10 @@ const useStore = create(
         categories: DEFAULT_CATEGORIES, // User's custom categories
       },
 
+      // Cloud sync state - prevents syncing before cloud data is loaded
+      _cloudSyncReady: false,
+      _lastCloudLoad: null, // Timestamp of last successful cloud load
+
       // Today actions
       addTodayTask: (title, category = null, urgent = false) => {
         const newTask = {
@@ -533,6 +537,13 @@ const useStore = create(
       // Cloud sync actions
       syncToCloud: async () => {
         const state = get()
+
+        // CRITICAL: Never sync to cloud before we've loaded from cloud first
+        if (!state._cloudSyncReady) {
+          console.log('[CloudSync] Blocked sync - cloud data not loaded yet')
+          return { success: false, error: 'Cloud sync not ready' }
+        }
+
         const result = await saveToCloud(state)
         return result
       },
@@ -541,6 +552,7 @@ const useStore = create(
         const result = await loadFromCloud()
 
         if (result.success && result.data) {
+          console.log('[CloudSync] Applying cloud data to store')
           set({
             today: result.data.today || [],
             backlog: result.data.backlog || [],
@@ -550,15 +562,38 @@ const useStore = create(
               ...get().settings,
               ...result.data.settings,
               categories: result.data.settings?.categories || DEFAULT_CATEGORIES
-            }
+            },
+            _cloudSyncReady: true,
+            _lastCloudLoad: Date.now()
+          })
+        } else if (result.success && !result.data) {
+          // No cloud data (new user) - mark as ready so local data can sync
+          console.log('[CloudSync] No cloud data found, marking sync as ready')
+          set({
+            _cloudSyncReady: true,
+            _lastCloudLoad: Date.now()
           })
         }
 
         return result
       },
+
+      // Mark cloud sync as ready (used when going offline-first)
+      setCloudSyncReady: (ready) => {
+        set({ _cloudSyncReady: ready })
+      },
     }),
     {
       name: 'todays-todos-storage',
+      // Don't persist cloud sync state - it should reset on each page load
+      partialize: (state) => ({
+        today: state.today,
+        backlog: state.backlog,
+        recurring: state.recurring,
+        done: state.done,
+        settings: state.settings,
+        // Explicitly exclude: _cloudSyncReady, _lastCloudLoad
+      }),
     }
   )
 )
