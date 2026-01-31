@@ -19,6 +19,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
     editRecurringTask,
     toggleBacklogUrgent,
     toggleRecurringUrgent,
+    markBacklogAsDone,
     settings
   } = useStore()
   const [showMenu, setShowMenu] = useState(false)
@@ -90,6 +91,13 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
       deleteBacklogTask(task.id)
     } else if (type === 'recurring') {
       deleteRecurringTask(task.id)
+    }
+    setShowMenu(false)
+  }
+
+  const handleMarkAsDone = () => {
+    if (type === 'backlog') {
+      markBacklogAsDone(task.id)
     }
     setShowMenu(false)
   }
@@ -332,6 +340,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           onEdit={handleEdit}
           onMakeRecurring={handleMarkRecurring}
           onMoveToToday={handleAddToToday}
+          onMarkAsDone={type === 'backlog' ? handleMarkAsDone : undefined}
           onDelete={handleDelete}
           onClose={() => setShowMenu(false)}
         />

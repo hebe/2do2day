@@ -2,26 +2,27 @@ import React from 'react'
 import useStore from '../store/useStore'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
-function TaskActionsModal({ 
-  task, 
-  onEdit, 
-  onMakeRecurring, 
-  onMoveToBacklog, 
+function TaskActionsModal({
+  task,
+  onEdit,
+  onMakeRecurring,
+  onMoveToBacklog,
   onMoveToToday,
-  onDelete, 
+  onMarkAsDone,
+  onDelete,
   onClose,
   type = 'today'
 }) {
-  const { 
-    toggleUrgent, 
-    toggleBacklogUrgent, 
+  const {
+    toggleUrgent,
+    toggleBacklogUrgent,
     toggleRecurringUrgent,
-    updateTaskCategory, 
-    updateBacklogCategory, 
+    updateTaskCategory,
+    updateBacklogCategory,
     updateRecurringCategory,
-    settings 
+    settings
   } = useStore()
-  
+
   const isToday = type === 'today'
   const isBacklog = type === 'backlog'
   const isRecurring = type === 'recurring'
@@ -95,21 +96,36 @@ function TaskActionsModal({
 
           {/* Actions */}
           <div className="p-6 space-y-3">
-            <button
-              onClick={onEdit}
-              className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-            >
-              <span className="text-2xl">✏️</span>
-              <span className="text-base font-medium">Edit</span>
-            </button>
+            {/* Edit and Urgent toggle - side by side */}
+            <div className="flex gap-3">
+              <button
+                onClick={onEdit}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+              >
+                <span className="text-xl">✏️</span>
+                <span className="text-sm font-medium">Edit</span>
+              </button>
+
+              <button
+                onClick={handleToggleUrgent}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-colors border ${
+                  task.urgent
+                    ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
+                    : 'border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <span className="text-xl">🔥</span>
+                <span className="text-sm font-medium">{task.urgent ? 'Urgent' : 'Not urgent'}</span>
+              </button>
+            </div>
 
             {/* Category inline picker - horizontal scrollable chips */}
-            <div className="px-5 py-4 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-              <div className="flex items-center gap-4 mb-3">
-                <span className="text-2xl">🏷️</span>
-                <span className="text-base font-medium text-gray-900 dark:text-gray-100">Category</span>
+            <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-lg">🏷️</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Category</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 pt-2 -mx-1 px-1 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
                 {/* No category option */}
                 <button
                   onClick={() => handleCategorySelect(null)}
@@ -121,7 +137,7 @@ function TaskActionsModal({
                 >
                   None
                 </button>
-                
+
                 {/* Category chips - using dynamic colors */}
                 {categories.map((category) => {
                   const categoryOKLab = getCategoryOKLab(category.color)
@@ -145,88 +161,80 @@ function TaskActionsModal({
               </div>
             </div>
 
-            {/* Urgent toggle - available for all task types */}
-            <button
-              onClick={handleToggleUrgent}
-              className="w-full flex items-center justify-between px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">🔥</span>
-                <span className="text-base font-medium">Mark as urgent</span>
+            {/* Primary actions row - Today/Recurring buttons */}
+            {(isBacklog || isRecurring) && (
+              <div className="flex gap-3">
+                {onMoveToToday && (
+                  <button
+                    onClick={onMoveToToday}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-colors font-medium"
+                  >
+                    <span className="text-xl">←</span>
+                    <span className="text-sm">Add to Today</span>
+                  </button>
+                )}
+
+                {onMakeRecurring && (
+                  <button
+                    onClick={onMakeRecurring}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                  >
+                    <span className="text-xl">{isRecurring ? '🔄' : '↻'}</span>
+                    <span className="text-sm font-medium">{isRecurring ? 'Change interval' : 'Make recurring'}</span>
+                  </button>
+                )}
               </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                task.urgent ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
-              }`}>
-                <div className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${
-                  task.urgent ? 'translate-x-6' : 'translate-x-0.5'
-                }`} />
+            )}
+
+            {/* Today view actions */}
+            {isToday && (
+              <div className="flex gap-3">
+                {onMoveToBacklog && (
+                  <button
+                    onClick={onMoveToBacklog}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                  >
+                    <span className="text-xl">📦</span>
+                    <span className="text-sm font-medium">Move to backlog</span>
+                  </button>
+                )}
+
+                {onMakeRecurring && (
+                  <button
+                    onClick={onMakeRecurring}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                  >
+                    <span className="text-xl">↻</span>
+                    <span className="text-sm font-medium">Make recurring</span>
+                  </button>
+                )}
               </div>
-            </button>
-
-            {isToday && onMakeRecurring && (
-              <button
-                onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <span className="text-2xl">↻</span>
-                <span className="text-base font-medium">Make recurring</span>
-              </button>
             )}
 
-            {isBacklog && onMakeRecurring && (
-              <button
-                onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <span className="text-2xl">↻</span>
-                <span className="text-base font-medium">Mark as recurring</span>
-              </button>
-            )}
+            {/* Bottom actions row - Done/Delete */}
+            <div className="flex gap-3 pt-2">
+              {isBacklog && onMarkAsDone && (
+                <button
+                  onClick={onMarkAsDone}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors border border-green-200 dark:border-green-800"
+                >
+                  <span className="text-xl">✓</span>
+                  <span className="text-sm font-medium">Mark as done</span>
+                </button>
+              )}
 
-            {isRecurring && onMakeRecurring && (
-              <button
-                onClick={onMakeRecurring}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <span className="text-2xl">🔄</span>
-                <span className="text-base font-medium">Change interval</span>
-              </button>
-            )}
-
-            {isToday && onMoveToBacklog && (
-              <button
-                onClick={onMoveToBacklog}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <span className="text-2xl">📦</span>
-                <span className="text-base font-medium">Move to backlog</span>
-              </button>
-            )}
-
-            {(isBacklog || isRecurring) && onMoveToToday && (
-              <button
-                onClick={onMoveToToday}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
-              >
-                <span className="text-2xl">←</span>
-                <span className="text-base font-medium">Add to Today</span>
-              </button>
-            )}
-
-            {/* Delete button - separated */}
-            <div className="pt-3">
               <button
                 onClick={onDelete}
-                className="w-full flex items-center gap-4 px-5 py-4 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                className={`${isBacklog && onMarkAsDone ? 'flex-1' : 'w-full'} flex items-center justify-center gap-2 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-red-200 dark:border-red-800`}
               >
-                <span className="text-2xl">🗑️</span>
-                <span className="text-base font-medium">Delete</span>
+                <span className="text-xl">🗑️</span>
+                <span className="text-sm font-medium">Delete</span>
               </button>
             </div>
           </div>
 
           {/* Bottom padding for safe area */}
-          <div className="h-8"></div>
+          <div className="h-6"></div>
         </div>
       </div>
 
