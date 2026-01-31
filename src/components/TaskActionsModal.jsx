@@ -2,24 +2,25 @@ import React from 'react'
 import useStore from '../store/useStore'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
-function TaskActionsModal({ 
-  task, 
-  onEdit, 
-  onMakeRecurring, 
-  onMoveToBacklog, 
+function TaskActionsModal({
+  task,
+  onEdit,
+  onMakeRecurring,
+  onMoveToBacklog,
   onMoveToToday,
-  onDelete, 
+  onMarkAsDone,
+  onDelete,
   onClose,
   type = 'today'
 }) {
-  const { 
-    toggleUrgent, 
-    toggleBacklogUrgent, 
+  const {
+    toggleUrgent,
+    toggleBacklogUrgent,
     toggleRecurringUrgent,
-    updateTaskCategory, 
-    updateBacklogCategory, 
+    updateTaskCategory,
+    updateBacklogCategory,
     updateRecurringCategory,
-    settings 
+    settings
   } = useStore()
   
   const isToday = type === 'today'
@@ -210,6 +211,16 @@ function TaskActionsModal({
               >
                 <span className="text-2xl">←</span>
                 <span className="text-base font-medium">Add to Today</span>
+              </button>
+            )}
+
+            {isBacklog && onMarkAsDone && (
+              <button
+                onClick={onMarkAsDone}
+                className="w-full flex items-center gap-4 px-5 py-4 text-left text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors"
+              >
+                <span className="text-2xl">✓</span>
+                <span className="text-base font-medium">Mark as done</span>
               </button>
             )}
 

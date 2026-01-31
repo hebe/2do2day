@@ -200,6 +200,24 @@ const useStore = create(
         }))
       },
 
+      // Mark a backlog task as done (move directly to done list)
+      markBacklogAsDone: (id) => {
+        set((state) => {
+          const task = state.backlog.find((t) => t.id === id)
+          if (!task) return state
+
+          return {
+            backlog: state.backlog.filter((t) => t.id !== id),
+            done: [...state.done, {
+              id: task.id,
+              title: task.title,
+              category: task.category,
+              completedAt: new Date().toISOString()
+            }]
+          }
+        })
+      },
+
       editBacklogTask: (id, newTitle) => {
         set((state) => ({
           backlog: state.backlog.map((task) =>
