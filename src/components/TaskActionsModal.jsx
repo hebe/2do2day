@@ -125,7 +125,7 @@ function TaskActionsModal({
                 <span className="text-lg">🏷️</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Category</span>
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto py-1 -mx-1 px-1 scrollbar-hide">
                 {/* No category option */}
                 <button
                   onClick={() => handleCategorySelect(null)}
