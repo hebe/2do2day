@@ -29,7 +29,8 @@ const useStore = create(
 
       // Cloud sync state - prevents syncing before cloud data is loaded
       _cloudSyncReady: false,
-      _lastCloudLoad: null, // Timestamp of last successful cloud load
+      _lastCloudLoad: null, // Timestamp of last successful cloud load (local time)
+      _lastCloudUpdatedAt: null, // Timestamp from cloud's updated_at field
 
       // Today actions
       addTodayTask: (title, category = null, urgent = false) => {
@@ -544,7 +545,19 @@ const useStore = create(
           return { success: false, error: 'Cloud sync not ready' }
         }
 
-        const result = await saveToCloud(state)
+        // Pass the last known cloud timestamp to prevent overwriting newer data
+        const result = await saveToCloud(state, state._lastCloudUpdatedAt)
+
+        // If cloud data is newer, we need to reload
+        if (result.needsReload) {
+          console.log('[CloudSync] Cloud has newer data, reloading...')
+          // Don't await - let it happen in background
+          get().loadFromCloudAndMerge()
+        } else if (result.success) {
+          // Update our timestamp so we know this is our save
+          set({ _lastCloudUpdatedAt: Date.now() })
+        }
+
         return result
       },
 
@@ -552,7 +565,12 @@ const useStore = create(
         const result = await loadFromCloud()
 
         if (result.success && result.data) {
-          console.log('[CloudSync] Applying cloud data to store')
+          // Convert cloud's updated_at to timestamp for comparison
+          const cloudUpdatedAt = result.updatedAt ? new Date(result.updatedAt).getTime() : Date.now()
+
+          console.log('[CloudSync] Applying cloud data to store', {
+            cloudUpdatedAt: new Date(cloudUpdatedAt).toISOString()
+          })
           set({
             today: result.data.today || [],
             backlog: result.data.backlog || [],
@@ -564,14 +582,16 @@ const useStore = create(
               categories: result.data.settings?.categories || DEFAULT_CATEGORIES
             },
             _cloudSyncReady: true,
-            _lastCloudLoad: Date.now()
+            _lastCloudLoad: Date.now(),
+            _lastCloudUpdatedAt: cloudUpdatedAt
           })
         } else if (result.success && !result.data) {
           // No cloud data (new user) - mark as ready so local data can sync
           console.log('[CloudSync] No cloud data found, marking sync as ready')
           set({
             _cloudSyncReady: true,
-            _lastCloudLoad: Date.now()
+            _lastCloudLoad: Date.now(),
+            _lastCloudUpdatedAt: Date.now() // Set to now since there's no cloud data
           })
         }
 
@@ -592,7 +612,7 @@ const useStore = create(
         recurring: state.recurring,
         done: state.done,
         settings: state.settings,
-        // Explicitly exclude: _cloudSyncReady, _lastCloudLoad
+        // Explicitly exclude: _cloudSyncReady, _lastCloudLoad, _lastCloudUpdatedAt
       }),
     }
   )

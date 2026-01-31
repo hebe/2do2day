@@ -5,15 +5,37 @@ const SCHEMA_VERSION = 1
 /**
  * Save the entire app state to Supabase
  * @param {Object} state - The Zustand store state
+ * @param {number} lastKnownCloudUpdate - Timestamp of when we last loaded from cloud
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-export async function saveToCloud(state) {
+export async function saveToCloud(state, lastKnownCloudUpdate = null) {
   try {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       console.warn('[CloudSync] saveToCloud: Not authenticated')
       return { success: false, error: 'Not authenticated' }
+    }
+
+    // CRITICAL: Check if cloud data has been updated since we last loaded
+    // This prevents overwriting newer data from another device
+    if (lastKnownCloudUpdate) {
+      const { data: currentCloud, error: checkError } = await supabase
+        .from('user_data')
+        .select('updated_at')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!checkError && currentCloud) {
+        const cloudUpdatedAt = new Date(currentCloud.updated_at).getTime()
+        if (cloudUpdatedAt > lastKnownCloudUpdate) {
+          console.log('[CloudSync] Cloud data is newer than our last load, skipping save to prevent data loss', {
+            cloudUpdatedAt: new Date(cloudUpdatedAt).toISOString(),
+            lastKnownCloudUpdate: new Date(lastKnownCloudUpdate).toISOString()
+          })
+          return { success: false, error: 'Cloud data is newer', needsReload: true }
+        }
+      }
     }
 
     console.log('[CloudSync] Saving to cloud for user:', user.id, {
