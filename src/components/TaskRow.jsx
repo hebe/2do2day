@@ -92,8 +92,8 @@ function TaskRow({ task, onDelete, onEdit }) {
   // Editing mode
   if (isEditing) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-calm-50 dark:bg-gray-700">
-        <div className="flex-shrink-0 w-5 h-5" />
+      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-700">
+        <div className="flex-shrink-0 w-7 h-7" />
         <input
           ref={inputRef}
           type="text"
@@ -101,19 +101,19 @@ function TaskRow({ task, onDelete, onEdit }) {
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSaveEdit}
-          className="flex-1 px-3 py-1 text-base border border-calm-300 dark:border-gray-600 rounded focus:outline-none focus:border-calm-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="flex-1 px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
         />
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSaveEdit}
-          className="px-3 py-1 text-xs bg-calm-700 dark:bg-gray-600 text-white rounded hover:bg-calm-600 dark:hover:bg-gray-500 transition-colors font-medium"
+          className="px-3 py-1.5 text-sm bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-colors font-medium"
         >
           Save
         </button>
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancelEdit}
-          className="px-3 py-1 text-xs text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors"
+          className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
         >
           Cancel
         </button>
@@ -129,20 +129,20 @@ function TaskRow({ task, onDelete, onEdit }) {
           ...style,
           ...(categoryOKLab && { '--accent': categoryOKLab })
         }}
-        className={`relative flex items-center gap-3 p-4 transition-colors group ${
+        className={`relative flex items-center gap-3 px-4 py-3 transition-colors group ${
           isDragging ? 'opacity-50 shadow-lg z-10' : ''
         } ${
           categoryOKLab
             ? 'cat-row'
-            : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
+            : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750'
         }`}
       >
-        {/* Drag handle - using activator pattern for touch-friendly dragging */}
+        {/* Drag handle */}
         <button
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing opacity-40 group-hover:opacity-100"
           aria-label="Drag to reorder"
           title="Drag to reorder"
         >
@@ -154,19 +154,53 @@ function TaskRow({ task, onDelete, onEdit }) {
           </svg>
         </button>
 
-        {/* Checkbox */}
+        {/* Task title - clickable to open menu */}
+        <div
+          className="flex-1 flex items-center gap-2 min-w-0 cursor-pointer"
+          onClick={() => setShowMenu(true)}
+        >
+          {/* Status indicators */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {task.fromRecurring && (
+              <span className="text-base" title="From recurring task">
+                💫
+              </span>
+            )}
+            {task.urgent && (
+              <span className="text-base" title="Urgent">
+                🔥
+              </span>
+            )}
+          </div>
+
+          <span
+            className={`flex-1 text-base truncate ${
+              task.done
+                ? 'line-through text-gray-400 dark:text-gray-500'
+                : 'text-gray-900 dark:text-gray-100'
+            } transition-all`}
+          >
+            {task.title}
+          </span>
+        </div>
+
+        {/* Checkbox - larger, matching design reference */}
         <button
           onClick={() => toggleDone(task.id)}
-          className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
+          className={`flex-shrink-0 w-7 h-7 rounded-md border-2 transition-all flex items-center justify-center ${
+            task.done
+              ? 'bg-teal-500 border-teal-500 dark:bg-teal-400 dark:border-teal-400'
+              : 'border-gray-300 dark:border-gray-600 hover:border-teal-400 dark:hover:border-teal-500 bg-white dark:bg-gray-800'
+          }`}
           aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
         >
           {task.done && (
             <svg
-              className="w-3 h-3 text-gray-600 dark:text-gray-300"
+              className="w-4 h-4 text-white dark:text-gray-900"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2"
+              strokeWidth="3"
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
@@ -175,42 +209,8 @@ function TaskRow({ task, onDelete, onEdit }) {
           )}
         </button>
 
-        {/* Task title with indicators */}
-        <div
-          className="flex-1 flex items-center gap-2 pr-4 cursor-pointer"
-          onClick={() => setShowMenu(true)}
-        >
-          {/* Status indicators */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Recurring star emoji */}
-            {task.fromRecurring && (
-              <span className="text-lg" title="From recurring task">
-                💫
-              </span>
-            )}
-
-            {/* Urgent fire emoji */}
-            {task.urgent && (
-              <span className="text-lg" title="Urgent">
-                🔥
-              </span>
-            )}
-          </div>
-
-          <span
-            className={`flex-1 text-base ${
-              task.done
-                ? 'line-through text-gray-500 dark:text-gray-400'
-                : 'text-gray-900 dark:text-gray-100'
-            } transition-all`}
-          >
-            {task.title}
-          </span>
-        </div>
-
-        {/* Quick action buttons - visible on hover (desktop) */}
+        {/* Desktop quick actions - visible on hover */}
         <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {/* Urgent button */}
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -218,28 +218,25 @@ function TaskRow({ task, onDelete, onEdit }) {
             }}
             className={`p-1.5 rounded transition-colors ${
               task.urgent
-                ? 'bg-orange-200 dark:bg-orange-900/50'
-                : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
+                ? 'bg-orange-100 dark:bg-orange-900/30'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
             title={task.urgent ? "Remove urgent" : "Mark as urgent"}
           >
             {task.urgent ? '🔥' : (
-              <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             )}
           </button>
-        </div>
 
-        {/* Desktop menu button - hidden on mobile */}
-        <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            onClick={() => setShowMenu(true)}
+            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
             aria-label="More options"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -253,7 +250,7 @@ function TaskRow({ task, onDelete, onEdit }) {
         </div>
       </div>
 
-      {/* Mobile modal - always render when showMenu is true */}
+      {/* Task Actions Modal */}
       {showMenu && (
         <TaskActionsModal
           task={task}
