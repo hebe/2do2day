@@ -22,8 +22,10 @@ function BacklogView() {
   const { backlog, recurring, done, addBacklogTask, reorderBacklogTasks, updateSettings, settings } = useStore()
   const [activeTab, setActiveTab] = useState('backlog')
   const [showAll, setShowAll] = useState(false)
+  const [showAllDone, setShowAllDone] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [sortBy, setSortBy] = useState(settings.backlogSortBy || 'manual')
+  const [doneSortBy, setDoneSortBy] = useState(settings.doneSortBy || 'recent')
 
   // dnd-kit sensors
   const sensors = useSensors(
@@ -54,6 +56,11 @@ function BacklogView() {
   const handleSortChange = (newSort) => {
     setSortBy(newSort)
     updateSettings({ backlogSortBy: newSort })
+  }
+
+  const handleDoneSortChange = (newSort) => {
+    setDoneSortBy(newSort)
+    updateSettings({ doneSortBy: newSort })
   }
 
   const handleDragEnd = (event) => {
@@ -230,13 +237,41 @@ function BacklogView() {
         )
 
       case 'done':
-        // Sort by completion date (most recent first), using lastCompletedAt for recurring tasks
-        const sortedDone = [...done].sort((a, b) => {
-          const dateA = new Date(a.lastCompletedAt || a.completedAt)
-          const dateB = new Date(b.lastCompletedAt || b.completedAt)
-          return dateB - dateA // Most recent first
-        })
-        const recentDone = sortedDone.slice(0, 20)
+        // Sort done tasks based on preference
+        const getSortedDone = () => {
+          const sorted = [...done]
+
+          switch (doneSortBy) {
+            case 'recent':
+              return sorted.sort((a, b) => {
+                const dateA = new Date(a.lastCompletedAt || a.completedAt)
+                const dateB = new Date(b.lastCompletedAt || b.completedAt)
+                return dateB - dateA // Most recent first
+              })
+            case 'oldest':
+              return sorted.sort((a, b) => {
+                const dateA = new Date(a.lastCompletedAt || a.completedAt)
+                const dateB = new Date(b.lastCompletedAt || b.completedAt)
+                return dateA - dateB // Oldest first
+              })
+            case 'category':
+              return sorted.sort((a, b) => {
+                if (!a.category && !b.category) return 0
+                if (!a.category) return 1
+                if (!b.category) return -1
+                const catA = settings.categories?.find(c => c.id === a.category)?.name || a.category
+                const catB = settings.categories?.find(c => c.id === b.category)?.name || b.category
+                return catA.localeCompare(catB)
+              })
+            case 'completionCount':
+              return sorted.sort((a, b) => (b.completionCount || 1) - (a.completionCount || 1))
+            default:
+              return sorted
+          }
+        }
+
+        const sortedDone = getSortedDone()
+        const visibleDone = showAllDone || done.length <= 10 ? sortedDone : sortedDone.slice(0, 10)
 
         return (
           <div>
@@ -249,16 +284,39 @@ function BacklogView() {
               </div>
             ) : (
               <>
-                <div className="p-4 bg-calm-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700/50 text-center">
+                <div className="p-4 bg-calm-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
                   <p className="text-sm text-gray-900 dark:text-gray-100">
                     🎉 <strong>{done.length}</strong> {done.length === 1 ? 'task' : 'tasks'} completed!
                   </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Sort:</span>
+                    <select
+                      value={doneSortBy}
+                      onChange={(e) => handleDoneSortChange(e.target.value)}
+                      className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="recent">Recent first</option>
+                      <option value="oldest">Oldest first</option>
+                      <option value="category">Category</option>
+                      <option value="completionCount">Most completed</option>
+                    </select>
+                  </div>
                 </div>
                 <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
-                  {recentDone.map((task) => (
+                  {visibleDone.map((task) => (
                     <BacklogItem key={task.id} task={task} type="done" />
                   ))}
                 </div>
+                {done.length > 10 && !showAllDone && (
+                  <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
+                    <button
+                      onClick={() => setShowAllDone(true)}
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
+                    >
+                      Show all ({done.length} tasks)
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -303,6 +361,7 @@ function BacklogView() {
             onClick={() => {
               setActiveTab('backlog')
               setShowAll(false)
+              setShowAllDone(false)
             }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'backlog'
@@ -313,7 +372,11 @@ function BacklogView() {
             Backlog {backlog.length > 0 && `(${backlog.length})`}
           </button>
           <button
-            onClick={() => setActiveTab('recurring')}
+            onClick={() => {
+              setActiveTab('recurring')
+              setShowAll(false)
+              setShowAllDone(false)
+            }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'recurring'
                 ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
@@ -323,7 +386,11 @@ function BacklogView() {
             Recurring {recurring.length > 0 && `(${recurring.length})`}
           </button>
           <button
-            onClick={() => setActiveTab('done')}
+            onClick={() => {
+              setActiveTab('done')
+              setShowAll(false)
+              setShowAllDone(false)
+            }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'done'
                 ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
