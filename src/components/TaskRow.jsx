@@ -195,6 +195,33 @@ function TaskRow({ task, onDelete, onEdit }) {
                 🔥
               </span>
             )}
+            {/* Quadrant indicator */}
+            {task.priorityScore !== null && (
+              <span
+                className="text-xs font-medium px-1.5 py-0.5 rounded-full leading-none"
+                style={{
+                  background: task.urgent && task.important ? '#fde68a' :
+                              !task.urgent && task.important ? '#bfdbfe' :
+                              task.urgent && !task.important ? '#fed7aa' :
+                              '#e5e7eb',
+                  color: task.urgent && task.important ? '#92400e' :
+                        !task.urgent && task.important ? '#1e40af' :
+                        task.urgent && !task.important ? '#9a3412' :
+                        '#6b7280',
+                }}
+                title={
+                  task.urgent && task.important ? 'Q1: Do First' :
+                  !task.urgent && task.important ? 'Q2: Schedule' :
+                  task.urgent && !task.important ? 'Q3: Delegate' :
+                  'Q4: Eliminate'
+                }
+              >
+                {task.urgent && task.important ? 'Q1' :
+                !task.urgent && task.important ? 'Q2' :
+                task.urgent && !task.important ? 'Q3' :
+                'Q4'}
+              </span>
+            )}
           </div>
 
           <span

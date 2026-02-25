@@ -183,8 +183,8 @@ function TaskActionsModal({
                 {/* Important axis label - left side */}
               </div>
               <div className="grid grid-cols-2 px-1 mt-1">
-                <span className="text-xs text-gray-400 dark:text-gray-500 text-center">important</span>
                 <span className="text-xs text-gray-400 dark:text-gray-500 text-center">not important</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 text-center">important</span>
               </div>
             </div>
 
