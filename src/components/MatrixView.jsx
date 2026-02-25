@@ -20,7 +20,7 @@ const QUADRANTS = [
 ]
 
 const QUADRANT_STYLES = {
-  Q1: { bg: 'quadrant-q1', labelColor: 'text-amber-600 dark:text-amber-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
+  Q1: { bg: 'quadrant-q1', labelColor: 'text-amber-600 dark:text-red-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
   Q2: { bg: 'quadrant-q2', labelColor: 'text-blue-600 dark:text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
   Q3: { bg: 'quadrant-q3', labelColor: 'text-yellow-600 dark:text-yellow-200', chipBg: 'bg-yellow-600 hover:bg-yellow-500', chipText: 'text-yellow-50' },
   Q4: { bg: 'quadrant-q4', labelColor: 'text-gray-500 dark:text-gray-400',     chipBg: 'bg-gray-500 hover:bg-gray-400',     chipText: 'text-gray-100'  },
@@ -123,7 +123,7 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
     >
       <div className="absolute top-3 left-4 pointer-events-none z-10">
         <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.label}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-600">{quadrant.sublabel}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{quadrant.sublabel}</p>
       </div>
 
       {tasks.map((task, i) => {
