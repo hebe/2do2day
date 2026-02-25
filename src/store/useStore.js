@@ -43,6 +43,7 @@ const useStore = create(
           urgent,
           important: false,
           priorityScore: null,
+          matrixPos: null,
           createdAt: new Date().toISOString()
         }
         set((state) => ({
@@ -82,16 +83,16 @@ const useStore = create(
         }))
       },
 
-      setTaskQuadrant: (id, important, urgent, priorityScore) => {
+      setTaskQuadrant: (id, important, urgent, priorityScore, matrixPos = null) => {
         set((state) => ({
           today: state.today.map((t) =>
-            t.id === id ? { ...t, important, urgent, priorityScore } : t
+            t.id === id ? { ...t, important, urgent, priorityScore, matrixPos } : t
           ),
           backlog: state.backlog.map((t) =>
-            t.id === id ? { ...t, important, urgent, priorityScore } : t
+            t.id === id ? { ...t, important, urgent, priorityScore, matrixPos } : t
           ),
           recurring: state.recurring.map((t) =>
-            t.id === id ? { ...t, important, urgent, priorityScore } : t
+            t.id === id ? { ...t, important, urgent, priorityScore, matrixPos } : t
           ),
         }))
       },
@@ -139,14 +140,14 @@ const useStore = create(
         set((state) => {
           const task = state.today.find((t) => t.id === id)
           if (!task) return state
-          
+
           const existingBacklogTask = state.backlog.find((t) => t.id === task.id)
-          
+
           if (existingBacklogTask) {
             return {
               today: state.today.filter((t) => t.id !== id),
-              backlog: state.backlog.map((t) => 
-                t.id === task.id 
+              backlog: state.backlog.map((t) =>
+                t.id === task.id
                   ? {
                       ...t,
                       addedToBacklogCount: (t.addedToBacklogCount || 0) + 1,
@@ -158,13 +159,14 @@ const useStore = create(
           } else {
             return {
               today: state.today.filter((t) => t.id !== id),
-              backlog: [...state.backlog, { 
-                id: task.id, 
+              backlog: [...state.backlog, {
+                id: task.id,
                 title: task.title,
                 category: task.category,
                 urgent: task.urgent || false,
                 important: task.important || false,
                 priorityScore: task.priorityScore ?? null,
+                matrixPos: task.matrixPos ?? null,
                 isRecurring: false,
                 createdAt: task.createdAt || new Date().toISOString(),
                 addedToBacklogCount: 1,
@@ -183,6 +185,7 @@ const useStore = create(
           urgent,
           important: false,
           priorityScore: null,
+          matrixPos: null,
           isRecurring: false,
           createdAt: new Date().toISOString(),
           addedToBacklogCount: 1,
@@ -208,6 +211,7 @@ const useStore = create(
             urgent: backlogTask.urgent || false,
             important: backlogTask.important || false,
             priorityScore: backlogTask.priorityScore ?? null,
+            matrixPos: backlogTask.matrixPos ?? null,
             snoozeUntil: null,
             createdAt: new Date().toISOString(),
             originalBacklogId: backlogTask.id
@@ -289,6 +293,7 @@ const useStore = create(
               urgent: task.urgent || false,
               important: task.important || false,
               priorityScore: task.priorityScore ?? null,
+              matrixPos: task.matrixPos ?? null,
               note: '',
               recurrencePattern,
               recurrenceDays,
@@ -313,6 +318,7 @@ const useStore = create(
               urgent: task.urgent || false,
               important: task.important || false,
               priorityScore: task.priorityScore ?? null,
+              matrixPos: task.matrixPos ?? null,
               note: task.note || '',
               recurrencePattern,
               recurrenceDays,
@@ -346,6 +352,7 @@ const useStore = create(
             urgent: recurringTask.urgent || false,
             important: recurringTask.important || false,
             priorityScore: recurringTask.priorityScore ?? null,
+            matrixPos: recurringTask.matrixPos ?? null,
             snoozeUntil: null,
             fromRecurring: true,
             recurringId: recurringTask.id,
@@ -498,24 +505,24 @@ const useStore = create(
         set((state) => {
           const now = new Date()
           const [hours, minutes] = state.settings.dayStart.split(':').map(Number)
-          
+
           const todayReset = new Date(now)
           todayReset.setHours(hours, minutes, 0, 0)
-          
+
           if (now < todayReset) {
             todayReset.setDate(todayReset.getDate() - 1)
           }
-          
-          const lastReset = state.settings.lastDayReset 
-            ? new Date(state.settings.lastDayReset) 
+
+          const lastReset = state.settings.lastDayReset
+            ? new Date(state.settings.lastDayReset)
             : null
-          
+
           const shouldReset = !lastReset || lastReset < todayReset
-          
+
           if (!shouldReset) {
             return state
           }
-          
+
           const incompleteTasks = state.today
             .filter(task => !task.done)
             .map(task => ({
@@ -525,12 +532,13 @@ const useStore = create(
               urgent: task.urgent || false,
               important: task.important || false,
               priorityScore: task.priorityScore ?? null,
+              matrixPos: task.matrixPos ?? null,
               isRecurring: false,
               createdAt: task.createdAt,
               addedToBacklogCount: 1,
               lastAddedToBacklog: new Date().toISOString()
             }))
-          
+
           const completedTasks = state.today
             .filter(task => task.done)
             .map(task => ({
@@ -539,7 +547,7 @@ const useStore = create(
               category: task.category,
               completedAt: new Date().toISOString()
             }))
-          
+
           return {
             today: [],
             backlog: [...state.backlog, ...incompleteTasks],

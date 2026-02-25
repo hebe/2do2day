@@ -1,168 +1,221 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import useStore from '../store/useStore'
 import TaskActionsModal from './TaskActionsModal'
 import RecurringIntervalModal from './RecurringIntervalModal'
 
-// Truncate to ~6 chars
 function chipLabel(title) {
   if (title.length <= 6) return title
   return title.slice(0, 6) + '…'
 }
 
-// Calculate priorityScore from normalized x, y position within the full matrix
-// x: 0 = left (not urgent), 1 = right (urgent)
-// y: 0 = top (important), 1 = bottom (not important)
-function calcPriorityScore(x, y, urgent, important) {
+function calcPriorityScore(urgent, important, localX, localY) {
   const baseScore = urgent && important ? 75 :
                     !urgent && important ? 50 :
                     urgent && !important ? 25 : 0
-  // Position within quadrant adds 0-24
-  const localX = urgent ? x * 2 - 1 : x * 2        // 0-1 within quadrant
-  const localY = important ? y * 2 : y * 2 - 1      // 0-1 within quadrant (inverted: top = important)
   const withinScore = Math.floor((localX + (1 - localY)) * 12)
   return Math.min(baseScore + withinScore, 99)
 }
 
+const QUADRANTS = [
+  { id: 'Q2', urgent: false, important: true,  label: 'Schedule',  sublabel: 'Important, not urgent',   gridCol: 1, gridRow: 1 },
+  { id: 'Q1', urgent: true,  important: true,  label: 'Do First',  sublabel: 'Urgent + Important',       gridCol: 2, gridRow: 1 },
+  { id: 'Q4', urgent: false, important: false, label: 'Eliminate', sublabel: 'Not urgent or important',  gridCol: 1, gridRow: 2 },
+  { id: 'Q3', urgent: true,  important: false, label: 'Delegate',  sublabel: 'Urgent, not important',    gridCol: 2, gridRow: 2 },
+]
+
 const QUADRANT_STYLES = {
-  Q1: { bg: 'bg-amber-50 dark:bg-amber-900/20',   border: 'border-amber-200 dark:border-amber-800',   label: 'Do First',  sublabel: 'Urgent + Important' },
-  Q2: { bg: 'bg-blue-50 dark:bg-blue-900/20',     border: 'border-blue-200 dark:border-blue-800',     label: 'Schedule',  sublabel: 'Important, not urgent' },
-  Q3: { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', label: 'Delegate',  sublabel: 'Urgent, not important' },
-  Q4: { bg: 'bg-gray-50 dark:bg-gray-800',        border: 'border-gray-200 dark:border-gray-700',     label: 'Eliminate', sublabel: 'Not urgent or important' },
+  Q1: { bg: 'bg-amber-950/40 dark:bg-amber-950/40',   border: 'border-amber-700/50',   labelColor: 'text-amber-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50' },
+  Q2: { bg: 'bg-blue-950/40 dark:bg-blue-950/40',     border: 'border-blue-700/50',     labelColor: 'text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50' },
+  Q3: { bg: 'bg-orange-950/40 dark:bg-orange-950/40', border: 'border-orange-700/50',   labelColor: 'text-orange-200',   chipBg: 'bg-orange-600 hover:bg-orange-500', chipText: 'text-orange-50' },
+  Q4: { bg: 'bg-gray-900/60 dark:bg-gray-900/60',     border: 'border-gray-700/50',     labelColor: 'text-gray-400',     chipBg: 'bg-gray-600 hover:bg-gray-500',     chipText: 'text-gray-100' },
 }
 
-const CHIP_COLORS = {
-  Q1: 'bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700',
-  Q2: 'bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-700',
-  Q3: 'bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100 border-orange-300 dark:border-orange-700',
-  Q4: 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600',
-}
-
-function getQuadrant(urgent, important) {
+function getQuadrantId(urgent, important) {
   if (urgent && important) return 'Q1'
   if (!urgent && important) return 'Q2'
   if (urgent && !important) return 'Q3'
   return 'Q4'
 }
 
-function TaskChip({ task, onOpenModal, onDragStart }) {
-  const quadrant = task.priorityScore !== null ? getQuadrant(task.urgent, task.important) : null
-  const chipColor = quadrant ? CHIP_COLORS[quadrant] : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600'
+function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragStart }) {
+  const style = QUADRANT_STYLES[quadrantId]
+
+  // Free position for placed chips
+  if (isPlaced) {
+    const pos = task.matrixPos
+    return (
+      <div
+        draggable
+        onDragStart={(e) => onDragStart(e, task.id)}
+        onClick={(e) => { e.stopPropagation(); onOpenModal(task) }}
+        title={task.title}
+        style={{
+          position: 'absolute',
+          left: `${pos.x * 100}%`,
+          top: `${pos.y * 100}%`,
+          transform: 'translate(-50%, -50%)',
+        }}
+        className={`px-2 py-1 rounded-md text-xs font-semibold cursor-grab active:cursor-grabbing select-none transition-all hover:scale-110 hover:z-10 hover:shadow-lg z-0 whitespace-nowrap ${style.chipBg} ${style.chipText}`}
+      >
+        {chipLabel(task.title)}
+      </div>
+    )
+  }
+
+  // Grid position for unplaced chips — bottom-right staging area
+  // 4 columns, rows grow upward from bottom-right
+  const col = gridIndex % 4
+  const row = Math.floor(gridIndex / 4)
+  const CHIP_W = 56  // px, approximate chip width
+  const CHIP_H = 26  // px, approximate chip height
+  const GAP = 4
+  const RIGHT_PAD = 8
+  const BOTTOM_PAD = 8
 
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, task.id)}
-      onClick={() => onOpenModal(task)}
+      onClick={(e) => { e.stopPropagation(); onOpenModal(task) }}
       title={task.title}
-      className={`inline-flex items-center px-2 py-1 rounded-md border text-xs font-medium cursor-grab active:cursor-grabbing select-none transition-all hover:scale-105 hover:shadow-md ${chipColor}`}
+      style={{
+        position: 'absolute',
+        right: RIGHT_PAD + col * (CHIP_W + GAP),
+        bottom: BOTTOM_PAD + row * (CHIP_H + GAP),
+      }}
+      className={`px-2 py-1 rounded-md text-xs font-semibold cursor-grab active:cursor-grabbing select-none transition-all hover:scale-110 hover:shadow-lg whitespace-nowrap opacity-60 border border-dashed ${style.chipBg} ${style.chipText}`}
     >
       {chipLabel(task.title)}
     </div>
   )
 }
 
-function MatrixQuadrant({ quadrantId, tasks, onDrop, onDragOver, onOpenModal, onDragStart }) {
-  const style = QUADRANT_STYLES[quadrantId]
+function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart }) {
+  const style = QUADRANT_STYLES[quadrant.id]
+  const quadrantRef = useRef(null)
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    if (!quadrantRef.current) return
+    const rect = quadrantRef.current.getBoundingClientRect()
+    const x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width))
+    const y = Math.max(0.05, Math.min(0.95, (e.clientY - rect.top) / rect.height))
+    onDrop(e, quadrant.id, quadrant.urgent, quadrant.important, x, y)
+  }
 
   return (
     <div
-      onDrop={(e) => onDrop(e, quadrantId)}
-      onDragOver={onDragOver}
-      className={`relative rounded-xl border-2 ${style.bg} ${style.border} p-3 min-h-[180px] flex flex-col gap-2`}
+      ref={quadrantRef}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      className={`relative rounded-xl border ${style.bg} ${style.border} overflow-hidden`}
     >
-      {/* Quadrant label */}
-      <div className="mb-1">
-        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{style.label}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">{style.sublabel}</p>
+      {/* Quadrant label - subtle, top-left */}
+      <div className="absolute top-3 left-4 pointer-events-none z-10">
+        <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.label}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-600">{quadrant.sublabel}</p>
       </div>
 
-      {/* Task chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {tasks.map(task => (
+      {/* Task chips - absolutely positioned */}
+      {tasks.map((task, i) => {
+        const isPlaced = task.matrixPos != null && typeof task.matrixPos === 'object'
+        const unplacedIndex = tasks.filter((t, j) => j < i && t.matrixPos === null).length
+        return (
           <TaskChip
             key={task.id}
             task={task}
+            quadrantId={quadrant.id}
+            isPlaced={isPlaced}
+            gridIndex={unplacedIndex}
             onOpenModal={onOpenModal}
             onDragStart={onDragStart}
           />
-        ))}
-      </div>
+        )
+      })}
 
       {/* Empty hint */}
       {tasks.length === 0 && (
-        <p className="text-xs text-gray-300 dark:text-gray-600 mt-auto">Drop tasks here</p>
+        <div className="absolute inset-0 flex items-end justify-end p-4 pointer-events-none">
+          <p className="text-xs text-gray-700 dark:text-gray-700">Drop tasks here</p>
+        </div>
       )}
     </div>
   )
 }
 
 function MatrixView() {
-  const { today, backlog, setTaskQuadrant, moveToBacklog, moveTodayToRecurring, deleteTask, deleteBacklogTask, editTask, editBacklogTask, settings } = useStore()
-  const [source, setSource] = useState('today') // 'today' or 'backlog'
+  const {
+    today, backlog,
+    setTaskQuadrant,
+    moveToBacklog, moveTodayToRecurring,
+    deleteTask, deleteBacklogTask,
+    editTask, editBacklogTask,
+  } = useStore()
+
+  const [source, setSource] = useState('today')
   const [selectedTask, setSelectedTask] = useState(null)
-  const [selectedTaskType, setSelectedTaskType] = useState('today')
   const [showRecurringModal, setShowRecurringModal] = useState(false)
   const dragTaskId = useRef(null)
 
-  const tasks = source === 'today' ? today : backlog
+  const rawTasks = source === 'today' ? today : backlog
 
-  // Split into quadrants + unprioritized
-  const q1 = tasks.filter(t => t.priorityScore !== null && t.urgent && t.important)
-  const q2 = tasks.filter(t => t.priorityScore !== null && !t.urgent && t.important)
-  const q3 = tasks.filter(t => t.priorityScore !== null && t.urgent && !t.important)
-  const q4 = tasks.filter(t => t.priorityScore !== null && !t.urgent && !t.important)
-  const unprioritized = tasks.filter(t => t.priorityScore === null)
+  // Keep selectedTask in sync with store (so modal reflects quadrant changes)
+  useEffect(() => {
+    if (!selectedTask) return
+    const updated = rawTasks.find(t => t.id === selectedTask.id)
+    if (updated) setSelectedTask(updated)
+  }, [rawTasks])
+
+  const prioritized = rawTasks.filter(t => t.priorityScore !== null)
+  const unprioritized = rawTasks.filter(t => t.priorityScore === null)
+
+  const tasksInQuadrant = (qId) => prioritized.filter(t => getQuadrantId(t.urgent, t.important) === qId)
 
   const handleDragStart = useCallback((e, taskId) => {
     dragTaskId.current = taskId
     e.dataTransfer.effectAllowed = 'move'
   }, [])
 
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }, [])
-
-  const handleDrop = useCallback((e, quadrantId) => {
-    e.preventDefault()
+  const handleDrop = useCallback((e, quadrantId, urgent, important, x, y) => {
     const taskId = dragTaskId.current
     if (!taskId) return
-
-    const urgent = quadrantId === 'Q1' || quadrantId === 'Q3'
-    const important = quadrantId === 'Q1' || quadrantId === 'Q2'
-    const score = calcPriorityScore(0.5, 0.5, urgent, important) // center of quadrant
-
-    setTaskQuadrant(taskId, important, urgent, score)
+    const score = calcPriorityScore(urgent, important, x, y)
+    setTaskQuadrant(taskId, important, urgent, score, { x, y })
     dragTaskId.current = null
   }, [setTaskQuadrant])
 
-  const handleOpenModal = useCallback((task) => {
-    setSelectedTask(task)
-    setSelectedTaskType(source)
-  }, [source])
-
-  const handleCloseModal = () => {
-    setSelectedTask(null)
+  // Drop on unprioritized tray — clear priority
+  const handleDropUnprioritized = (e) => {
+    e.preventDefault()
+    const taskId = dragTaskId.current
+    if (taskId) {
+      setTaskQuadrant(taskId, false, false, null, null)
+      dragTaskId.current = null
+    }
   }
 
-  // Modal action handlers - mirroring what BacklogItem/TaskRow do
+  const handleOpenModal = useCallback((task) => {
+    setSelectedTask(task)
+  }, [])
+
+  const handleCloseModal = () => setSelectedTask(null)
+
   const handleDelete = () => {
-    if (selectedTaskType === 'today') {
-      deleteTask(selectedTask.id)
-    } else {
-      deleteBacklogTask(selectedTask.id)
-    }
+    source === 'today' ? deleteTask(selectedTask.id) : deleteBacklogTask(selectedTask.id)
     setSelectedTask(null)
   }
 
   const handleEdit = () => {
     const newTitle = prompt('Edit task:', selectedTask.title)
-    if (newTitle && newTitle.trim()) {
-      if (selectedTaskType === 'today') {
-        editTask(selectedTask.id, newTitle.trim())
-      } else {
-        editBacklogTask(selectedTask.id, newTitle.trim())
-      }
+    if (newTitle?.trim()) {
+      source === 'today'
+        ? editTask(selectedTask.id, newTitle.trim())
+        : editBacklogTask(selectedTask.id, newTitle.trim())
     }
     setSelectedTask(null)
   }
@@ -174,124 +227,110 @@ function MatrixView() {
 
   const handleMakeRecurring = () => {
     setShowRecurringModal(true)
-    setSelectedTask(null)
   }
 
   const handleRecurringConfirm = (interval, recurrenceDays = []) => {
-    if (selectedTask) {
-      moveTodayToRecurring(selectedTask.id, interval, recurrenceDays)
-    }
+    if (selectedTask) moveTodayToRecurring(selectedTask.id, interval, recurrenceDays)
     setShowRecurringModal(false)
+    setSelectedTask(null)
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 57px)' }}>
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-6 py-3 flex-shrink-0">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Priority Matrix</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Drag tasks into quadrants to prioritize</p>
+          <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">Priority Matrix</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {rawTasks.length - unprioritized.length} of {rawTasks.length} tasks prioritized
+          </p>
         </div>
 
         {/* Today / Backlog toggle */}
         <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm">
-          <button
-            onClick={() => setSource('today')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              source === 'today'
-                ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => setSource('backlog')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              source === 'backlog'
-                ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            Backlog
-          </button>
+          {['today', 'backlog'].map(s => (
+            <button
+              key={s}
+              onClick={() => setSource(s)}
+              className={`px-4 py-1.5 font-medium capitalize transition-colors ${
+                source === s
+                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              {s}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Axis labels */}
-      <div className="relative mb-1">
-        <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 px-1">
-          <span>← Not urgent</span>
-          <span>Urgent →</span>
+      {/* Matrix + axis labels */}
+      <div className="flex flex-1 gap-2 px-6 pb-4 min-h-0">
+        {/* Y axis label */}
+        <div className="flex flex-col justify-between text-xs text-gray-500 dark:text-gray-600 w-6 flex-shrink-0 py-2">
+          <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Important ↑</span>
+          <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>↓ Not important</span>
         </div>
-      </div>
 
-      {/* Matrix grid */}
-      <div className="flex gap-1 mb-1">
-        <div className="flex flex-col justify-between text-xs text-gray-400 dark:text-gray-500 py-2 w-16 flex-shrink-0 text-right pr-2">
-          <span>Important ↑</span>
-          <span>↓ Not important</span>
-        </div>
-        <div className="flex-1 grid grid-cols-2 gap-3">
-          {/* Top row: Important */}
-          <MatrixQuadrant quadrantId="Q2" tasks={q2} onDrop={handleDrop} onDragOver={handleDragOver} onOpenModal={handleOpenModal} onDragStart={handleDragStart} />
-          <MatrixQuadrant quadrantId="Q1" tasks={q1} onDrop={handleDrop} onDragOver={handleDragOver} onOpenModal={handleOpenModal} onDragStart={handleDragStart} />
-          {/* Bottom row: Not important */}
-          <MatrixQuadrant quadrantId="Q4" tasks={q4} onDrop={handleDrop} onDragOver={handleDragOver} onOpenModal={handleOpenModal} onDragStart={handleDragStart} />
-          <MatrixQuadrant quadrantId="Q3" tasks={q3} onDrop={handleDrop} onDragOver={handleDragOver} onOpenModal={handleOpenModal} onDragStart={handleDragStart} />
-        </div>
-      </div>
+        <div className="flex flex-col flex-1 gap-2 min-h-0">
+          {/* X axis label */}
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-600 px-1 flex-shrink-0">
+            <span>← Not urgent</span>
+            <span>Urgent →</span>
+          </div>
 
-      {/* Unprioritized tasks */}
-      {unprioritized.length > 0 && (
-        <div className="mt-6">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-            Unprioritized — drag into a quadrant
-          </p>
-          <div
-            onDrop={(e) => {
-              // Allow dropping back to unprioritized (clears priority)
-              e.preventDefault()
-              const taskId = dragTaskId.current
-              if (taskId) {
-                setTaskQuadrant(taskId, false, false, null)
-                dragTaskId.current = null
-              }
-            }}
-            onDragOver={handleDragOver}
-            className="flex flex-wrap gap-2 p-3 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 min-h-[48px]"
-          >
-            {unprioritized.map(task => (
-              <TaskChip
-                key={task.id}
-                task={task}
+          {/* 2x2 grid */}
+          <div className="grid grid-cols-2 grid-rows-2 gap-3 flex-1 min-h-0">
+            {QUADRANTS.map(q => (
+              <MatrixQuadrant
+                key={q.id}
+                quadrant={q}
+                tasks={tasksInQuadrant(q.id)}
+                onDrop={handleDrop}
                 onOpenModal={handleOpenModal}
                 onDragStart={handleDragStart}
               />
             ))}
           </div>
-        </div>
-      )}
 
-      {/* Task count summary */}
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 text-right">
-        {tasks.length - unprioritized.length} of {tasks.length} tasks prioritized
-      </p>
+          {/* Unprioritized tray */}
+          {unprioritized.length > 0 && (
+            <div
+              onDrop={handleDropUnprioritized}
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
+              className="flex-shrink-0 flex flex-wrap gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-gray-700 min-h-[44px] items-center"
+            >
+              <span className="text-xs text-gray-600 dark:text-gray-600 mr-1">Unprioritized:</span>
+              {unprioritized.map(task => (
+                <div
+                  key={task.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, task.id)}
+                  onClick={() => handleOpenModal(task)}
+                  title={task.title}
+                  className="px-2 py-0.5 rounded-md text-xs font-medium cursor-grab bg-gray-700 hover:bg-gray-600 text-gray-300 select-none transition-all hover:scale-105"
+                >
+                  {chipLabel(task.title)}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Task actions modal */}
       {selectedTask && (
         <TaskActionsModal
           task={selectedTask}
-          type={selectedTaskType}
+          type={source}
           onEdit={handleEdit}
-          onMakeRecurring={selectedTaskType === 'today' ? handleMakeRecurring : undefined}
-          onMoveToBacklog={selectedTaskType === 'today' ? handleMoveToBacklog : undefined}
+          onMakeRecurring={source === 'today' ? handleMakeRecurring : undefined}
+          onMoveToBacklog={source === 'today' ? handleMoveToBacklog : undefined}
           onDelete={handleDelete}
           onClose={handleCloseModal}
         />
       )}
 
-      {/* Recurring modal */}
       {showRecurringModal && selectedTask && (
         <RecurringIntervalModal
           task={selectedTask}
