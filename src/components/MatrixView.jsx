@@ -5,8 +5,8 @@ import RecurringIntervalModal from './RecurringIntervalModal'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
 function chipLabel(title) {
-  if (title.length <= 6) return title
-  return title.slice(0, 6) + '…'
+  if (title.length <= 12) return title
+  return title.slice(0, 12) + '…'
 }
 
 function calcPriorityScore(urgent, important, localX, localY) {
