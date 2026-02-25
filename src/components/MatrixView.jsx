@@ -15,7 +15,7 @@ function calcPriorityScore(urgent, important, localX, localY) {
 const QUADRANTS = [
   { id: 'Q2', urgent: false, important: true,  label: 'Schedule',  sublabel: 'Important, not urgent'  },
   { id: 'Q1', urgent: true,  important: true,  label: 'Do First',  sublabel: 'Urgent + Important'      },
-  { id: 'Q4', urgent: false, important: false, label: 'Surplus', sublabel: 'Not urgent or important' },
+  { id: 'Q4', urgent: false, important: false, label: 'Someday Funday', sublabel: 'Not urgent or important' },
   { id: 'Q3', urgent: true,  important: false, label: 'Delegate',  sublabel: 'Urgent, not important'   },
 ]
 
