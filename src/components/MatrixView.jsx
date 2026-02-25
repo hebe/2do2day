@@ -13,24 +13,24 @@ function calcPriorityScore(urgent, important, localX, localY) {
 }
 
 const QUADRANTS = [
-  { id: 'Q2', urgent: false, important: true,  label: 'Schedule',  sublabel: 'Important, not urgent'  },
-  { id: 'Q1', urgent: true,  important: true,  label: 'Do First',  sublabel: 'Urgent + Important'      },
-  { id: 'Q4', urgent: false, important: false, label: 'Someday Funday', sublabel: 'Not urgent or important' },
-  { id: 'Q3', urgent: true,  important: false, label: 'Delegate',  sublabel: 'Urgent, not important'   },
+  { id: 'P2', urgent: false, important: true,  label: 'Schedule',  sublabel: 'Important, not urgent', emoji: '📅' },
+  { id: 'P1', urgent: true,  important: true,  label: 'Do First',  sublabel: 'Urgent + Important', emoji: '🚨' },
+  { id: 'P4', urgent: false, important: false, label: 'Someday Funday', sublabel: 'Not urgent or important', emoji: '☀️' },
+  { id: 'P3', urgent: true,  important: false, label: 'Delegate',  sublabel: 'Urgent, not important', emoji: '👋' },
 ]
 
 const QUADRANT_STYLES = {
-  Q1: { bg: 'quadrant-q1', labelColor: 'text-amber-600 dark:text-red-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
-  Q2: { bg: 'quadrant-q2', labelColor: 'text-blue-600 dark:text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
-  Q3: { bg: 'quadrant-q3', labelColor: 'text-yellow-600 dark:text-yellow-200', chipBg: 'bg-yellow-600 hover:bg-yellow-500', chipText: 'text-yellow-50' },
-  Q4: { bg: 'quadrant-q4', labelColor: 'text-gray-500 dark:text-gray-400',     chipBg: 'bg-gray-500 hover:bg-gray-400',     chipText: 'text-gray-100'  },
+  P1: { bg: 'quadrant-p1', labelColor: 'text-amber-600 dark:text-red-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
+  P2: { bg: 'quadrant-p2', labelColor: 'text-blue-600 dark:text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
+  P3: { bg: 'quadrant-p3', labelColor: 'text-yellow-600 dark:text-yellow-200', chipBg: 'bg-yellow-600 hover:bg-yellow-500', chipText: 'text-yellow-50' },
+  P4: { bg: 'quadrant-p4', labelColor: 'text-gray-500 dark:text-gray-400',     chipBg: 'bg-gray-500 hover:bg-gray-400',     chipText: 'text-gray-100'  },
 }
 
 function getQuadrantId(urgent, important) {
-  if (urgent && important) return 'Q1'
-  if (!urgent && important) return 'Q2'
-  if (urgent && !important) return 'Q3'
-  return 'Q4'
+  if (urgent && important) return 'P1'
+  if (!urgent && important) return 'P2'
+  if (urgent && !important) return 'P3'
+  return 'P4'
 }
 
 function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragStart, settings, chipMaxLen }) {
@@ -122,7 +122,7 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
       className={`relative rounded-xl ${style.bg} quadrant-bg overflow-hidden`}
     >
       <div className="absolute top-3 left-4 pointer-events-none z-10">
-        <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.label}</p>
+        <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.emoji} {quadrant.label}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{quadrant.sublabel}</p>
       </div>
 

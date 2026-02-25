@@ -124,10 +124,10 @@
  
  
   /* Matrix quadrant base colors */ 
-.quadrant-q1 { --accent: oklch(0.60 0.18 30);  } /* red-amber */
-.quadrant-q2 { --accent: oklch(0.76 0.10 250); } /* blue, keep */
-.quadrant-q3 { --accent: oklch(0.76 0.15 75);  } /* warm yellow */
-.quadrant-q4 { --accent: oklch(0.55 0.01 260); } /* neutral */
+.quadrant-p1 { --accent: oklch(0.60 0.18 30);  } /* red-amber */
+.quadrant-p2 { --accent: oklch(0.76 0.10 250); } /* blue, keep */
+.quadrant-p3 { --accent: oklch(0.76 0.15 75);  } /* warm yellow */
+.quadrant-p4 { --accent: oklch(0.55 0.01 260); } /* neutral */
 
 .quadrant-bg {
   background: color-mix(in oklab, var(--row-surface) 85%, var(--accent) 15%);

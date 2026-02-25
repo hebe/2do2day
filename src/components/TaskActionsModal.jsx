@@ -2,23 +2,23 @@ import React, { useState } from 'react'
 import useStore from '../store/useStore'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
-// Q1: Urgent + Important (do first)
-// Q2: Not Urgent + Important (schedule)
-// Q3: Urgent + Not Important (delegate)
-// Q4: Not Urgent + Not Important (eliminate)
+// P1: Urgent + Important (do first)
+// P2: Not Urgent + Important (schedule)
+// P3: Urgent + Not Important (delegate)
+// P4: Not Urgent + Not Important (eliminate)
 const QUADRANTS = [
-  { id: 'Q2', label: 'Schedule',  desc: 'Important, not urgent', urgent: false, important: true,  baseScore: 50, emoji: '📅' },
-  { id: 'Q1', label: 'Do First',  desc: 'Urgent & important',    urgent: true,  important: true,  baseScore: 75, emoji: '🎯' },
-  { id: 'Q4', label: 'Someday Funday', desc: 'Not urgent or important', urgent: false, important: false, baseScore: 0,  emoji: '☀️' },
-  { id: 'Q3', label: 'Delegate',  desc: 'Urgent, not important', urgent: true,  important: false, baseScore: 25, emoji: '👋' },
+  { id: 'P2', label: 'Schedule',  desc: 'Important, not urgent', urgent: false, important: true,  baseScore: 50, emoji: '📅' },
+  { id: 'P1', label: 'Do First',  desc: 'Urgent & important',    urgent: true,  important: true,  baseScore: 75, emoji: '🚨' },
+  { id: 'P4', label: 'Someday Funday', desc: 'Not urgent or important', urgent: false, important: false, baseScore: 0,  emoji: '☀️' },
+  { id: 'P3', label: 'Delegate',  desc: 'Urgent, not important', urgent: true,  important: false, baseScore: 25, emoji: '👋' },
 ]
 
 function getActiveQuadrant(task) {
   if (task.priorityScore === null && !task.important) return null
-  if (task.urgent && task.important) return 'Q1'
-  if (!task.urgent && task.important) return 'Q2'
-  if (task.urgent && !task.important) return 'Q3'
-  if (!task.urgent && !task.important) return 'Q4'
+  if (task.urgent && task.important) return 'P1'
+  if (!task.urgent && task.important) return 'P2'
+  if (task.urgent && !task.important) return 'P3'
+  if (!task.urgent && !task.important) return 'P4'
   return null
 }
 
@@ -164,9 +164,9 @@ function TaskActionsModal({
                   </span>
                   {activeQuadrant && (
                     <span className="text-xs text-gray-400 dark:text-gray-500">
-                      {activeQuadrant === 'Q1' ? '🎯 Do First' :
-                      activeQuadrant === 'Q2' ? '📅 Schedule' :
-                      activeQuadrant === 'Q3' ? '👋 Delegate' :
+                      {activeQuadrant === 'P1' ? '🎯 Do First' :
+                      activeQuadrant === 'P2' ? '📅 Schedule' :
+                      activeQuadrant === 'P3' ? '👋 Delegate' :
                       '☀️ Someday Funday'}
                     </span>
                   )}

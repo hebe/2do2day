@@ -146,9 +146,9 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
   // Helper to get quadrant label and color
   const getQuadrantWatermark = () => {
     if (task.priorityScore === null) return null
-    const label = task.urgent && task.important ? 'Q1' :
-                  !task.urgent && task.important ? 'Q2' :
-                  task.urgent && !task.important ? 'Q3' : 'Q4'
+    const label = task.urgent && task.important ? 'P1' :
+                  !task.urgent && task.important ? 'P2' :
+                  task.urgent && !task.important ? 'P3' : 'P4'
     const color = task.urgent && task.important ? '#f59e0b' :
                   !task.urgent && task.important ? '#3b82f6' :
                   task.urgent && !task.important ? '#f97316' :
@@ -318,7 +318,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           {watermark && (
             <span
               className="absolute right-0 top-1/2 -translate-y-1/2 text-4xl font-black pointer-events-none select-none"
-              style={{ opacity: 0.07, color: watermark.color }}
+              style={{ opacity: 0.12, color: watermark.color }}
             >
               {watermark.label}
             </span>
