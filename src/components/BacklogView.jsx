@@ -97,6 +97,13 @@ function BacklogView() {
         return sorted.sort((a, b) =>
           (b.addedToBacklogCount || 0) - (a.addedToBacklogCount || 0)
         )
+       case 'priority':
+        return sorted.sort((a, b) => {
+          if (a.priorityScore === null && b.priorityScore === null) return 0
+          if (a.priorityScore === null) return 1
+          if (b.priorityScore === null) return -1
+          return b.priorityScore - a.priorityScore
+        })
       case 'oldest':
         return sorted.sort((a, b) =>
           new Date(a.createdAt) - new Date(b.createdAt)
@@ -155,6 +162,7 @@ function BacklogView() {
             <option value="manual">Manual (drag to reorder)</option>
             <option value="recent">Recently added</option>
             <option value="postponed">Most postponed</option>
+            <option value="priority">Eisenhower prio</option>
             <option value="oldest">Oldest first</option>
             <option value="category">Category</option>
           </select>

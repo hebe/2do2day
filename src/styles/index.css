@@ -121,6 +121,18 @@
       pointer-events: none;
     }
   }
+ 
+ 
+  /* Matrix quadrant base colors */ 
+.quadrant-p1 { --accent: oklch(0.60 0.18 30);  } /* red-amber */
+.quadrant-p2 { --accent: oklch(0.76 0.10 250); } /* blue, keep */
+.quadrant-p3 { --accent: oklch(0.76 0.15 75);  } /* warm yellow */
+.quadrant-p4 { --accent: oklch(0.55 0.01 260); } /* neutral */
+
+.quadrant-bg {
+  background: color-mix(in oklab, var(--row-surface) 85%, var(--accent) 15%);
+  border: 1px solid color-mix(in oklab, var(--row-surface) 60%, var(--accent) 40%);
+}
 
   /* Fallback for older browsers: still pleasant, just less fancy */
   @supports not (background: color-mix(in oklab, white, black)) {

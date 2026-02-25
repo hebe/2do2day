@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from './lib/supabase'
 import TodayView from './components/TodayView'
 import BacklogView from './components/BacklogView'
+import MatrixView from './components/MatrixView'
 import SettingsView from './components/SettingsView'
 import OfflineIndicator from './components/OfflineIndicator'
 import AuthView from './components/AuthView'
@@ -105,6 +106,16 @@ function App() {
               Backlog
             </button>
             <button
+              onClick={() => setCurrentView('matrix')}
+              className={`hidden md:block py-4 text-sm font-medium border-b-2 transition-colors ${
+                currentView === 'matrix'
+                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
+                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+              }`}
+            >
+              Matrix
+            </button>
+            <button
               onClick={() => setCurrentView('settings')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'settings'
@@ -131,6 +142,7 @@ function App() {
       {/* Views */}
       {currentView === 'today' && <TodayView />}
       {currentView === 'backlog' && <BacklogView />}
+      {currentView === 'matrix' && <MatrixView />}
       {currentView === 'settings' && <SettingsView />}
 
       {/* Offline Indicator */}
