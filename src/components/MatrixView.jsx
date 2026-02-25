@@ -61,7 +61,9 @@ function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragSt
         }}
         className={`${baseClasses} ${colorClasses} z-0 hover:z-10`}
       >
-        {label}
+        <span className={task.done ? 'line-through opacity-50' : ''}>
+          {label}
+        </span>
       </div>
     )
   }
