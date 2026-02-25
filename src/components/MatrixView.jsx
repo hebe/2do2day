@@ -4,11 +4,6 @@ import TaskActionsModal from './TaskActionsModal'
 import RecurringIntervalModal from './RecurringIntervalModal'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
-function chipLabel(title) {
-  if (title.length <= 12) return title
-  return title.slice(0, 12) + '…'
-}
-
 function calcPriorityScore(urgent, important, localX, localY) {
   const baseScore = urgent && important ? 75 :
                     !urgent && important ? 50 :
@@ -20,15 +15,15 @@ function calcPriorityScore(urgent, important, localX, localY) {
 const QUADRANTS = [
   { id: 'Q2', urgent: false, important: true,  label: 'Schedule',  sublabel: 'Important, not urgent'  },
   { id: 'Q1', urgent: true,  important: true,  label: 'Do First',  sublabel: 'Urgent + Important'      },
-  { id: 'Q4', urgent: false, important: false, label: 'Eliminate', sublabel: 'Not urgent or important' },
+  { id: 'Q4', urgent: false, important: false, label: 'Surplus', sublabel: 'Not urgent or important' },
   { id: 'Q3', urgent: true,  important: false, label: 'Delegate',  sublabel: 'Urgent, not important'   },
 ]
 
 const QUADRANT_STYLES = {
-  Q1: { bg: 'bg-amber-950/40',   border: 'border-amber-700/50',   labelColor: 'text-amber-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
-  Q2: { bg: 'bg-blue-950/40',    border: 'border-blue-700/50',    labelColor: 'text-blue-200',    chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
-  Q3: { bg: 'bg-orange-950/40',  border: 'border-orange-700/50',  labelColor: 'text-orange-200',  chipBg: 'bg-orange-600 hover:bg-orange-500', chipText: 'text-orange-50' },
-  Q4: { bg: 'bg-gray-900/60',    border: 'border-gray-700/50',    labelColor: 'text-gray-400',    chipBg: 'bg-gray-600 hover:bg-gray-500',     chipText: 'text-gray-100'  },
+  Q1: { bg: 'quadrant-q1', labelColor: 'text-amber-600 dark:text-amber-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
+  Q2: { bg: 'quadrant-q2', labelColor: 'text-blue-600 dark:text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
+  Q3: { bg: 'quadrant-q3', labelColor: 'text-yellow-600 dark:text-yellow-200', chipBg: 'bg-yellow-600 hover:bg-yellow-500', chipText: 'text-yellow-50' },
+  Q4: { bg: 'quadrant-q4', labelColor: 'text-gray-500 dark:text-gray-400',     chipBg: 'bg-gray-500 hover:bg-gray-400',     chipText: 'text-gray-100'  },
 }
 
 function getQuadrantId(urgent, important) {
@@ -38,16 +33,16 @@ function getQuadrantId(urgent, important) {
   return 'Q4'
 }
 
-function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragStart, settings }) {
+function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragStart, settings, chipMaxLen }) {
   const style = QUADRANT_STYLES[quadrantId]
 
   const category = settings.categories?.find(c => c.id === task.category)
   const categoryOKLab = category ? getCategoryOKLab(category.color) : null
 
+  const label = task.title.length <= chipMaxLen ? task.title : task.title.slice(0, chipMaxLen) + '…'
+
   const baseClasses = `px-2 py-1 rounded-md text-xs font-semibold cursor-grab active:cursor-grabbing select-none transition-all hover:scale-110 hover:shadow-lg whitespace-nowrap`
-  const colorClasses = categoryOKLab
-    ? `cat-chip`
-    : `${style.chipBg} ${style.chipText}`
+  const colorClasses = categoryOKLab ? `cat-chip` : `${style.chipBg} ${style.chipText}`
 
   if (isPlaced) {
     const pos = task.matrixPos
@@ -66,7 +61,7 @@ function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragSt
         }}
         className={`${baseClasses} ${colorClasses} z-0 hover:z-10`}
       >
-        {chipLabel(task.title)}
+        {label}
       </div>
     )
   }
@@ -94,12 +89,12 @@ function TaskChip({ task, quadrantId, isPlaced, gridIndex, onOpenModal, onDragSt
       }}
       className={`${baseClasses} ${colorClasses} opacity-60 border border-dashed`}
     >
-      {chipLabel(task.title)}
+      {label}
     </div>
   )
 }
 
-function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, settings }) {
+function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, settings, chipMaxLen }) {
   const style = QUADRANT_STYLES[quadrant.id]
   const quadrantRef = useRef(null)
 
@@ -122,15 +117,13 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
       ref={quadrantRef}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className={`relative rounded-xl border ${style.bg} ${style.border} overflow-hidden`}
+      className={`relative rounded-xl ${style.bg} quadrant-bg overflow-hidden`}
     >
-      {/* Quadrant label */}
       <div className="absolute top-3 left-4 pointer-events-none z-10">
         <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.label}</p>
         <p className="text-xs text-gray-500 dark:text-gray-600">{quadrant.sublabel}</p>
       </div>
 
-      {/* Task chips */}
       {tasks.map((task, i) => {
         const isPlaced = task.matrixPos != null && typeof task.matrixPos === 'object'
         const unplacedIndex = tasks.filter((t, j) => j < i && !(t.matrixPos != null && typeof t.matrixPos === 'object')).length
@@ -144,6 +137,7 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
             onOpenModal={onOpenModal}
             onDragStart={onDragStart}
             settings={settings}
+            chipMaxLen={chipMaxLen}
           />
         )
       })}
@@ -170,11 +164,11 @@ function MatrixView() {
   const [source, setSource] = useState('today')
   const [selectedTask, setSelectedTask] = useState(null)
   const [showRecurringModal, setShowRecurringModal] = useState(false)
+  const [chipMaxLen, setChipMaxLen] = useState(12)
   const dragTaskId = useRef(null)
 
   const rawTasks = source === 'today' ? today : backlog
 
-  // Keep selectedTask in sync with store so modal reflects live changes
   useEffect(() => {
     if (!selectedTask) return
     const updated = rawTasks.find(t => t.id === selectedTask.id)
@@ -249,20 +243,37 @@ function MatrixView() {
           </p>
         </div>
 
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm">
-          {['today', 'backlog'].map(s => (
-            <button
-              key={s}
-              onClick={() => setSource(s)}
-              className={`px-4 py-1.5 font-medium capitalize transition-colors ${
-                source === s
-                  ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+        <div className="flex items-center gap-4">
+          {/* Chip length slider */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-600 font-mono">xs</span>
+            <input
+              type="range"
+              min={6}
+              max={40}
+              value={chipMaxLen}
+              onChange={(e) => setChipMaxLen(Number(e.target.value))}
+              className="w-20 accent-gray-400"
+            />
+            <span className="text-xs font-mono text-gray-500 dark:text-gray-600 font-mono">XL</span>
+          </div>
+
+          {/* Today / Backlog toggle */}
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm">
+            {['today', 'backlog'].map(s => (
+              <button
+                key={s}
+                onClick={() => setSource(s)}
+                className={`px-4 py-1.5 font-medium capitalize transition-colors ${
+                  source === s
+                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+                    : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -292,6 +303,7 @@ function MatrixView() {
                 onOpenModal={handleOpenModal}
                 onDragStart={handleDragStart}
                 settings={settings}
+                chipMaxLen={chipMaxLen}
               />
             ))}
           </div>
@@ -307,6 +319,7 @@ function MatrixView() {
               {unprioritized.map(task => {
                 const category = settings.categories?.find(c => c.id === task.category)
                 const categoryOKLab = category ? getCategoryOKLab(category.color) : null
+                const label = task.title.length <= chipMaxLen ? task.title : task.title.slice(0, chipMaxLen) + '…'
                 return (
                   <div
                     key={task.id}
@@ -316,12 +329,10 @@ function MatrixView() {
                     title={task.title}
                     style={categoryOKLab ? { '--accent': categoryOKLab } : undefined}
                     className={`px-2 py-0.5 rounded-md text-xs font-medium cursor-grab select-none transition-all hover:scale-105 ${
-                      categoryOKLab
-                        ? 'cat-chip'
-                        : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      categoryOKLab ? 'cat-chip' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
                     }`}
                   >
-                    {chipLabel(task.title)}
+                    {label}
                   </div>
                 )
               })}
