@@ -24,7 +24,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function TodayView() {
-  const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, settings, loadFromCloudAndMerge } = useStore()
+const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
@@ -40,6 +40,7 @@ function TodayView() {
   const doneCount = today.filter(t => t.done).length
   const undoneCount = today.filter(t => !t.done).length
   const showCounter = today.length > 5
+  const hasPrioritized = today.some(t => t.priorityScore !== null)
 
   // Get ready recurring tasks
   const readyRecurringTasks = getReadyRecurringTasks(recurring, settings.dayStart)
@@ -265,6 +266,17 @@ function TodayView() {
                   <strong className="text-gray-900 dark:text-gray-100">{doneCount}</strong> done
                 </span>
               </div>
+              {hasPrioritized && (
+                <button
+                  onClick={sortTodayByPriority}
+                  className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  Sort by priority
+                </button>
+              )}
               {doneCount > 0 && undoneCount > 0 && (
                 <button
                   onClick={sortTodayByCompletion}
