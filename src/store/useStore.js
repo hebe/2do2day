@@ -23,7 +23,8 @@ const useStore = create(
         lastDayReset: null,
         backlogSortBy: 'recent', // 'recent', 'postponed', 'oldest'
         colorMode: 'auto', // 'light', 'dark', or 'auto'
-        categories: DEFAULT_CATEGORIES, // User's custom categories
+        categories: DEFAULT_CATEGORIES,
+        todaySortBy: 'manual', // 'manual' or 'priority'
       },
 
       // Cloud sync state - prevents syncing before cloud data is loaded
@@ -38,8 +39,10 @@ const useStore = create(
           prio: false,
           note: '',
           snoozeUntil: null,
-          category, // New field
-          urgent, // New field
+          category,
+          urgent,
+          important: false,
+          priorityScore: null,
           createdAt: new Date().toISOString()
         }
         set((state) => ({
@@ -63,7 +66,6 @@ const useStore = create(
         }))
       },
 
-      // Toggle urgent for backlog items
       toggleBacklogUrgent: (id) => {
         set((state) => ({
           backlog: state.backlog.map((task) =>
@@ -72,7 +74,6 @@ const useStore = create(
         }))
       },
 
-      // Toggle urgent for recurring items
       toggleRecurringUrgent: (id) => {
         set((state) => ({
           recurring: state.recurring.map((task) =>
@@ -81,12 +82,27 @@ const useStore = create(
         }))
       },
 
-      updateTaskCategory: (id, category) => {
+      setTaskQuadrant: (id, important, urgent, priorityScore) => {
         set((state) => ({
-          today: state.today.map((task) =>
-            task.id === id ? { ...task, category } : task
-          )
+          today: state.today.map((t) =>
+            t.id === id ? { ...t, important, urgent, priorityScore } : t
+          ),
+          backlog: state.backlog.map((t) =>
+            t.id === id ? { ...t, important, urgent, priorityScore } : t
+          ),
+          recurring: state.recurring.map((t) =>
+            t.id === id ? { ...t, important, urgent, priorityScore } : t
+          ),
         }))
+      },
+
+      sortTodayByPriority: () => {
+        set((state) => {
+          const withPrio = state.today.filter((t) => t.priorityScore !== null)
+          const withoutPrio = state.today.filter((t) => t.priorityScore === null)
+          withPrio.sort((a, b) => b.priorityScore - a.priorityScore)
+          return { today: [...withPrio, ...withoutPrio] }
+        })
       },
 
       sortTodayByCompletion: () => {
@@ -95,6 +111,14 @@ const useStore = create(
           const done = state.today.filter(t => t.done)
           return { today: [...undone, ...done] }
         })
+      },
+
+      updateTaskCategory: (id, category) => {
+        set((state) => ({
+          today: state.today.map((task) =>
+            task.id === id ? { ...task, category } : task
+          )
+        }))
       },
 
       deleteTask: (id) => {
@@ -116,11 +140,9 @@ const useStore = create(
           const task = state.today.find((t) => t.id === id)
           if (!task) return state
           
-          // Check if this task already exists in backlog
           const existingBacklogTask = state.backlog.find((t) => t.id === task.id)
           
           if (existingBacklogTask) {
-            // Update existing backlog item
             return {
               today: state.today.filter((t) => t.id !== id),
               backlog: state.backlog.map((t) => 
@@ -134,14 +156,15 @@ const useStore = create(
               )
             }
           } else {
-            // Create new backlog item
             return {
               today: state.today.filter((t) => t.id !== id),
               backlog: [...state.backlog, { 
                 id: task.id, 
                 title: task.title,
-                category: task.category, // Preserve category
-                urgent: task.urgent || false, // Preserve urgent status
+                category: task.category,
+                urgent: task.urgent || false,
+                important: task.important || false,
+                priorityScore: task.priorityScore ?? null,
                 isRecurring: false,
                 createdAt: task.createdAt || new Date().toISOString(),
                 addedToBacklogCount: 1,
@@ -152,13 +175,14 @@ const useStore = create(
         })
       },
 
-      // Backlog actions
       addBacklogTask: (title, category = null, urgent = false) => {
         const newTask = {
           id: Date.now().toString(),
           title,
           category,
-          urgent, // Add urgent field
+          urgent,
+          important: false,
+          priorityScore: null,
           isRecurring: false,
           createdAt: new Date().toISOString(),
           addedToBacklogCount: 1,
@@ -177,14 +201,16 @@ const useStore = create(
           const newTodayTask = {
             id: Date.now().toString(),
             title: backlogTask.title,
-            category: backlogTask.category, // Preserve category
+            category: backlogTask.category,
             done: false,
             prio: false,
             note: '',
-            urgent: backlogTask.urgent || false, // Preserve urgent status
+            urgent: backlogTask.urgent || false,
+            important: backlogTask.important || false,
+            priorityScore: backlogTask.priorityScore ?? null,
             snoozeUntil: null,
             createdAt: new Date().toISOString(),
-            originalBacklogId: backlogTask.id // Track original backlog item
+            originalBacklogId: backlogTask.id
           }
 
           return {
@@ -200,7 +226,6 @@ const useStore = create(
         }))
       },
 
-      // Mark a backlog task as done (move directly to done list)
       markBacklogAsDone: (id) => {
         set((state) => {
           const task = state.backlog.find((t) => t.id === id)
@@ -262,9 +287,11 @@ const useStore = create(
               title: task.title,
               category: task.category,
               urgent: task.urgent || false,
+              important: task.important || false,
+              priorityScore: task.priorityScore ?? null,
               note: '',
-              recurrencePattern, // 'daily', 'weekly', 'monthly'
-              recurrenceDays, // For weekly: [0-6], for monthly: [1-31]
+              recurrencePattern,
+              recurrenceDays,
               lastAddedToToday: null,
               createdAt: task.createdAt
             }]
@@ -284,6 +311,8 @@ const useStore = create(
               title: task.title,
               category: task.category,
               urgent: task.urgent || false,
+              important: task.important || false,
+              priorityScore: task.priorityScore ?? null,
               note: task.note || '',
               recurrencePattern,
               recurrenceDays,
@@ -315,9 +344,11 @@ const useStore = create(
             prio: false,
             note: recurringTask.note || '',
             urgent: recurringTask.urgent || false,
+            important: recurringTask.important || false,
+            priorityScore: recurringTask.priorityScore ?? null,
             snoozeUntil: null,
-            fromRecurring: true, // Mark that this came from recurring
-            recurringId: recurringTask.id, // Track which recurring task it came from
+            fromRecurring: true,
+            recurringId: recurringTask.id,
             createdAt: new Date().toISOString()
           }
 
@@ -344,19 +375,15 @@ const useStore = create(
         }))
       },
 
-      // Archive completed task
       archiveTask: (id) => {
         set((state) => {
           const task = state.today.find((t) => t.id === id && t.done)
           if (!task) return state
 
-          // Check if this is a recurring task completion
           if (task.recurringId) {
-            // Find existing done entry for this recurring task
             const existingDoneEntry = state.done.find((d) => d.recurringId === task.recurringId)
 
             if (existingDoneEntry) {
-              // Update existing entry: increment counter and update timestamp
               return {
                 today: state.today.filter((t) => t.id !== id),
                 done: state.done.map((d) =>
@@ -370,7 +397,6 @@ const useStore = create(
                 )
               }
             } else {
-              // Create first done entry for this recurring task
               return {
                 today: state.today.filter((t) => t.id !== id),
                 done: [...state.done, {
@@ -386,7 +412,6 @@ const useStore = create(
               }
             }
           } else {
-            // Regular one-time task completion
             return {
               today: state.today.filter((t) => t.id !== id),
               done: [...state.done, {
@@ -400,7 +425,6 @@ const useStore = create(
         })
       },
 
-      // Reorder tasks
       reorderTodayTasks: (startIndex, endIndex) => {
         set((state) => {
           const result = Array.from(state.today)
@@ -419,7 +443,6 @@ const useStore = create(
         })
       },
 
-      // Category management
       addCategory: (name, color) => {
         set((state) => ({
           settings: {
@@ -453,7 +476,6 @@ const useStore = create(
             ...state.settings,
             categories: state.settings.categories.filter((cat) => cat.id !== id)
           },
-          // Remove category from all tasks
           today: state.today.map((task) =>
             task.category === id ? { ...task, category: null } : task
           ),
@@ -466,24 +488,20 @@ const useStore = create(
         }))
       },
 
-      // Settings
       updateSettings: (newSettings) => {
         set((state) => ({
           settings: { ...state.settings, ...newSettings }
         }))
       },
 
-      // New Day Reset Logic
       checkAndResetDay: () => {
         set((state) => {
           const now = new Date()
           const [hours, minutes] = state.settings.dayStart.split(':').map(Number)
           
-          // Create today's reset time
           const todayReset = new Date(now)
           todayReset.setHours(hours, minutes, 0, 0)
           
-          // If current time is before today's reset time, the reset time was yesterday
           if (now < todayReset) {
             todayReset.setDate(todayReset.getDate() - 1)
           }
@@ -492,21 +510,21 @@ const useStore = create(
             ? new Date(state.settings.lastDayReset) 
             : null
           
-          // Check if we need to reset (haven't reset since the last reset time)
           const shouldReset = !lastReset || lastReset < todayReset
           
           if (!shouldReset) {
-            return state // No reset needed
+            return state
           }
           
-          // Perform the reset
           const incompleteTasks = state.today
             .filter(task => !task.done)
             .map(task => ({
               id: task.id,
               title: task.title,
-              category: task.category, // Preserve category
-              urgent: task.urgent || false, // Preserve urgent
+              category: task.category,
+              urgent: task.urgent || false,
+              important: task.important || false,
+              priorityScore: task.priorityScore ?? null,
               isRecurring: false,
               createdAt: task.createdAt,
               addedToBacklogCount: 1,
@@ -518,14 +536,14 @@ const useStore = create(
             .map(task => ({
               id: task.id,
               title: task.title,
-              category: task.category, // Preserve category
+              category: task.category,
               completedAt: new Date().toISOString()
             }))
           
           return {
-            today: [], // Clear today's list
-            backlog: [...state.backlog, ...incompleteTasks], // Move incomplete to backlog
-            done: [...state.done, ...completedTasks], // Archive completed
+            today: [],
+            backlog: [...state.backlog, ...incompleteTasks],
+            done: [...state.done, ...completedTasks],
             settings: {
               ...state.settings,
               lastDayReset: now.toISOString()
@@ -534,7 +552,6 @@ const useStore = create(
         })
       },
 
-      // Import data
       importData: (importedData) => {
         set({
           today: importedData.today || [],
@@ -544,27 +561,23 @@ const useStore = create(
           settings: {
             ...get().settings,
             ...importedData.settings,
-            // Ensure categories exist
             categories: importedData.settings?.categories || DEFAULT_CATEGORIES
           }
         })
       },
 
-      // Cloud sync ready flag setter (used by useCloudSync hook)
       setCloudSyncReady: (ready) => {
         set({ _cloudSyncReady: ready })
       },
     }),
     {
       name: 'todays-todos-storage',
-      // Don't persist cloud sync state - it should reset on each page load
       partialize: (state) => ({
         today: state.today,
         backlog: state.backlog,
         recurring: state.recurring,
         done: state.done,
         settings: state.settings,
-        // Explicitly exclude: _cloudSyncReady, _lastCloudLoad, _lastCloudUpdatedAt
       }),
     }
   )
