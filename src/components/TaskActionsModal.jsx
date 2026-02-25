@@ -2,6 +2,26 @@ import React from 'react'
 import useStore from '../store/useStore'
 import { getCategoryOKLab } from '../utils/colorUtils'
 
+// Q1: Urgent + Important (do first)
+// Q2: Not Urgent + Important (schedule)
+// Q3: Urgent + Not Important (delegate)
+// Q4: Not Urgent + Not Important (eliminate)
+const QUADRANTS = [
+  { id: 'Q2', label: 'Schedule',  desc: 'Important, not urgent', urgent: false, important: true,  baseScore: 50, emoji: '📅' },
+  { id: 'Q1', label: 'Do First',  desc: 'Urgent & important',    urgent: true,  important: true,  baseScore: 75, emoji: '🎯' },
+  { id: 'Q4', label: 'Eliminate', desc: 'Not urgent or important', urgent: false, important: false, baseScore: 0,  emoji: '🗑️' },
+  { id: 'Q3', label: 'Delegate',  desc: 'Urgent, not important', urgent: true,  important: false, baseScore: 25, emoji: '👋' },
+]
+
+function getActiveQuadrant(task) {
+  if (task.priorityScore === null && !task.important) return null
+  if (task.urgent && task.important) return 'Q1'
+  if (!task.urgent && task.important) return 'Q2'
+  if (task.urgent && !task.important) return 'Q3'
+  if (!task.urgent && !task.important) return 'Q4'
+  return null
+}
+
 function TaskActionsModal({
   task,
   onEdit,
@@ -20,6 +40,7 @@ function TaskActionsModal({
     updateTaskCategory,
     updateBacklogCategory,
     updateRecurringCategory,
+    setTaskQuadrant,
     settings
   } = useStore()
 
@@ -28,6 +49,7 @@ function TaskActionsModal({
   const isRecurring = type === 'recurring'
 
   const categories = settings.categories || []
+  const activeQuadrant = getActiveQuadrant(task)
 
   const handleToggleUrgent = () => {
     if (isToday) {
@@ -47,6 +69,15 @@ function TaskActionsModal({
       updateBacklogCategory(task.id, categoryId)
     } else if (isRecurring) {
       updateRecurringCategory(task.id, categoryId)
+    }
+  }
+
+  const handleQuadrantSelect = (quadrant) => {
+    if (activeQuadrant === quadrant.id) {
+      // Deselect — clear priority
+      setTaskQuadrant(task.id, false, false, null)
+    } else {
+      setTaskQuadrant(task.id, quadrant.important, quadrant.urgent, quadrant.baseScore)
     }
   }
 
@@ -119,6 +150,44 @@ function TaskActionsModal({
               </button>
             </div>
 
+            {/* Eisenhower quadrant picker */}
+            <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-lg">⊞</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Priority</span>
+                {activeQuadrant && (
+                  <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">tap to deselect</span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {/* Labels */}
+                <div className="col-span-2 grid grid-cols-2 px-1">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 text-center">not urgent</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 text-center">urgent</span>
+                </div>
+                {QUADRANTS.map((q) => (
+                  <button
+                    key={q.id}
+                    onClick={() => handleQuadrantSelect(q)}
+                    className={`flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl text-sm transition-all border ${
+                      activeQuadrant === q.id
+                        ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-300 dark:ring-indigo-600'
+                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <span className="text-lg">{q.emoji}</span>
+                    <span className="font-medium text-xs">{q.label}</span>
+                    <span className="text-xs opacity-60 text-center leading-tight">{q.desc}</span>
+                  </button>
+                ))}
+                {/* Important axis label - left side */}
+              </div>
+              <div className="grid grid-cols-2 px-1 mt-1">
+                <span className="text-xs text-gray-400 dark:text-gray-500 text-center">important</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 text-center">not important</span>
+              </div>
+            </div>
+
             {/* Category inline picker - horizontal scrollable chips */}
             <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
               <div className="flex items-center gap-3 mb-2">
@@ -138,16 +207,14 @@ function TaskActionsModal({
                   None
                 </button>
 
-                {/* Category chips - using dynamic colors */}
+                {/* Category chips */}
                 {categories.map((category) => {
                   const categoryOKLab = getCategoryOKLab(category.color)
                   return (
                     <button
                       key={category.id}
                       onClick={() => handleCategorySelect(category.id)}
-                      style={{
-                        '--accent': categoryOKLab
-                      }}
+                      style={{ '--accent': categoryOKLab }}
                       className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all cat-chip ${
                         task.category === category.id
                           ? 'ring-2 ring-gray-500 dark:ring-gray-400'
