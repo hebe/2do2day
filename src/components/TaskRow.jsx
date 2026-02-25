@@ -175,65 +175,52 @@ function TaskRow({ task, onDelete, onEdit }) {
           )}
         </button>
 
-        {/* Task title with indicators */}
-        <div
-          className="flex-1 flex items-center gap-2 pr-4 cursor-pointer"
-          onClick={() => setShowMenu(true)}
-        >
-          {/* Status indicators */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Recurring star emoji */}
-            {task.fromRecurring && (
-              <span className="text-lg" title="From recurring task">
-                💫
-              </span>
-            )}
+{/* Task title with indicators */}
+<div
+  className="flex-1 flex items-center relative gap-2 pr-4 cursor-pointer"
+  onClick={() => setShowMenu(true)}
+>
+  {/* Status indicators */}
+  <div className="flex items-center gap-1 flex-shrink-0">
+    {task.fromRecurring && (
+      <span className="text-lg" title="From recurring task">
+        💫
+      </span>
+    )}
+    {task.urgent && (
+      <span className="text-lg" title="Urgent">
+        🔥
+      </span>
+    )}
+  </div>
 
-            {/* Urgent fire emoji */}
-            {task.urgent && (
-              <span className="text-lg" title="Urgent">
-                🔥
-              </span>
-            )}
-            {/* Quadrant indicator */}
-            {task.priorityScore !== null && (
-              <span
-                className="text-xs font-medium px-1.5 py-0.5 rounded-full leading-none"
-                style={{
-                  background: task.urgent && task.important ? '#fde68a' :
-                              !task.urgent && task.important ? '#bfdbfe' :
-                              task.urgent && !task.important ? '#fed7aa' :
-                              '#e5e7eb',
-                  color: task.urgent && task.important ? '#92400e' :
-                        !task.urgent && task.important ? '#1e40af' :
-                        task.urgent && !task.important ? '#9a3412' :
-                        '#6b7280',
-                }}
-                title={
-                  task.urgent && task.important ? 'Q1: Do First' :
-                  !task.urgent && task.important ? 'Q2: Schedule' :
-                  task.urgent && !task.important ? 'Q3: Delegate' :
-                  'Q4: Eliminate'
-                }
-              >
-                {task.urgent && task.important ? 'Q1' :
-                !task.urgent && task.important ? 'Q2' :
-                task.urgent && !task.important ? 'Q3' :
-                'Q4'}
-              </span>
-            )}
-          </div>
+  <span
+    className={`flex-1 text-base ${
+      task.done
+        ? 'line-through text-gray-500 dark:text-gray-400'
+        : 'text-gray-900 dark:text-gray-100'
+    } transition-all`}
+  >
+    {task.title}
+  </span>
 
-          <span
-            className={`flex-1 text-base ${
-              task.done
-                ? 'line-through text-gray-500 dark:text-gray-400'
-                : 'text-gray-900 dark:text-gray-100'
-            } transition-all`}
-          >
-            {task.title}
-          </span>
-        </div>
+  {task.priorityScore !== null && (
+    <span
+      className="absolute right-12 text-4xl font-black pointer-events-none select-none"
+      style={{
+        opacity: 0.07,
+        color: task.urgent && task.important ? '#f59e0b' :
+               !task.urgent && task.important ? '#3b82f6' :
+               task.urgent && !task.important ? '#f97316' :
+               '#6b7280',
+      }}
+    >
+      {task.urgent && task.important ? 'Q1' :
+       !task.urgent && task.important ? 'Q2' :
+       task.urgent && !task.important ? 'Q3' : 'Q4'}
+    </span>
+  )}
+</div>
 
         {/* Quick action buttons - visible on hover (desktop) */}
         <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

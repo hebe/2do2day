@@ -28,7 +28,6 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
   const [editValue, setEditValue] = useState(task.title)
   const inputRef = useRef(null)
 
-  // Only enable sorting for backlog items when not editing and not disabled
   const sortableEnabled = type === 'backlog' && !isEditing && !isDragDisabled
 
   const {
@@ -144,6 +143,21 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
     return date.toLocaleDateString()
   }
 
+  // Helper to get quadrant label and color
+  const getQuadrantWatermark = () => {
+    if (task.priorityScore === null) return null
+    const label = task.urgent && task.important ? 'Q1' :
+                  !task.urgent && task.important ? 'Q2' :
+                  task.urgent && !task.important ? 'Q3' : 'Q4'
+    const color = task.urgent && task.important ? '#f59e0b' :
+                  !task.urgent && task.important ? '#3b82f6' :
+                  task.urgent && !task.important ? '#f97316' :
+                  '#6b7280'
+    return { label, color }
+  }
+
+  const watermark = getQuadrantWatermark()
+
   // Done tasks are read-only
   if (type === 'done') {
     const isRecurring = task.isRecurringCompletion
@@ -245,7 +259,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
             : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
         }`}
       >
-        {/* Drag handle - only for backlog items when sorting is enabled */}
+        {/* Drag handle */}
         {sortableEnabled && (
           <button
             ref={setActivatorNodeRef}
@@ -265,18 +279,17 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
         )}
 
         {/* Task title - clickable to open menu */}
-        <div 
-          className="flex-1 min-w-0 pr-4 cursor-pointer"
+        <div
+          className="relative flex-1 min-w-0 pr-4 cursor-pointer"
           onClick={() => setShowMenu(true)}
         >
           <div className="flex items-center gap-2">
-            {/* Urgent fire emoji */}
             {task.urgent && (
               <span className="text-base flex-shrink-0" title="Urgent">
                 🔥
               </span>
             )}
-            
+
             <div className="flex-1 min-w-0">
               <span className="text-sm block text-gray-900 dark:text-gray-100">
                 {task.title}
@@ -287,16 +300,28 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
                 </span>
               )}
             </div>
+
             {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount >= 3 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">
                 Postponed {task.addedToBacklogCount}x
               </span>
             )}
           </div>
+
           {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount < 3 && task.addedToBacklogCount > 1 && (
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               Postponed {task.addedToBacklogCount} times
             </p>
+          )}
+
+          {/* Quadrant watermark */}
+          {watermark && (
+            <span
+              className="absolute right-0 top-1/2 -translate-y-1/2 text-4xl font-black pointer-events-none select-none"
+              style={{ opacity: 0.07, color: watermark.color }}
+            >
+              {watermark.label}
+            </span>
           )}
         </div>
 
@@ -309,7 +334,6 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
             ← Today
           </button>
 
-          {/* Desktop menu button - hidden on mobile */}
           <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -332,7 +356,6 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
         </div>
       </div>
 
-      {/* Actions Modal */}
       {showMenu && (
         <TaskActionsModal
           task={task}
@@ -346,7 +369,6 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
         />
       )}
 
-      {/* Recurring Interval Modal */}
       {showRecurringModal && (
         <RecurringIntervalModal
           task={task}
