@@ -35,6 +35,12 @@ function SettingsView() {
   const [timeSettingExpanded, setTimeSettingExpanded] = useState(false)
   const [importError, setImportError] = useState('')
   const [importSuccess, setImportSuccess] = useState(false)
+  const [passwordExpanded, setPasswordExpanded] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState(null)
+  const [passwordError, setPasswordError] = useState(null)
 
   // Get categories directly from settings (reactive)
   const categories = settings.categories || []
@@ -146,6 +152,34 @@ function SettingsView() {
     event.target.value = ''
   }
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault()
+    setPasswordError(null)
+    setPasswordMessage(null)
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords don't match")
+      return
+    }
+
+    try {
+      setPasswordLoading(true)
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      setPasswordMessage('Password updated successfully!')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => {
+        setPasswordMessage(null)
+        setPasswordExpanded(false)
+      }, 2000)
+    } catch (error) {
+      setPasswordError(error.message)
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
   const timeOptions = [
     { value: '00:00', label: 'Midnight (00:00)' },
     { value: '01:00', label: '1:00 AM' },
@@ -183,6 +217,95 @@ function SettingsView() {
           )}
         </div>
 
+
+        {/* Change Password */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Change Password</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  Update your account password
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setPasswordExpanded(!passwordExpanded)
+                  setPasswordError(null)
+                  setPasswordMessage(null)
+                  setNewPassword('')
+                  setConfirmPassword('')
+                }}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                aria-label={passwordExpanded ? "Collapse" : "Expand"}
+              >
+                <svg
+                  className={`w-5 h-5 transition-transform ${passwordExpanded ? 'rotate-180' : ''}`}
+                  fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  viewBox="0 0 24 24" stroke="currentColor"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            {passwordExpanded && (
+              <form onSubmit={handleChangePassword} className="space-y-3">
+                {passwordMessage && (
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-200">{passwordMessage}</p>
+                  </div>
+                )}
+                {passwordError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-sm text-red-800 dark:text-red-200">{passwordError}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    New password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    disabled={passwordLoading}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 6 characters</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Confirm new password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                    disabled={passwordLoading}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={passwordLoading || !newPassword || !confirmPassword}
+                  className="px-6 py-2 bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {passwordLoading && (
+                    <div className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {passwordLoading ? 'Updating...' : 'Update password'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
 
         {/* Color Mode Setting */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
