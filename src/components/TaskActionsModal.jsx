@@ -147,7 +147,7 @@ function TaskActionsModal({
                 }`}
               >
                 <span className="text-xl">🔥</span>
-                <span className="text-sm font-medium">{task.urgent ? 'Urgent' : 'Not urgent'}</span>
+                <span className="text-sm font-medium">{task.urgent ? 'Urgent' : 'Make urgent'}</span>
               </button>
             </div>
 
