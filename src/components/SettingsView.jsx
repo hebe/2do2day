@@ -194,7 +194,8 @@ function SettingsView() {
 
   const colorModeOptions = [
     { value: 'light', label: 'Light', icon: '☀️', description: 'Always use light mode' },
-    { value: 'dark', label: 'Dark', icon: '🌙', description: 'Always use dark mode' },
+    { value: 'dark', label: 'Dark (riso navy)', icon: '🌙', description: 'New riso-inspired dark' },
+    { value: 'dark-2', label: 'Dark (classic)', icon: '🌑', description: 'Original gray dark' },
     { value: 'auto', label: 'Auto', icon: '⚙️', description: 'Match system preference' },
   ]
 

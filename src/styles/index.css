@@ -19,79 +19,118 @@
 @layer base {
   :root {
     /* --- Surfaces --- */
-    --bg-page:   #fdfdfe;
-    --bg-card:   #ffffff;
-    --bg-hover:  #f9fafb;
-    --bg-input:  #ffffff;
+    --bg-page:   #f4ecd8;          /* warm parchment */
+    --bg-card:   #faf6ee;          /* slightly lighter cream for cards */
+    --bg-hover:  #ede5d0;          /* slightly deeper cream for hover */
+    --bg-input:  #ffffff;          /* clean white — keeps inputs readable */
 
     /* --- Text --- */
-    --text-primary:     #111827;   /* gray-900 */
-    --text-muted:       #4b5563;   /* gray-600 */
-    --text-faint:       #9ca3af;   /* gray-400 */
+    --text-primary:     #1a2340;   /* riso navy */
+    --text-muted:       #4a5470;   /* muted navy */
+    --text-faint:       #8a7d5f;   /* warm tan — from inspo sketch */
 
     /* --- Borders --- */
-    --border:           #e5e7eb;   /* gray-200 / calm-200 */
-    --border-strong:    #d1d5db;   /* gray-300 */
+    --border:           #d8cebd;   /* warm beige */
+    --border-strong:    #c4b89f;   /* stronger warm beige */
 
     /* --- Action (primary buttons / CTAs) --- */
-    --action:           #F0A500;
-    --action-hover:     #D89400;
-    --on-action:        #1f2937;   /* text ON action bg */
-    --action-subtle:    #fffbeb;   /* faint action-tinted bg */
+    --action:           #1a2340;   /* navy */
+    --action-hover:     #0f1829;   /* deeper navy */
+    --on-action:        #ffffff;   /* white text on navy */
+    --action-subtle:    #e8edf5;   /* pale navy tint */
 
-    /* --- Accent (highlights, display type, heading colour) ---
-       Same as action in the base theme; diverges in riso/desk directions
-       (e.g. riso: --action = navy, --accent = riso-red) */
-    --accent:           #F0A500;
-    --accent-subtle:    #fffbeb;
+    /* --- Accent (highlights, display type, heading colour) --- */
+    --accent:           #e04a32;   /* riso red */
+    --accent-subtle:    #fdecea;   /* pale red tint */
 
     /* --- Secondary action (inline save, confirm, modal submit) --- */
-    --secondary:        #9baabf;   /* calm-700 blue-gray */
+    --secondary:        #9baabf;
     --secondary-dark:   #7b8da3;
 
-    /* --- Category row system (keep colour-mix logic intact) --- */
-    --row-surface: oklch(0.99 0.002 260);
-    --row-hover:   oklch(0.975 0.004 260);
-    --row-border:  oklch(0.90 0.01 260);
-    --cat-bg-mix:     15%;
-    --cat-border-mix: 32%;
+    /* --- Category row system --- */
+    --row-surface: oklch(0.96 0.025 75);   /* warm cream */
+    --row-hover:   oklch(0.93 0.030 75);   /* slightly deeper */
+    --row-border:  oklch(0.86 0.040 75);   /* warm beige divider */
+    --cat-bg-mix:     18%;
+    --cat-border-mix: 35%;
     --cat-edge-mix:   65%;
+
+    /* Legacy aliases — Tailwind JIT may still reference these variable names
+       from a warm cache; they forward to the new action/accent tokens */
+    --brand:        var(--action);
+    --brand-dark:   var(--action-hover);
+    --on-brand:     var(--on-action);
+    --brand-subtle: var(--action-subtle);
 
     /* Legacy alias kept for body background */
     --app-bg: var(--bg-page);
   }
 
   .dark {
+    --bg-page:   #111827;          /* deep navy-ink */
+    --bg-card:   #1a2340;          /* riso navy */
+    --bg-hover:  #243058;          /* lighter navy hover */
+    --bg-input:  #243058;
+
+    --text-primary:     #f0ece2;   /* warm off-white */
+    --text-muted:       #9da8c0;   /* muted periwinkle */
+    --text-faint:       #7b88a8;   /* periwinkle — from inspo sketch */
+
+    --border:           #2a3560;   /* dark navy border */
+    --border-strong:    #3a4878;   /* stronger navy */
+
+    --action:           #e04a32;   /* riso red becomes the action in dark */
+    --action-hover:     #c73e28;
+    --on-action:        #ffffff;
+    --action-subtle:    #3d1a14;   /* deep red tint */
+
+    --accent:           #e04a32;   /* riso red */
+    --accent-subtle:    #3d1a14;
+
+    --secondary:        #3a4878;
+    --secondary-dark:   #2a3560;
+
+    --row-surface: oklch(0.28 0.04 260);   /* lighter base → more vivid tints */
+    --row-hover:   oklch(0.32 0.04 260);
+    --row-border:  oklch(0.40 0.05 260);
+    --cat-bg-mix:     28%;
+    --cat-border-mix: 48%;
+    --cat-edge-mix:   75%;
+
+    --app-bg: var(--bg-page);
+  }
+
+  /* DARK-2 (classic gray) — A/B toggle against .dark (riso navy).
+     Must come after .dark so it wins when both classes are on <html>
+     (both are toggled together so Tailwind dark: utilities still fire). */
+  .dark-2 {
     --bg-page:   #212936;
-    --bg-card:   #1f2937;          /* gray-800 */
-    --bg-hover:  #374151;          /* gray-700 */
-    --bg-input:  #374151;          /* gray-700 — slightly elevated for inputs */
-
-    --text-primary:     #f9fafb;   /* gray-100 */
-    --text-muted:       #9ca3af;   /* gray-400 */
-    --text-faint:       #6b7280;   /* gray-500 */
-
-    --border:           #374151;   /* gray-700 */
-    --border-strong:    #4b5563;   /* gray-600 */
-
+    --bg-card:   #1f2937;
+    --bg-hover:  #374151;
+    --bg-input:  #374151;
+    --text-primary:     #f9fafb;
+    --text-muted:       #9ca3af;
+    --text-faint:       #6b7280;
+    --border:           #374151;
+    --border-strong:    #4b5563;
     --action:           #F0A500;
     --action-hover:     #D89400;
     --on-action:        #1f2937;
     --action-subtle:    #451a03;
-
     --accent:           #F0A500;
     --accent-subtle:    #451a03;
-
-    --secondary:        #4b5563;   /* gray-600 */
-    --secondary-dark:   #374151;   /* gray-700 */
-
+    --secondary:        #4b5563;
+    --secondary-dark:   #374151;
+    --brand:        var(--action);
+    --brand-dark:   var(--action-hover);
+    --on-brand:     var(--on-action);
+    --brand-subtle: var(--action-subtle);
     --row-surface: oklch(0.30 0.03 255);
     --row-hover:   oklch(0.34 0.03 255);
     --row-border:  oklch(0.42 0.03 255);
     --cat-bg-mix:     18%;
     --cat-border-mix: 40%;
     --cat-edge-mix:   70%;
-
     --app-bg: var(--bg-page);
   }
 

@@ -6,30 +6,35 @@ export function useDarkMode() {
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
+    const applyDark = (on, variant = 'dark') => {
+      const root = document.documentElement
+      if (on) {
+        root.classList.add('dark')
+        if (variant === 'dark-2') root.classList.add('dark-2')
+        else root.classList.remove('dark-2')
+      } else {
+        root.classList.remove('dark', 'dark-2')
+      }
+      setIsDark(on)
+    }
+
     const updateDarkMode = () => {
       const mode = settings.colorMode || 'auto'
-      
+
       if (mode === 'dark') {
-        setIsDark(true)
-        document.documentElement.classList.add('dark')
+        applyDark(true, 'dark')
+      } else if (mode === 'dark-2') {
+        applyDark(true, 'dark-2')
       } else if (mode === 'light') {
-        setIsDark(false)
-        document.documentElement.classList.remove('dark')
+        applyDark(false)
       } else {
-        // Auto mode - follow system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        setIsDark(prefersDark)
-        if (prefersDark) {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
+        applyDark(prefersDark, 'dark')
       }
     }
 
     updateDarkMode()
 
-    // Listen for system preference changes (only in auto mode)
     if (settings.colorMode === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       const handler = () => updateDarkMode()
