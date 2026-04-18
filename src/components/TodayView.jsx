@@ -229,7 +229,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 md:py-16">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Pull-to-refresh indicator */}
       {isPullRefreshing && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-blue-500 text-white py-2 px-4 text-center text-sm font-medium shadow-lg">

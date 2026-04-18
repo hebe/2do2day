@@ -268,7 +268,7 @@ function MatrixView() {
                 onClick={() => setSource(s)}
                 className={`px-4 py-1.5 font-medium capitalize transition-colors ${
                   source === s
-                    ? 'bg-ink text-card dark:text-ink'
+                    ? 'bg-action text-action-on'
                     : 'bg-card text-ink-muted hover:bg-hover'
                 }`}
               >
