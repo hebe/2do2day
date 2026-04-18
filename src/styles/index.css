@@ -66,43 +66,6 @@
     --app-bg: var(--bg-page);
   }
 
-  /* ================================================================
-     DARK-2 (classic gray) — kept for A/B testing in production.
-     To activate: add class "dark-2" instead of "dark" on <html>.
-     useDarkMode hook + a SettingsView option needed (next session).
-     ================================================================
-  .dark-2 {
-    --bg-page:   #212936;
-    --bg-card:   #1f2937;
-    --bg-hover:  #374151;
-    --bg-input:  #374151;
-    --text-primary:     #f9fafb;
-    --text-muted:       #9ca3af;
-    --text-faint:       #6b7280;
-    --border:           #374151;
-    --border-strong:    #4b5563;
-    --action:           #F0A500;
-    --action-hover:     #D89400;
-    --on-action:        #1f2937;
-    --action-subtle:    #451a03;
-    --accent:           #F0A500;
-    --accent-subtle:    #451a03;
-    --secondary:        #4b5563;
-    --secondary-dark:   #374151;
-    --brand:        var(--action);
-    --brand-dark:   var(--action-hover);
-    --on-brand:     var(--on-action);
-    --brand-subtle: var(--action-subtle);
-    --row-surface: oklch(0.30 0.03 255);
-    --row-hover:   oklch(0.34 0.03 255);
-    --row-border:  oklch(0.42 0.03 255);
-    --cat-bg-mix:     18%;
-    --cat-border-mix: 40%;
-    --cat-edge-mix:   70%;
-    --app-bg: var(--bg-page);
-  }
-     ================================================================ */
-
   .dark {
     --bg-page:   #111827;          /* deep navy-ink */
     --bg-card:   #1a2340;          /* riso navy */
@@ -134,6 +97,40 @@
     --cat-border-mix: 48%;
     --cat-edge-mix:   75%;
 
+    --app-bg: var(--bg-page);
+  }
+
+  /* DARK-2 (classic gray) — A/B toggle against .dark (riso navy).
+     Must come after .dark so it wins when both classes are on <html>
+     (both are toggled together so Tailwind dark: utilities still fire). */
+  .dark-2 {
+    --bg-page:   #212936;
+    --bg-card:   #1f2937;
+    --bg-hover:  #374151;
+    --bg-input:  #374151;
+    --text-primary:     #f9fafb;
+    --text-muted:       #9ca3af;
+    --text-faint:       #6b7280;
+    --border:           #374151;
+    --border-strong:    #4b5563;
+    --action:           #F0A500;
+    --action-hover:     #D89400;
+    --on-action:        #1f2937;
+    --action-subtle:    #451a03;
+    --accent:           #F0A500;
+    --accent-subtle:    #451a03;
+    --secondary:        #4b5563;
+    --secondary-dark:   #374151;
+    --brand:        var(--action);
+    --brand-dark:   var(--action-hover);
+    --on-brand:     var(--on-action);
+    --brand-subtle: var(--action-subtle);
+    --row-surface: oklch(0.30 0.03 255);
+    --row-hover:   oklch(0.34 0.03 255);
+    --row-border:  oklch(0.42 0.03 255);
+    --cat-bg-mix:     18%;
+    --cat-border-mix: 40%;
+    --cat-edge-mix:   70%;
     --app-bg: var(--bg-page);
   }
 
