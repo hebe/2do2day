@@ -10,7 +10,7 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Add another task..."
-          className="flex-1 px-4 py-3 text-sm border border-edge dark:bg-card dark:text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
+          className="flex-1 px-4 py-3 text-sm border border-edge bg-card text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
         />
         <button
           type="submit"

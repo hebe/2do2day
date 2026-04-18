@@ -84,7 +84,22 @@ function App() {
       {/* Navigation */}
       <nav className="border-b border-edge surface-nav backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="flex gap-6 md:gap-8">
+          <div className="flex items-center gap-6 md:gap-8">
+            <button
+              onClick={() => setCurrentView('today')}
+              aria-label="Go to Today"
+              className="mr-auto py-4 flex items-center gap-2 font-display text-xl md:text-2xl text-ink hover:opacity-80 transition-opacity"
+            >
+              <svg
+                className="logo-mark w-7 h-5 md:w-8 md:h-6"
+                viewBox="0 0 32 20"
+                aria-hidden="true"
+              >
+                <circle className="logo-accent" cx="10" cy="10" r="10" />
+                <circle className="logo-mono"   cx="22" cy="10" r="10" />
+              </svg>
+              2do2day
+            </button>
             <button
               onClick={() => setCurrentView('today')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
@@ -125,16 +140,6 @@ function App() {
             >
               Settings
             </button>
-
-            {/* User menu */}
-            <div className="ml-auto flex items-center">
-              <button
-                onClick={handleSignOut}
-                className="text-xs text-ink-muted hover:text-ink transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
           </div>
         </div>
       </nav>
@@ -143,7 +148,7 @@ function App() {
       {currentView === 'today' && <TodayView />}
       {currentView === 'backlog' && <BacklogView />}
       {currentView === 'matrix' && <MatrixView />}
-      {currentView === 'settings' && <SettingsView />}
+      {currentView === 'settings' && <SettingsView onSignOut={handleSignOut} />}
 
       {/* Offline Indicator */}
       <OfflineIndicator />

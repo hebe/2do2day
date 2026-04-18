@@ -144,6 +144,13 @@
   background: color-mix(in srgb, var(--bg-page) 85%, transparent);
 }
 
+/* Logo mark — two overlapping circles that flip with theme.
+   Left circle uses the accent (riso red); right uses text-muted
+   so it stays distinct from the wordmark color in both modes
+   (muted navy in light, periwinkle in dark). */
+.logo-mark .logo-accent { fill: var(--accent); }
+.logo-mark .logo-mono   { fill: var(--text-muted); }
+
 @layer components {
   /* ---------- Base row look (used by your list rows) ---------- */
   .task-row-base {

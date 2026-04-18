@@ -23,10 +23,42 @@ import {
 } from '@dnd-kit/sortable'
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
+const TODAY_PROMPTS = [
+  "What's one thing you'd like to accomplish today?",
+  "Ready for a fresh start?",
+  "What matters most to you today?",
+  "Start simple. What's your first step?",
+  "What would make today feel complete?",
+  "Begin with what feels right.",
+  "Today is yours. Where should we start?",
+  "What's calling for your attention?",
+  "Keep it light. What's on your mind?",
+  "Pick one thing. Just one.",
+  "What deserves your energy today?",
+  "A blank slate. What will you create?",
+  "Small steps add up. What's yours?",
+  "No pressure. What feels important?",
+  "What would feel good to finish today?",
+  "Trust yourself. What needs doing?",
+  "Start anywhere. Where feels right?",
+  "What's worth your time today?",
+  "One task at a time. Which one first?",
+  "Let's keep it simple today.",
+  "What would make you proud today?",
+  "Choose one thing to focus on.",
+  "What's been on your mind lately?",
+  "No rush. What feels urgent to you?",
+  "Take a breath. What's next?",
+  "What would make you sleep better tonight?",
+]
+
 function TodayView() {
 const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
+  const [todayPrompt] = useState(
+    () => TODAY_PROMPTS[Math.floor(Math.random() * TODAY_PROMPTS.length)]
+  )
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
   const [showRecurringPicker, setShowRecurringPicker] = useState(false)
   const [showResetMessage, setShowResetMessage] = useState(false)
@@ -237,6 +269,12 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
           </div>
         </div>
       )}
+
+      {/* Page header */}
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-normal text-ink">Today</h1>
+        <p className="text-sm text-ink-muted mt-1 italic">{todayPrompt}</p>
+      </div>
 
       {/* Blank state */}
       {!showList && (
