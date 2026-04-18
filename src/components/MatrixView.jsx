@@ -239,7 +239,7 @@ function MatrixView() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 flex-shrink-0">
         <div>
-          <h1 className="text-base font-semibold text-ink">Priority Matrix</h1>
+          <h1 className="font-display text-lg font-medium text-ink">Priority Matrix</h1>
           <p className="text-xs text-ink-muted">
             {rawTasks.length - unprioritized.length} of {rawTasks.length} tasks prioritized
           </p>

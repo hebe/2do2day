@@ -317,7 +317,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           {/* Quadrant watermark */}
           {watermark && (
             <span
-              className="absolute right-0 top-1/2 -translate-y-1/2 text-4xl font-black pointer-events-none select-none"
+              className="absolute right-0 top-1/2 -translate-y-1/2 font-display italic text-4xl font-bold pointer-events-none select-none"
               style={{ opacity: 0.12, color: watermark.color }}
             >
               {watermark.label}

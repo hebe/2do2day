@@ -127,8 +127,8 @@ function BacklogView() {
   }
 
   const getVisibleItems = (items) => {
-    if (showAll || items.length <= 6) return items
-    return items.slice(0, 6)
+    if (showAll || items.length <= 50) return items
+    return items.slice(0, 50)
   }
 
   const sortedBacklog = getSortedBacklog()
@@ -205,7 +205,7 @@ function BacklogView() {
         )}
 
         {/* Show all button */}
-        {backlog.length > 6 && !showAll && (
+        {backlog.length > 50 && !showAll && (
           <div className="p-4 text-center border-t border-edge">
             <button
               onClick={() => setShowAll(true)}
@@ -340,7 +340,7 @@ function BacklogView() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-light text-ink">Backlog</h1>
+          <h1 className="font-display text-3xl font-normal text-ink">Backlog</h1>
           <p className="text-sm text-ink-muted mt-1">
             Tasks you'll get to someday, recurring tasks, and your wins.
           </p>
@@ -353,7 +353,7 @@ function BacklogView() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Add to backlog..."
-            className="flex-1 px-4 py-3 text-sm border border-edge dark:bg-card dark:text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
+            className="flex-1 px-4 py-3 text-sm border border-edge bg-card text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
           />
           <button
             type="submit"

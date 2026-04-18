@@ -3,7 +3,7 @@ import useStore from '../store/useStore'
 import { CATEGORY_COLOR_PALETTE } from '../utils/colorUtils'
 import { supabase } from '../lib/supabase'
 
-function SettingsView() {
+function SettingsView({ onSignOut }) {
   // Get settings and actions from store - this will re-render when settings change
   const settings = useStore((state) => state.settings)
   const updateSettings = useStore((state) => state.updateSettings)
@@ -207,7 +207,7 @@ function SettingsView() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-light text-ink">Settings</h1>
+          <h1 className="font-display text-3xl font-normal text-ink">Settings</h1>
           <p className="text-sm text-ink-muted mt-1">
             Customize how Today's ToDos works for you.
           </p>
@@ -218,6 +218,30 @@ function SettingsView() {
           )}
         </div>
 
+        {/* Stats */}
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
+          <h2 className="text-lg font-medium text-ink mb-4">Your Stats</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="font-display text-4xl font-normal text-ink">
+                {done.length}
+              </div>
+              <div className="text-xs text-ink-muted mt-1">Tasks Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="font-display text-4xl font-normal text-ink">
+                {backlog.length}
+              </div>
+              <div className="text-xs text-ink-muted mt-1">In Backlog</div>
+            </div>
+            <div className="text-center">
+              <div className="font-display text-4xl font-normal text-ink">
+                {recurring.length}
+              </div>
+              <div className="text-xs text-ink-muted mt-1">Recurring Tasks</div>
+            </div>
+          </div>
+        </div>
 
         {/* Color Mode Setting */}
         <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
@@ -542,50 +566,6 @@ function SettingsView() {
           </div>
         </div>
 
-        {/* Info Box */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex gap-3">
-            <div className="flex-shrink-0 text-blue-600 dark:text-blue-400">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">How it works</h3>
-              <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
-                Every day at your chosen time, the app automatically starts fresh. 
-                Tasks you didn't complete move to your backlog so you can pick them up later. 
-                Completed tasks are saved to your "Done!" archive so you can celebrate your wins.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
-          <h2 className="text-lg font-medium text-ink mb-4">Your Stats</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-ink">
-                {done.length}
-              </div>
-              <div className="text-xs text-ink-muted mt-1">Tasks Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-ink">
-                {backlog.length}
-              </div>
-              <div className="text-xs text-ink-muted mt-1">In Backlog</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-semibold text-ink">
-                {recurring.length}
-              </div>
-              <div className="text-xs text-ink-muted mt-1">Recurring Tasks</div>
-            </div>
-          </div>
-        </div>
-
         {/* Export Data */}
         <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
@@ -607,7 +587,7 @@ function SettingsView() {
                 Download Backup
               </button>
 
-              <label className="px-6 py-2 bg-hover dark:bg-secondary text-white rounded-lg hover:bg-hover dark:hover:bg-secondary-dark transition-colors font-semibold shadow-sm flex items-center gap-2 cursor-pointer">
+              <label className="px-6 py-2 border border-edge-strong text-ink rounded-lg hover:bg-hover transition-colors font-semibold flex items-center gap-2 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                   <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L9 8m4-4v12" />
                 </svg>
@@ -642,12 +622,12 @@ function SettingsView() {
             )}
           </div>
         </div>
-        {/* Change Password */}
+        {/* Account — password + sign out */}
         <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-medium text-ink">Change Password</h2>
+                <h2 className="text-lg font-medium text-ink">Change password</h2>
                 <p className="text-sm text-ink-muted mt-1">
                   Update your account password
                 </p>
@@ -727,6 +707,23 @@ function SettingsView() {
                   {passwordLoading ? 'Updating...' : 'Update password'}
                 </button>
               </form>
+            )}
+
+            {onSignOut && (
+              <div className="pt-4 border-t border-edge flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-medium text-ink">Sign out</h2>
+                  <p className="text-sm text-ink-muted mt-1">
+                    Sign out of this device. Your data stays synced.
+                  </p>
+                </div>
+                <button
+                  onClick={onSignOut}
+                  className="px-4 py-2 text-sm rounded-lg border border-edge-strong text-ink hover:bg-hover transition-colors font-medium whitespace-nowrap"
+                >
+                  Sign out
+                </button>
+              </div>
             )}
           </div>
         </div>

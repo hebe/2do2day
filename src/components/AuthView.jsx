@@ -86,7 +86,7 @@ function AuthView() {
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-light text-ink mb-2">
+          <h1 className="font-display text-5xl font-normal text-ink mb-2">
             2do2day
           </h1>
           <p className="text-ink-muted">

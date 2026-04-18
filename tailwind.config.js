@@ -56,7 +56,7 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Fraunces', 'Source Serif 4', 'Georgia', 'serif'],
+        display: ['Fraunces', '"Source Serif 4"', 'Georgia', 'serif'],
       },
     },
   },
