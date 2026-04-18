@@ -88,7 +88,7 @@ function App() {
             <button
               onClick={() => setCurrentView('today')}
               aria-label="Go to Today"
-              className="mr-auto py-4 flex items-center gap-2 font-display text-xl md:text-2xl text-ink hover:opacity-80 transition-opacity"
+              className="mr-auto py-4 flex items-center gap-2 font-display text-xl md:text-2xl font-semibold text-ink hover:opacity-80 transition-opacity"
             >
               <svg
                 className="logo-mark w-7 h-5 md:w-8 md:h-6"

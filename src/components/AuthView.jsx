@@ -86,7 +86,15 @@ function AuthView() {
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-5xl font-normal text-ink mb-2">
+          <h1 className="font-display text-5xl font-extrabold text-ink mb-2 flex items-center justify-center gap-3">
+            <svg
+              className="logo-mark h-10 w-16"
+              viewBox="0 0 32 20"
+              aria-hidden="true"
+            >
+              <circle className="logo-accent" cx="10" cy="10" r="10" />
+              <circle className="logo-mono"   cx="22" cy="10" r="10" />
+            </svg>
             2do2day
           </h1>
           <p className="text-ink-muted">
@@ -231,19 +239,18 @@ function AuthView() {
           </div>
         </div>
 
-        {/* Optional: Continue without signing in */}
-        <div className="mt-4 text-center">
-          <p className="text-sm text-ink-muted">
-            Or{' '}
-            <button
-              onClick={() => {
-                // TODO: Implement "use without account" mode
-                alert('Local-only mode coming soon! For now, please sign in to use the app.')
-              }}
-              className="text-brand hover:text-brand-dark font-medium"
+        {/* Credit / contact */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-ink-faint">
+            An app by{' '}
+            <a
+              href="https://github.com/hebe"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ink-muted hover:text-ink underline underline-offset-2"
             >
-              continue without an account
-            </button>
+              Hebe
+            </a>
           </p>
         </div>
       </div>

@@ -104,9 +104,9 @@
      Must come after .dark so it wins when both classes are on <html>
      (both are toggled together so Tailwind dark: utilities still fire). */
   .dark-2 {
-    --bg-page:   #212936;
-    --bg-card:   #1f2937;
-    --bg-hover:  #374151;
+    --bg-page:   #1a202e;          /* gray-850 — softer floor */
+    --bg-card:   #283142;          /* gray-750 — cards lift one step */
+    --bg-hover:  #374151;          /* gray-700 — hover lifts further */
     --bg-input:  #374151;
     --text-primary:     #f9fafb;
     --text-muted:       #9ca3af;

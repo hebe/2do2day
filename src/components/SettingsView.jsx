@@ -24,6 +24,20 @@ function SettingsView({ onSignOut }) {
     })
   }, [])
 
+  // Admin-only: total user count
+  const isAdmin = userEmail === 'hebedesign@gmail.com'
+  const [userCount, setUserCount] = useState(null)
+  useEffect(() => {
+    if (!isAdmin) return
+    supabase.rpc('user_count').then(({ data, error }) => {
+      if (error) {
+        console.warn('user_count rpc failed:', error.message)
+        return
+      }
+      setUserCount(data)
+    })
+  }, [isAdmin])
+
   const [dayStart, setDayStart] = useState(settings.dayStart)
   const [colorMode, setColorMode] = useState(settings.colorMode || 'auto')
   const [isSaved, setIsSaved] = useState(false)
@@ -241,6 +255,13 @@ function SettingsView({ onSignOut }) {
               <div className="text-xs text-ink-muted mt-1">Recurring Tasks</div>
             </div>
           </div>
+          {isAdmin && (
+            <div className="mt-4 pt-4 border-t border-edge text-center">
+              <span className="text-xs text-ink-faint">
+                Admin · {userCount ?? '—'} total {userCount === 1 ? 'user' : 'users'} on 2do2day
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Color Mode Setting */}

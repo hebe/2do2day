@@ -22,7 +22,7 @@ const useStore = create(
         snoozeOptions: [2, 5, 60, 'Tonight'],
         lastDayReset: null,
         backlogSortBy: 'recent', // 'recent', 'postponed', 'oldest'
-        colorMode: 'auto', // 'light', 'dark', or 'auto'
+        colorMode: 'dark', // 'light', 'dark' (riso navy), 'dark-2' (classic gray), or 'auto'
         categories: DEFAULT_CATEGORIES,
         todaySortBy: 'manual', // 'manual' or 'priority'
       },
