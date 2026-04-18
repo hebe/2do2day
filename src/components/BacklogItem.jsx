@@ -169,12 +169,12 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           ...(categoryOKLab && { '--accent': categoryOKLab })
         }}
         className={`flex items-center gap-3 p-4 ${
-          categoryOKLab ? 'cat-row' : 'bg-white dark:bg-gray-800'
+          categoryOKLab ? 'cat-row' : 'bg-card'
         }`}
       >
-        <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+        <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-edge-strong flex items-center justify-center bg-hover">
           <svg
-            className="w-3 h-3 text-gray-600 dark:text-gray-400"
+            className="w-3 h-3 text-ink-muted"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -192,17 +192,17 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
                 💫
               </span>
             )}
-            <span className="text-sm text-gray-900 dark:text-gray-100">
+            <span className="text-sm text-ink">
               {task.title}
               {isRecurring && task.completionCount && (
-                <span className="ml-1 text-gray-600 dark:text-gray-400">
+                <span className="ml-1 text-ink-muted">
                   ×{task.completionCount}
                 </span>
               )}
             </span>
           </div>
           {completionDate && (
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <p className="text-xs text-ink-muted mt-1">
               {isRecurring ? 'Last: ' : 'Completed '}
               {formatDate(completionDate)}
             </p>
@@ -215,7 +215,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
   // Editing mode
   if (isEditing) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-calm-50 dark:bg-gray-700">
+      <div className="flex items-center gap-3 p-4 bg-hover dark:bg-hover">
         <input
           ref={inputRef}
           type="text"
@@ -223,19 +223,19 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSaveEdit}
-          className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="flex-1 px-3 py-1 text-sm border border-edge-strong rounded focus:outline-none focus:border-edge-strong transition-colors bg-card text-ink"
         />
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSaveEdit}
-          className="px-3 py-1 text-xs bg-gray-700 dark:bg-gray-600 text-white rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors"
+          className="px-3 py-1 text-xs bg-hover dark:bg-secondary text-white rounded hover:bg-hover dark:hover:bg-secondary-dark transition-colors"
         >
           Save
         </button>
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancelEdit}
-          className="px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+          className="px-3 py-1 text-xs text-ink-muted hover:text-ink transition-colors"
         >
           Cancel
         </button>
@@ -256,7 +256,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
         } ${
           categoryOKLab
             ? 'cat-row'
-            : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
+            : 'bg-card hover:bg-hover'
         }`}
       >
         {/* Drag handle */}
@@ -265,11 +265,11 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
             ref={setActivatorNodeRef}
             {...attributes}
             {...listeners}
-            className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
+            className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
             aria-label="Drag to reorder"
             title="Drag to reorder"
           >
-            <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400">
+            <svg viewBox="0 0 20 20" className="w-4 h-4 text-ink-faint">
               <path
                 fill="currentColor"
                 d="M7 4h2v2H7V4zm4 0h2v2h-2V4zM7 9h2v2H7V9zm4 0h2v2h-2V9zM7 14h2v2H7v-2zm4 0h2v2h-2v-2z"
@@ -291,11 +291,11 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
             )}
 
             <div className="flex-1 min-w-0">
-              <span className="text-sm block text-gray-900 dark:text-gray-100">
+              <span className="text-sm block text-ink">
                 {task.title}
               </span>
               {type === 'recurring' && task.recurrencePattern && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 block mt-0.5">
+                <span className="text-xs text-ink-muted block mt-0.5">
                   ↻ {getRecurrenceDescription(task)}
                 </span>
               )}
@@ -309,7 +309,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           </div>
 
           {type === 'backlog' && task.addedToBacklogCount && task.addedToBacklogCount < 3 && task.addedToBacklogCount > 1 && (
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <p className="text-xs text-ink-muted mt-1">
               Postponed {task.addedToBacklogCount} times
             </p>
           )}
@@ -329,7 +329,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleAddToToday}
-            className="px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="px-2 py-1 text-xs rounded transition-colors font-medium whitespace-nowrap text-ink dark:text-ink bg-hover hover:bg-hover"
           >
             ← Today
           </button>
@@ -337,7 +337,7 @@ function BacklogItem({ task, type, isDragDisabled = false }) {
           <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="p-1 text-ink-muted hover:text-ink dark:hover:text-ink-faint transition-colors"
               aria-label="More options"
             >
               <svg

@@ -92,7 +92,7 @@ function TaskRow({ task, onDelete, onEdit }) {
   // Editing mode
   if (isEditing) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-calm-50 dark:bg-gray-700">
+      <div className="flex items-center gap-3 p-4 bg-hover dark:bg-hover">
         <div className="flex-shrink-0 w-5 h-5" />
         <input
           ref={inputRef}
@@ -101,19 +101,19 @@ function TaskRow({ task, onDelete, onEdit }) {
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSaveEdit}
-          className="flex-1 px-3 py-1 text-base border border-calm-300 dark:border-gray-600 rounded focus:outline-none focus:border-calm-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="flex-1 px-3 py-1 text-base border border-edge-strong dark:border-edge rounded focus:outline-none focus:border-ink-muted transition-colors bg-card text-ink"
         />
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleSaveEdit}
-          className="px-3 py-1 text-xs bg-calm-700 dark:bg-gray-600 text-white rounded hover:bg-calm-600 dark:hover:bg-gray-500 transition-colors font-medium"
+          className="px-3 py-1 text-xs bg-secondary text-white rounded hover:bg-secondary-dark dark:hover:bg-secondary-dark transition-colors font-medium"
         >
           Save
         </button>
         <button
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleCancelEdit}
-          className="px-3 py-1 text-xs text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors"
+          className="px-3 py-1 text-xs text-ink-muted hover:text-ink-muted transition-colors"
         >
           Cancel
         </button>
@@ -134,7 +134,7 @@ function TaskRow({ task, onDelete, onEdit }) {
         } ${
           categoryOKLab
             ? 'cat-row'
-            : 'bg-white dark:bg-gray-800 hover:bg-calm-50 dark:hover:bg-gray-700'
+            : 'bg-card hover:bg-hover'
         }`}
       >
         {/* Drag handle - using activator pattern for touch-friendly dragging */}
@@ -142,11 +142,11 @@ function TaskRow({ task, onDelete, onEdit }) {
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 w-6 h-6 -ml-1 rounded hover:bg-black/5 dark:hover:bg-white/5 active:scale-95 transition touch-none flex items-center justify-center cursor-grab active:cursor-grabbing"
           aria-label="Drag to reorder"
           title="Drag to reorder"
         >
-          <svg viewBox="0 0 20 20" className="w-4 h-4 text-gray-400">
+          <svg viewBox="0 0 20 20" className="w-4 h-4 text-ink-faint">
             <path
               fill="currentColor"
               d="M7 4h2v2H7V4zm4 0h2v2h-2V4zM7 9h2v2H7V9zm4 0h2v2h-2V9zM7 14h2v2H7v-2zm4 0h2v2h-2v-2z"
@@ -157,12 +157,12 @@ function TaskRow({ task, onDelete, onEdit }) {
         {/* Checkbox */}
         <button
           onClick={() => toggleDone(task.id)}
-          className="flex-shrink-0 w-5 h-5 rounded border-2 border-gray-400 dark:border-gray-500 hover:border-gray-600 dark:hover:border-gray-300 transition-colors flex items-center justify-center bg-white/50 dark:bg-gray-800/50"
+          className="flex-shrink-0 w-5 h-5 rounded border-2 border-edge-strong hover:border-ink-muted transition-colors flex items-center justify-center bg-card"
           aria-label={task.done ? 'Mark as incomplete' : 'Mark as complete'}
         >
           {task.done && (
             <svg
-              className="w-3 h-3 text-gray-600 dark:text-gray-300"
+              className="w-3 h-3 text-ink-muted dark:text-ink-faint"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -197,8 +197,8 @@ function TaskRow({ task, onDelete, onEdit }) {
   <span
     className={`flex-1 text-base ${
       task.done
-        ? 'line-through text-gray-500 dark:text-gray-400'
-        : 'text-gray-900 dark:text-gray-100'
+        ? 'line-through text-ink-muted'
+        : 'text-ink'
     } transition-all`}
   >
     {task.title}
@@ -233,12 +233,12 @@ function TaskRow({ task, onDelete, onEdit }) {
             className={`p-1.5 rounded transition-colors ${
               task.urgent
                 ? 'bg-orange-200 dark:bg-orange-900/50'
-                : 'hover:bg-white/50 dark:hover:bg-gray-900/50'
+                : 'hover:bg-hover'
             }`}
             title={task.urgent ? "Remove urgent" : "Mark as urgent"}
           >
             {task.urgent ? '🔥' : (
-              <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-ink-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             )}
@@ -249,7 +249,7 @@ function TaskRow({ task, onDelete, onEdit }) {
         <div className="hidden md:block flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            className="p-1 text-ink-muted hover:text-ink dark:hover:text-ink-faint transition-colors"
             aria-label="More options"
           >
             <svg

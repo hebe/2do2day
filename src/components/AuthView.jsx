@@ -82,24 +82,24 @@ function AuthView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-calm-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-page flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-light text-gray-900 dark:text-gray-100 mb-2">
+          <h1 className="text-4xl font-light text-ink mb-2">
             2do2day
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-ink-muted">
             A minimal, calming daily to-do app
           </p>
         </div>
 
         {/* Sign In Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-8">
-          <h2 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2 text-center">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-8">
+          <h2 className="text-xl font-medium text-ink mb-2 text-center">
             {mode === 'reset' ? 'Reset your password' : mode === 'signup' ? 'Create an account' : 'Sign in to sync your tasks'}
           </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 text-center">
+          <p className="text-sm text-ink-muted mb-6 text-center">
             {mode === 'reset'
               ? "We'll send you a password reset link"
               : mode === 'signup'
@@ -121,7 +121,7 @@ function AuthView() {
 
           <form onSubmit={mode === 'reset' ? handlePasswordReset : handlePasswordAuth} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-ink mb-2">
                 Email address
               </label>
               <input
@@ -132,13 +132,13 @@ function AuthView() {
                 placeholder="you@example.com"
                 required
                 disabled={loading}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                className="w-full px-4 py-3 border border-edge-strong rounded-lg focus:outline-none focus:border-brand transition-colors bg-input text-ink disabled:opacity-50"
               />
             </div>
 
             {mode !== 'reset' && (
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-ink mb-2">
                   Password
                 </label>
                 <input
@@ -150,10 +150,10 @@ function AuthView() {
                   required
                   disabled={loading}
                   minLength={6}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                  className="w-full px-4 py-3 border border-edge-strong rounded-lg focus:outline-none focus:border-brand transition-colors bg-input text-ink disabled:opacity-50"
                 />
                 {mode === 'signup' && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-ink-muted mt-1">
                     Minimum 6 characters
                   </p>
                 )}
@@ -163,7 +163,7 @@ function AuthView() {
             <button
               type="submit"
               disabled={loading || !email || (mode !== 'reset' && !password)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#F0A500] text-white rounded-lg hover:bg-[#D89400] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {loading ? (
                 <>
@@ -189,11 +189,11 @@ function AuthView() {
                     setError(null)
                     setMessage(null)
                   }}
-                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#F0A500] dark:hover:text-[#F0A500]"
+                  className="text-sm text-ink-muted hover:text-brand dark:hover:text-brand"
                 >
                   Forgot password?
                 </button>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-ink-muted">
                   Don't have an account?{' '}
                   <button
                     onClick={() => {
@@ -202,7 +202,7 @@ function AuthView() {
                       setError(null)
                       setMessage(null)
                     }}
-                    className="text-[#F0A500] hover:text-[#D89400] font-medium"
+                    className="text-brand hover:text-brand-dark font-medium"
                   >
                     Sign up
                   </button>
@@ -217,15 +217,15 @@ function AuthView() {
                   setError(null)
                   setMessage(null)
                 }}
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#F0A500] dark:hover:text-[#F0A500]"
+                className="text-sm text-ink-muted hover:text-brand dark:hover:text-brand"
               >
                 Back to sign in
               </button>
             )}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div className="mt-6 pt-6 border-t border-edge">
+            <p className="text-xs text-ink-muted text-center">
               Your tasks will be securely stored and synced across all your devices
             </p>
           </div>
@@ -233,14 +233,14 @@ function AuthView() {
 
         {/* Optional: Continue without signing in */}
         <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-ink-muted">
             Or{' '}
             <button
               onClick={() => {
                 // TODO: Implement "use without account" mode
                 alert('Local-only mode coming soon! For now, please sign in to use the app.')
               }}
-              className="text-[#F0A500] hover:text-[#D89400] font-medium"
+              className="text-brand hover:text-brand-dark font-medium"
             >
               continue without an account
             </button>

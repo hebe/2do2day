@@ -63,10 +63,10 @@ function App() {
   // Show loading state while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-white to-calm-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-gray-200 dark:border-gray-700 border-t-[#F0A500] rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="w-12 h-12 border-4 border-edge border-t-brand rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-ink-muted">Loading...</p>
         </div>
       </div>
     )
@@ -80,17 +80,17 @@ function App() {
   // Main app (user is signed in)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-calm-50 dark:from-gray-900 dark:to-gray-800 transition-colors">
+    <div className="min-h-screen bg-page transition-colors">
       {/* Navigation */}
-      <nav className="border-b border-calm-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
+      <nav className="border-b border-edge surface-nav backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex gap-6 md:gap-8">
             <button
               onClick={() => setCurrentView('today')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'today'
-                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
-                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                  ? 'border-brand text-ink'
+                  : 'border-transparent text-ink-faint hover:text-ink-muted'
               }`}
             >
               Today
@@ -99,8 +99,8 @@ function App() {
               onClick={() => setCurrentView('backlog')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'backlog'
-                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
-                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                  ? 'border-brand text-ink'
+                  : 'border-transparent text-ink-faint hover:text-ink-muted'
               }`}
             >
               Backlog
@@ -109,8 +109,8 @@ function App() {
               onClick={() => setCurrentView('matrix')}
               className={`hidden md:block py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'matrix'
-                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
-                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                  ? 'border-brand text-ink'
+                  : 'border-transparent text-ink-faint hover:text-ink-muted'
               }`}
             >
               Matrix
@@ -119,8 +119,8 @@ function App() {
               onClick={() => setCurrentView('settings')}
               className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                 currentView === 'settings'
-                  ? 'border-[#F0A500] text-gray-900 dark:text-gray-100'
-                  : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                  ? 'border-brand text-ink'
+                  : 'border-transparent text-ink-faint hover:text-ink-muted'
               }`}
             >
               Settings
@@ -130,7 +130,7 @@ function App() {
             <div className="ml-auto flex items-center">
               <button
                 onClick={handleSignOut}
-                className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                className="text-xs text-ink-muted hover:text-ink transition-colors"
               >
                 Sign Out
               </button>

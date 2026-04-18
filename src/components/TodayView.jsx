@@ -257,19 +257,19 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
           {/* Counter and Sort Button */}
           {showCounter && (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-4 text-sm text-ink-muted">
                 <span>
-                  <strong className="text-gray-900 dark:text-gray-100">{undoneCount}</strong> to do
+                  <strong className="text-ink">{undoneCount}</strong> to do
                 </span>
-                <span className="text-gray-300 dark:text-gray-600">•</span>
+                <span className="text-ink-faint">•</span>
                 <span>
-                  <strong className="text-gray-900 dark:text-gray-100">{doneCount}</strong> done
+                  <strong className="text-ink">{doneCount}</strong> done
                 </span>
               </div>
               {hasPrioritized && (
                 <button
                   onClick={sortTodayByPriority}
-                  className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors flex items-center gap-1"
+                  className="text-xs text-ink-muted hover:text-ink transition-colors flex items-center gap-1"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
@@ -280,7 +280,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
               {doneCount > 0 && undoneCount > 0 && (
                 <button
                   onClick={sortTodayByCompletion}
-                  className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors flex items-center gap-1"
+                  className="text-xs text-ink-muted hover:text-ink transition-colors flex items-center gap-1"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
@@ -292,9 +292,9 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
           )}
 
           {/* Task list */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-card rounded-lg shadow-sm border border-edge overflow-hidden">
             {today.length === 0 ? (
-              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+              <div className="p-8 text-center text-ink-muted">
                 <p className="text-sm">Your list is empty. Add your first task below.</p>
               </div>
             ) : (
@@ -308,7 +308,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
                   items={today.map((t) => t.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+                  <div className="divide-y divide-edge">
                     {today.map((task) => (
                       <TaskRow
                         key={task.id}

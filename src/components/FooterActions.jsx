@@ -10,11 +10,11 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Add another task..."
-          className="flex-1 px-4 py-3 text-sm border border-calm-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors"
+          className="flex-1 px-4 py-3 text-sm border border-edge dark:bg-card dark:text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
         />
         <button
           type="submit"
-          className="px-6 py-3 bg-[#F0A500] text-gray-800 text-sm rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm"
+          className="px-6 py-3 bg-brand text-brand-on text-sm rounded-lg hover:bg-brand-dark transition-colors font-semibold shadow-sm"
         >
           Add
         </button>
@@ -24,7 +24,7 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
       <div className="flex gap-3 justify-center">
         <button
           onClick={handleAddFromBacklog}
-          className="text-sm text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+          className="text-sm text-ink-muted hover:text-ink-muted transition-colors flex items-center gap-1"
         >
           <span>📋</span>
           <span>From backlog</span>
@@ -33,7 +33,7 @@ function FooterActions({ inputValue, setInputValue, handleAddTask, handleAddFrom
         {recurringCount > 0 && (
           <button
             onClick={handleAddFromRecurring}
-            className="text-sm text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+            className="text-sm text-ink-muted hover:text-ink-muted transition-colors flex items-center gap-1"
           >
             <span>💫</span>
             <span>{recurringCount} ready</span>

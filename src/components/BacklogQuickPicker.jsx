@@ -19,13 +19,13 @@ function BacklogQuickPicker({ onClose }) {
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-calm-200 dark:border-gray-700 w-full max-w-md max-h-[80vh] flex flex-col animate-slideUp">
+        <div className="bg-card rounded-lg shadow-xl border border-edge w-full max-w-md max-h-[80vh] flex flex-col animate-slideUp">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Add from Backlog</h2>
+          <div className="px-6 py-4 border-b border-edge flex items-center justify-between">
+            <h2 className="text-lg font-medium text-ink">Add from Backlog</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              className="text-ink-faint hover:text-ink-muted transition-colors"
               aria-label="Close"
             >
               <svg
@@ -45,22 +45,22 @@ function BacklogQuickPicker({ onClose }) {
           {/* Content */}
           <div className="overflow-y-auto flex-1">
             {backlog.length === 0 ? (
-              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+              <div className="p-8 text-center text-ink-muted">
                 <p className="text-sm">Your backlog is empty.</p>
-                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+                <p className="text-xs mt-2 text-ink-muted">
                   Go to the Backlog tab to add tasks for later.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+              <div className="divide-y divide-edge">
                 {backlog.map((task) => (
                   <button
                     key={task.id}
                     onClick={() => handleSelect(task.id)}
-                    className="w-full px-6 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-between group"
+                    className="w-full px-6 py-3 text-left hover:bg-hover transition-colors flex items-center justify-between group"
                   >
-                    <span className="text-sm text-gray-900 dark:text-gray-100">{task.title}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
+                    <span className="text-sm text-ink">{task.title}</span>
+                    <span className="text-xs text-ink-faint group-hover:text-ink-muted dark:group-hover:text-ink-faint transition-colors">
                       Add →
                     </span>
                   </button>
@@ -70,10 +70,10 @@ function BacklogQuickPicker({ onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+          <div className="px-6 py-4 border-t border-edge bg-hover">
             <button
               onClick={onClose}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+              className="text-sm text-ink-muted hover:text-ink transition-colors"
             >
               Cancel
             </button>
