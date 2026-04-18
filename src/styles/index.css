@@ -3,57 +3,106 @@
 @tailwind utilities;
 
 /*
-  index.css — calm light/dark theme + subtle category tinting
+  index.css — design token system + category tinting
 
-  Goals (based on your feedback):
-  - Light mode: reduce the "grayish" wash in tinted rows (keep it crisp/white)
-  - Dark mode: make category differences more visible without becoming loud
+  Token layers:
+  1. Global semantic tokens (surfaces, text, borders, brand) — swap the whole
+     visual direction by changing only the :root / .dark blocks here.
+  2. Category row system — color-mix tinting via --accent + --row-* tokens.
+     Category colors come from the user's data; everything else is tokens.
 
-  How it works:
-  - We define a neutral row surface token: --row-surface
-  - Each category defines an accent: --cat-*
-  - Category row classes mix surface + accent with different strengths per theme
-  - Dark mode also gets a tiny "ink" edge to help scanning in dense lists
-
-  Notes:
-  - color-mix(in oklab, …) is supported in modern Chromium/Safari/Firefox.
-  - A simple fallback is included for older browsers (it will still look fine).
+  To apply a new visual direction: update the CSS variable values below.
+  Tailwind aliases (bg-card, text-ink, border-edge, bg-brand …) are wired
+  to these variables in tailwind.config.js.
 */
 
 @layer base {
   :root {
-    /* Base surfaces */
-    --app-bg: #fdfdfe; /* your light base */
-    --row-surface: oklch(0.99 0.002 260); /* cleaner than #fdfdfe => less gray tint */
-    --row-hover: oklch(0.975 0.004 260);
+    /* --- Surfaces --- */
+    --bg-page:   #fdfdfe;
+    --bg-card:   #ffffff;
+    --bg-hover:  #f9fafb;
+    --bg-input:  #ffffff;
 
-    /* Borders / dividers */
-    --row-border: oklch(0.90 0.01 260);
+    /* --- Text --- */
+    --text-primary:     #111827;   /* gray-900 */
+    --text-muted:       #4b5563;   /* gray-600 */
+    --text-faint:       #9ca3af;   /* gray-400 */
 
-    /* Mix strengths — LIGHT */
-    --cat-bg-mix: 15%;       /* background tint strength */
-    --cat-border-mix: 32%;  /* border tint strength */
-    --cat-edge-mix: 65%;    /* (mostly unused in light) */
+    /* --- Borders --- */
+    --border:           #e5e7eb;   /* gray-200 / calm-200 */
+    --border-strong:    #d1d5db;   /* gray-300 */
+
+    /* --- Action (primary buttons / CTAs) --- */
+    --action:           #F0A500;
+    --action-hover:     #D89400;
+    --on-action:        #1f2937;   /* text ON action bg */
+    --action-subtle:    #fffbeb;   /* faint action-tinted bg */
+
+    /* --- Accent (highlights, display type, heading colour) ---
+       Same as action in the base theme; diverges in riso/desk directions
+       (e.g. riso: --action = navy, --accent = riso-red) */
+    --accent:           #F0A500;
+    --accent-subtle:    #fffbeb;
+
+    /* --- Secondary action (inline save, confirm, modal submit) --- */
+    --secondary:        #9baabf;   /* calm-700 blue-gray */
+    --secondary-dark:   #7b8da3;
+
+    /* --- Category row system (keep colour-mix logic intact) --- */
+    --row-surface: oklch(0.99 0.002 260);
+    --row-hover:   oklch(0.975 0.004 260);
+    --row-border:  oklch(0.90 0.01 260);
+    --cat-bg-mix:     15%;
+    --cat-border-mix: 32%;
+    --cat-edge-mix:   65%;
+
+    /* Legacy alias kept for body background */
+    --app-bg: var(--bg-page);
   }
 
-  /* Tailwind typically toggles dark mode via class on <html> */
   .dark {
-    --app-bg: #212936; /* your dark base */
-    /* Slightly lighter than #212936 so subtle mixes show up more */
+    --bg-page:   #212936;
+    --bg-card:   #1f2937;          /* gray-800 */
+    --bg-hover:  #374151;          /* gray-700 */
+    --bg-input:  #374151;          /* gray-700 — slightly elevated for inputs */
+
+    --text-primary:     #f9fafb;   /* gray-100 */
+    --text-muted:       #9ca3af;   /* gray-400 */
+    --text-faint:       #6b7280;   /* gray-500 */
+
+    --border:           #374151;   /* gray-700 */
+    --border-strong:    #4b5563;   /* gray-600 */
+
+    --action:           #F0A500;
+    --action-hover:     #D89400;
+    --on-action:        #1f2937;
+    --action-subtle:    #451a03;
+
+    --accent:           #F0A500;
+    --accent-subtle:    #451a03;
+
+    --secondary:        #4b5563;   /* gray-600 */
+    --secondary-dark:   #374151;   /* gray-700 */
+
     --row-surface: oklch(0.30 0.03 255);
-    --row-hover: oklch(0.34 0.03 255);
-    --row-border: oklch(0.42 0.03 255);
-
-    /* Mix strengths — DARK */
-    --cat-bg-mix: 18%;
+    --row-hover:   oklch(0.34 0.03 255);
+    --row-border:  oklch(0.42 0.03 255);
+    --cat-bg-mix:     18%;
     --cat-border-mix: 40%;
-    --cat-edge-mix: 70%;
+    --cat-edge-mix:   70%;
+
+    --app-bg: var(--bg-page);
   }
 
-  /* Optional: if you want the whole page background to match --app-bg */
   body {
-    background: var(--app-bg);
+    background: var(--bg-page);
   }
+}
+
+/* Nav surface — semi-transparent page bg for sticky nav frosted glass */
+.surface-nav {
+  background: color-mix(in srgb, var(--bg-page) 85%, transparent);
 }
 
 @layer components {
@@ -100,7 +149,10 @@
       );
     }
 
-    /* Dark-mode scan aid: tiny ink edge (keeps background subtle) */
+    /* ----------------------------------------------------------------
+       SCAN AID (optional add-on) — remove this block per visual
+       direction if you don't want the left-edge accent bar in dark mode
+       ---------------------------------------------------------------- */
     .dark .cat-row {
       position: relative;
     }
@@ -120,6 +172,7 @@
       opacity: 0.9;
       pointer-events: none;
     }
+    /* END scan aid */
   }
  
  

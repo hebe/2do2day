@@ -140,9 +140,9 @@ function BacklogView() {
   const renderBacklogList = () => {
     if (backlog.length === 0) {
       return (
-        <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+        <div className="p-8 text-center text-ink-muted">
           <p className="text-sm">Your backlog is empty.</p>
-          <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+          <p className="text-xs mt-2 text-ink-muted">
             Add tasks here that you want to do someday, but not necessarily today.
           </p>
         </div>
@@ -152,12 +152,12 @@ function BacklogView() {
     return (
       <>
         {/* Sort dropdown */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Sort by:</span>
+        <div className="p-4 border-b border-edge flex items-center justify-between">
+          <span className="text-xs text-ink-muted">Sort by:</span>
           <select
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value)}
-            className="text-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="text-xs px-3 py-1 border border-edge-strong rounded focus:outline-none focus:border-edge-strong transition-colors bg-card text-ink"
           >
             <option value="manual">Manual (drag to reorder)</option>
             <option value="recent">Recently added</option>
@@ -180,7 +180,7 @@ function BacklogView() {
               items={visibleBacklog.map((t) => t.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+              <div className="divide-y divide-edge">
                 {visibleBacklog.map((task) => (
                   <BacklogItem
                     key={task.id}
@@ -192,7 +192,7 @@ function BacklogView() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+          <div className="divide-y divide-edge">
             {visibleBacklog.map((task) => (
               <BacklogItem
                 key={task.id}
@@ -206,10 +206,10 @@ function BacklogView() {
 
         {/* Show all button */}
         {backlog.length > 6 && !showAll && (
-          <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
+          <div className="p-4 text-center border-t border-edge">
             <button
               onClick={() => setShowAll(true)}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
+              className="text-sm text-ink-muted hover:text-ink transition-colors font-medium"
             >
               Show all ({backlog.length} tasks)
             </button>
@@ -228,14 +228,14 @@ function BacklogView() {
         return (
           <div>
             {recurring.length === 0 ? (
-              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+              <div className="p-8 text-center text-ink-muted">
                 <p className="text-sm">No recurring tasks yet.</p>
-                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+                <p className="text-xs mt-2 text-ink-muted">
                   Mark tasks as recurring from your backlog.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+              <div className="divide-y divide-edge">
                 {recurring.map((task) => (
                   <BacklogItem key={task.id} task={task} type="recurring" />
                 ))}
@@ -284,24 +284,24 @@ function BacklogView() {
         return (
           <div>
             {done.length === 0 ? (
-              <div className="p-8 text-center text-gray-600 dark:text-gray-400">
+              <div className="p-8 text-center text-ink-muted">
                 <p className="text-sm">No completed tasks yet.</p>
-                <p className="text-xs mt-2 text-gray-500 dark:text-gray-500">
+                <p className="text-xs mt-2 text-ink-muted">
                   Keep going! Your completed tasks will appear here. 🎉
                 </p>
               </div>
             ) : (
               <>
-                <div className="p-4 bg-calm-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700/50 flex items-center justify-between">
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
+                <div className="p-4 bg-hover border-b border-edge flex items-center justify-between">
+                  <p className="text-sm text-ink">
                     🎉 <strong>{done.length}</strong> {done.length === 1 ? 'task' : 'tasks'} completed!
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Sort:</span>
+                    <span className="text-xs text-ink-muted">Sort:</span>
                     <select
                       value={doneSortBy}
                       onChange={(e) => handleDoneSortChange(e.target.value)}
-                      className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-gray-600 dark:focus:border-gray-400 transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="text-xs px-2 py-1 border border-edge-strong rounded focus:outline-none focus:border-edge-strong transition-colors bg-card text-ink"
                     >
                       <option value="recent">Recent first</option>
                       <option value="oldest">Oldest first</option>
@@ -310,16 +310,16 @@ function BacklogView() {
                     </select>
                   </div>
                 </div>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700/50">
+                <div className="divide-y divide-edge">
                   {visibleDone.map((task) => (
                     <BacklogItem key={task.id} task={task} type="done" />
                   ))}
                 </div>
                 {done.length > 10 && !showAllDone && (
-                  <div className="p-4 text-center border-t border-gray-200 dark:border-gray-700/50">
+                  <div className="p-4 text-center border-t border-edge">
                     <button
                       onClick={() => setShowAllDone(true)}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors font-medium"
+                      className="text-sm text-ink-muted hover:text-ink transition-colors font-medium"
                     >
                       Show all ({done.length} tasks)
                     </button>
@@ -340,8 +340,8 @@ function BacklogView() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-light text-gray-900 dark:text-gray-100">Backlog</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-light text-ink">Backlog</h1>
+          <p className="text-sm text-ink-muted mt-1">
             Tasks you'll get to someday, recurring tasks, and your wins.
           </p>
         </div>
@@ -353,18 +353,18 @@ function BacklogView() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Add to backlog..."
-            className="flex-1 px-4 py-3 text-sm border border-calm-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors"
+            className="flex-1 px-4 py-3 text-sm border border-edge dark:bg-card dark:text-ink rounded-lg focus:outline-none focus:border-brand transition-colors"
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-[#F0A500] text-gray-800 text-sm rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm"
+            className="px-6 py-3 bg-brand text-brand-on text-sm rounded-lg hover:bg-brand-dark transition-colors font-semibold shadow-sm"
           >
             Add
           </button>
         </form>
 
         {/* Subtabs */}
-        <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-4 border-b border-edge">
           <button
             onClick={() => {
               setActiveTab('backlog')
@@ -373,8 +373,8 @@ function BacklogView() {
             }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'backlog'
-                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                ? 'border-ink dark:border-ink text-ink'
+                : 'border-transparent text-ink-faint hover:text-ink-muted'
             }`}
           >
             Backlog {backlog.length > 0 && `(${backlog.length})`}
@@ -387,8 +387,8 @@ function BacklogView() {
             }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'recurring'
-                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                ? 'border-ink dark:border-ink text-ink'
+                : 'border-transparent text-ink-faint hover:text-ink-muted'
             }`}
           >
             Recurring {recurring.length > 0 && `(${recurring.length})`}
@@ -401,8 +401,8 @@ function BacklogView() {
             }}
             className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'done'
-                ? 'border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100'
-                : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400'
+                ? 'border-ink dark:border-ink text-ink'
+                : 'border-transparent text-ink-faint hover:text-ink-muted'
             }`}
           >
             Done! {done.length > 0 && `(${done.length})`}
@@ -410,7 +410,7 @@ function BacklogView() {
         </div>
 
         {/* Content */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-600 overflow-hidden">
+        <div className="bg-card rounded-lg shadow-sm border border-edge overflow-hidden">
           {renderContent()}
         </div>
       </div>

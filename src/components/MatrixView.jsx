@@ -23,7 +23,7 @@ const QUADRANT_STYLES = {
   P1: { bg: 'quadrant-p1', labelColor: 'text-amber-600 dark:text-red-200',   chipBg: 'bg-amber-600 hover:bg-amber-500',   chipText: 'text-amber-50'  },
   P2: { bg: 'quadrant-p2', labelColor: 'text-blue-600 dark:text-blue-200',     chipBg: 'bg-blue-600 hover:bg-blue-500',     chipText: 'text-blue-50'   },
   P3: { bg: 'quadrant-p3', labelColor: 'text-yellow-600 dark:text-yellow-200', chipBg: 'bg-yellow-600 hover:bg-yellow-500', chipText: 'text-yellow-50' },
-  P4: { bg: 'quadrant-p4', labelColor: 'text-gray-500 dark:text-gray-400',     chipBg: 'bg-gray-500 hover:bg-gray-400',     chipText: 'text-gray-100'  },
+  P4: { bg: 'quadrant-p4', labelColor: 'text-ink-muted',     chipBg: 'bg-edge-strong hover:bg-edge',     chipText: 'text-ink'  },
 }
 
 function getQuadrantId(urgent, important) {
@@ -123,7 +123,7 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
     >
       <div className="absolute top-3 left-4 pointer-events-none z-10">
         <p className={`text-sm font-semibold ${style.labelColor}`}>{quadrant.emoji} {quadrant.label}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{quadrant.sublabel}</p>
+        <p className="text-xs text-ink-muted">{quadrant.sublabel}</p>
       </div>
 
       {tasks.map((task, i) => {
@@ -146,7 +146,7 @@ function MatrixQuadrant({ quadrant, tasks, onDrop, onOpenModal, onDragStart, set
 
       {tasks.length === 0 && (
         <div className="absolute inset-0 flex items-end justify-end p-4 pointer-events-none">
-          <p className="text-xs text-gray-700 dark:text-gray-700">Drop tasks here</p>
+          <p className="text-xs text-ink dark:text-ink">Drop tasks here</p>
         </div>
       )}
     </div>
@@ -239,8 +239,8 @@ function MatrixView() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 flex-shrink-0">
         <div>
-          <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">Priority Matrix</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <h1 className="text-base font-semibold text-ink">Priority Matrix</h1>
+          <p className="text-xs text-ink-muted">
             {rawTasks.length - unprioritized.length} of {rawTasks.length} tasks prioritized
           </p>
         </div>
@@ -248,7 +248,7 @@ function MatrixView() {
         <div className="flex items-center gap-4">
           {/* Chip length slider */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-600 font-mono">xs</span>
+            <span className="text-xs text-ink-faint font-mono">xs</span>
             <input
               type="range"
               min={6}
@@ -257,19 +257,19 @@ function MatrixView() {
               onChange={(e) => setChipMaxLen(Number(e.target.value))}
               className="w-20 accent-gray-400"
             />
-            <span className="text-xs font-mono text-gray-500 dark:text-gray-600 font-mono">XL</span>
+            <span className="text-xs font-mono text-ink-faint font-mono">XL</span>
           </div>
 
           {/* Today / Backlog toggle */}
-          <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-sm">
+          <div className="flex rounded-lg border border-edge overflow-hidden text-sm">
             {['today', 'backlog'].map(s => (
               <button
                 key={s}
                 onClick={() => setSource(s)}
                 className={`px-4 py-1.5 font-medium capitalize transition-colors ${
                   source === s
-                    ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-                    : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ? 'bg-ink text-card dark:text-ink'
+                    : 'bg-card text-ink-muted hover:bg-hover'
                 }`}
               >
                 {s}
@@ -282,14 +282,14 @@ function MatrixView() {
       {/* Matrix + axis labels */}
       <div className="flex flex-1 gap-2 px-6 pb-4 min-h-0">
         {/* Y axis label */}
-        <div className="flex flex-col justify-between text-xs text-gray-500 dark:text-gray-600 w-6 flex-shrink-0 py-2">
+        <div className="flex flex-col justify-between text-xs text-ink-faint w-6 flex-shrink-0 py-2">
           <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Important ↑</span>
           <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>↓ Not important</span>
         </div>
 
         <div className="flex flex-col flex-1 gap-2 min-h-0">
           {/* X axis label */}
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-600 px-1 flex-shrink-0">
+          <div className="flex justify-between text-xs text-ink-faint px-1 flex-shrink-0">
             <span>← Not urgent</span>
             <span>Urgent →</span>
           </div>
@@ -315,9 +315,9 @@ function MatrixView() {
             <div
               onDrop={handleDropUnprioritized}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move' }}
-              className="flex-shrink-0 flex flex-wrap gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-gray-700 min-h-[44px] items-center"
+              className="flex-shrink-0 flex flex-wrap gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-edge-strong min-h-[44px] items-center"
             >
-              <span className="text-xs text-gray-600 mr-1">Unprioritized:</span>
+              <span className="text-xs text-ink-muted mr-1">Unprioritized:</span>
               {unprioritized.map(task => {
                 const category = settings.categories?.find(c => c.id === task.category)
                 const categoryOKLab = category ? getCategoryOKLab(category.color) : null
@@ -331,7 +331,7 @@ function MatrixView() {
                     title={task.title}
                     style={categoryOKLab ? { '--accent': categoryOKLab } : undefined}
                     className={`px-2 py-0.5 rounded-md text-xs font-medium cursor-grab select-none transition-all hover:scale-105 ${
-                      categoryOKLab ? 'cat-chip' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                      categoryOKLab ? 'cat-chip' : 'bg-hover hover:bg-hover text-ink-faint'
                     }`}
                   >
                     {label}

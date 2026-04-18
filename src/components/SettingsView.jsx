@@ -206,12 +206,12 @@ function SettingsView() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-light text-gray-900 dark:text-gray-100">Settings</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl font-light text-ink">Settings</h1>
+          <p className="text-sm text-ink-muted mt-1">
             Customize how Today's ToDos works for you.
           </p>
           {userEmail && (
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+            <p className="text-xs text-ink-muted mt-2">
               Logged in as <span className="font-medium">{userEmail}</span>
             </p>
           )}
@@ -219,11 +219,11 @@ function SettingsView() {
 
 
         {/* Color Mode Setting */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Appearance</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <h2 className="text-lg font-medium text-ink">Appearance</h2>
+              <p className="text-sm text-ink-muted mt-1">
                 Choose how Today's ToDos looks.
               </p>
             </div>
@@ -235,25 +235,25 @@ function SettingsView() {
                   onClick={() => handleColorModeChange(option.value)}
                   className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
                     colorMode === option.value
-                      ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'border-brand bg-brand-subtle'
+                      : 'border-edge hover:border-edge dark:hover:border-edge hover:bg-hover'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{option.icon}</span>
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <div className="text-sm font-medium text-ink">
                           {option.label}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                        <div className="text-xs text-ink-muted mt-0.5">
                           {option.description}
                         </div>
                       </div>
                     </div>
                     {colorMode === option.value && (
                       <svg
-                        className="w-5 h-5 text-[#F0A500]"
+                        className="w-5 h-5 text-brand"
                         fill="none"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -273,18 +273,18 @@ function SettingsView() {
 
 
         {/* Categories Management */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Categories</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h2 className="text-lg font-medium text-ink">Categories</h2>
+                <p className="text-sm text-ink-muted mt-1">
                   Organize your tasks with custom categories
                 </p>
               </div>
               <button
                 onClick={() => setCategoriesExpanded(!categoriesExpanded)}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                className="p-2 text-ink-muted hover:text-ink transition-colors"
                 aria-label={categoriesExpanded ? "Collapse categories" : "Expand categories"}
               >
                 <svg
@@ -306,14 +306,14 @@ function SettingsView() {
                 {/* Categories List */}
                 <div className="space-y-2">
                   {categories.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                    <p className="text-sm text-ink-muted text-center py-4">
                       No categories yet. Add one to get started!
                     </p>
                   ) : (
                     categories.map((category) => (
                       <div
                         key={category.id}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600"
+                        className="flex items-center gap-3 p-3 rounded-lg border border-edge"
                       >
                         {editingCategory?.id === category.id ? (
                           // Edit mode
@@ -323,7 +323,7 @@ function SettingsView() {
                                 type="text"
                                 value={editingCategory.name}
                                 onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                                className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                className="w-full px-3 py-1.5 text-sm border border-edge-strong rounded-lg focus:outline-none focus:border-brand bg-card text-ink"
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') handleUpdateCategory(category.id)
                                   if (e.key === 'Escape') setEditingCategory(null)
@@ -337,8 +337,8 @@ function SettingsView() {
                                     onClick={() => setEditingCategory({ ...editingCategory, color })}
                                     className={`w-8 h-8 rounded-lg border-2 transition-all ${
                                       editingCategory.color === color
-                                        ? 'border-[#F0A500] scale-110'
-                                        : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                                        ? 'border-brand scale-110'
+                                        : 'border-edge-strong hover:scale-105'
                                     }`}
                                     style={{ backgroundColor: color }}
                                   />
@@ -348,13 +348,13 @@ function SettingsView() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateCategory(category.id)}
-                                className="px-3 py-1.5 text-xs bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
+                                className="px-3 py-1.5 text-xs bg-brand text-brand-on rounded-lg hover:bg-brand-dark transition-colors font-semibold"
                               >
                                 Save
                               </button>
                               <button
                                 onClick={() => setEditingCategory(null)}
-                                className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                                className="px-3 py-1.5 text-xs text-ink-muted hover:text-ink transition-colors"
                               >
                                 Cancel
                               </button>
@@ -367,12 +367,12 @@ function SettingsView() {
                               className="w-8 h-8 rounded-lg flex-shrink-0"
                               style={{ backgroundColor: category.color }}
                             />
-                            <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <span className="flex-1 text-sm font-medium text-ink">
                               {category.name}
                             </span>
                             <button
                               onClick={() => setEditingCategory({ id: category.id, name: category.name, color: category.color })}
-                              className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
+                              className="px-3 py-1.5 text-xs text-ink-muted hover:text-ink transition-colors whitespace-nowrap"
                             >
                               Edit
                             </button>
@@ -393,7 +393,7 @@ function SettingsView() {
                 <div className="pt-2">
                   <button
                     onClick={() => setShowAddCategory(!showAddCategory)}
-                    className="w-full px-3 py-2 text-sm bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
+                    className="w-full px-3 py-2 text-sm bg-brand text-brand-on rounded-lg hover:bg-brand-dark transition-colors font-semibold"
                   >
                     + Add Category
                   </button>
@@ -401,13 +401,13 @@ function SettingsView() {
 
                 {/* Add Category Form */}
                 {showAddCategory && (
-                  <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
+                  <div className="p-4 bg-hover rounded-lg space-y-3">
                     <input
                       type="text"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Category name..."
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm border border-edge-strong rounded-lg focus:outline-none focus:border-brand bg-card text-ink"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleAddCategory()
                       }}
@@ -415,7 +415,7 @@ function SettingsView() {
                     />
 
                     <div>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Choose color:</p>
+                      <p className="text-xs text-ink-muted mb-2">Choose color:</p>
                       <div className="flex gap-2 flex-wrap">
                         {colorPresets.map((color) => (
                           <button
@@ -423,8 +423,8 @@ function SettingsView() {
                             onClick={() => setNewCategoryColor(color)}
                             className={`w-10 h-10 rounded-lg border-2 transition-all ${
                               newCategoryColor === color
-                                ? 'border-[#F0A500] scale-110'
-                                : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                                ? 'border-brand scale-110'
+                                : 'border-edge-strong hover:scale-105'
                             }`}
                             style={{ backgroundColor: color }}
                           />
@@ -435,7 +435,7 @@ function SettingsView() {
                     <div className="flex gap-2">
                       <button
                         onClick={handleAddCategory}
-                        className="px-4 py-2 text-sm bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold"
+                        className="px-4 py-2 text-sm bg-brand text-brand-on rounded-lg hover:bg-brand-dark transition-colors font-semibold"
                       >
                         Add Category
                       </button>
@@ -445,7 +445,7 @@ function SettingsView() {
                           setNewCategoryName('')
                           setNewCategoryColor(CATEGORY_COLOR_PALETTE[0])
                         }}
-                        className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                        className="px-4 py-2 text-sm text-ink-muted hover:text-ink transition-colors"
                       >
                         Cancel
                       </button>
@@ -458,12 +458,12 @@ function SettingsView() {
         </div>
 
         {/* Day Start Setting */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">When does your day start?</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h2 className="text-lg font-medium text-ink">When does your day start?</h2>
+                <p className="text-sm text-ink-muted mt-1">
                   {timeSettingExpanded
                     ? "At this time each day, your Today list will reset. Unfinished tasks move to the backlog, and completed tasks are archived."
                     : `Currently: ${timeOptions.find(opt => opt.value === dayStart)?.label || dayStart}`
@@ -472,7 +472,7 @@ function SettingsView() {
               </div>
               <button
                 onClick={() => setTimeSettingExpanded(!timeSettingExpanded)}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                className="p-2 text-ink-muted hover:text-ink transition-colors"
                 aria-label={timeSettingExpanded ? "Collapse time setting" : "Expand time setting"}
               >
                 <svg
@@ -498,17 +498,17 @@ function SettingsView() {
                       onClick={() => setDayStart(option.value)}
                       className={`w-full px-4 py-3 text-left rounded-lg border-2 transition-all ${
                         dayStart === option.value
-                          ? 'border-[#F0A500] bg-orange-50 dark:bg-orange-900/20'
-                          : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          ? 'border-brand bg-brand-subtle'
+                          : 'border-edge hover:border-edge dark:hover:border-edge hover:bg-hover'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        <span className="text-sm font-medium text-ink">
                           {option.label}
                         </span>
                         {dayStart === option.value && (
                           <svg
-                            className="w-5 h-5 text-[#F0A500]"
+                            className="w-5 h-5 text-brand"
                             fill="none"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -530,7 +530,7 @@ function SettingsView() {
                     className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                       isSaved
                         ? 'bg-green-600 text-white'
-                        : 'bg-[#F0A500] text-gray-800 hover:bg-[#D89400] shadow-sm'
+                        : 'bg-brand text-brand-on hover:bg-brand-dark shadow-sm'
                     }`}
                   >
                     {isSaved ? '✓ Saved!' : 'Set time'}
@@ -561,36 +561,36 @@ function SettingsView() {
         </div>
 
         {/* Stats */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Your Stats</h2>
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
+          <h2 className="text-lg font-medium text-ink mb-4">Your Stats</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <div className="text-2xl font-semibold text-ink">
                 {done.length}
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Tasks Completed</div>
+              <div className="text-xs text-ink-muted mt-1">Tasks Completed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <div className="text-2xl font-semibold text-ink">
                 {backlog.length}
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">In Backlog</div>
+              <div className="text-xs text-ink-muted mt-1">In Backlog</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+              <div className="text-2xl font-semibold text-ink">
                 {recurring.length}
               </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Recurring Tasks</div>
+              <div className="text-xs text-ink-muted mt-1">Recurring Tasks</div>
             </div>
           </div>
         </div>
 
         {/* Export Data */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Export & Backup</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <h2 className="text-lg font-medium text-ink">Export & Backup</h2>
+              <p className="text-sm text-ink-muted mt-1">
                 Download all your data as a JSON file for backup, or restore from a previous backup.
               </p>
             </div>
@@ -598,7 +598,7 @@ function SettingsView() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={handleExportData}
-                className="px-6 py-2 bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm flex items-center gap-2"
+                className="px-6 py-2 bg-brand text-brand-on rounded-lg hover:bg-brand-dark transition-colors font-semibold shadow-sm flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                   <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -606,7 +606,7 @@ function SettingsView() {
                 Download Backup
               </button>
 
-              <label className="px-6 py-2 bg-gray-700 dark:bg-gray-600 text-white rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition-colors font-semibold shadow-sm flex items-center gap-2 cursor-pointer">
+              <label className="px-6 py-2 bg-hover dark:bg-secondary text-white rounded-lg hover:bg-hover dark:hover:bg-secondary-dark transition-colors font-semibold shadow-sm flex items-center gap-2 cursor-pointer">
                 <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                   <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L9 8m4-4v12" />
                 </svg>
@@ -642,12 +642,12 @@ function SettingsView() {
           </div>
         </div>
         {/* Change Password */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-calm-200 dark:border-gray-700 p-6">
+        <div className="bg-card rounded-lg shadow-sm border border-edge p-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Change Password</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <h2 className="text-lg font-medium text-ink">Change Password</h2>
+                <p className="text-sm text-ink-muted mt-1">
                   Update your account password
                 </p>
               </div>
@@ -659,7 +659,7 @@ function SettingsView() {
                   setNewPassword('')
                   setConfirmPassword('')
                 }}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
+                className="p-2 text-ink-muted hover:text-ink transition-colors"
                 aria-label={passwordExpanded ? "Collapse" : "Expand"}
               >
                 <svg
@@ -685,7 +685,7 @@ function SettingsView() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-ink mb-1">
                     New password
                   </label>
                   <input
@@ -696,12 +696,12 @@ function SettingsView() {
                     required
                     minLength={6}
                     disabled={passwordLoading}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                    className="w-full px-4 py-3 border border-edge-strong rounded-lg focus:outline-none focus:border-brand transition-colors bg-input text-ink disabled:opacity-50"
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 6 characters</p>
+                  <p className="text-xs text-ink-muted mt-1">Minimum 6 characters</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-ink mb-1">
                     Confirm new password
                   </label>
                   <input
@@ -712,16 +712,16 @@ function SettingsView() {
                     required
                     minLength={6}
                     disabled={passwordLoading}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-[#F0A500] transition-colors bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:opacity-50"
+                    className="w-full px-4 py-3 border border-edge-strong rounded-lg focus:outline-none focus:border-brand transition-colors bg-input text-ink disabled:opacity-50"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={passwordLoading || !newPassword || !confirmPassword}
-                  className="px-6 py-2 bg-[#F0A500] text-gray-800 rounded-lg hover:bg-[#D89400] transition-colors font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2 bg-brand text-brand-on rounded-lg hover:bg-brand-dark transition-colors font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {passwordLoading && (
-                    <div className="w-4 h-4 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-ink border-t-transparent rounded-full animate-spin" />
                   )}
                   {passwordLoading ? 'Updating...' : 'Update password'}
                 </button>

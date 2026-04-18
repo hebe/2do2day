@@ -41,7 +41,7 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
   return (
     <div className="text-center space-y-8 py-20">
       {/* Main prompt */}
-      <h1 className="text-3xl md:text-4xl text-calm-700 dark:text-gray-300 font-light">
+      <h1 className="text-3xl md:text-4xl text-ink dark:text-ink-faint font-light">
         {message}
       </h1>
 
@@ -53,7 +53,7 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Add a task..."
-          className="w-full px-4 py-4 text-lg border-2 border-calm-200 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:border-[#F0A500] transition-colors"
+          className="w-full px-4 py-4 text-lg border-2 border-edge rounded-lg dark:bg-hover dark:text-white focus:outline-none focus:border-brand transition-colors"
         />
       </form>
 
@@ -61,17 +61,17 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
       <div className="flex items-center justify-center gap-3 text-sm">
         <button
           onClick={handleAddFromBacklog}
-          className="text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors underline underline-offset-2"
+          className="text-ink-muted hover:text-ink-muted transition-colors underline underline-offset-2"
         >
           Add from backlog
         </button>
 
         {recurringCount > 0 && (
           <>
-            <span className="text-gray-300 dark:text-gray-600">•</span>
+            <span className="text-ink-faint">•</span>
             <button
               onClick={handleAddFromRecurring}
-              className="text-calm-600 dark:text-gray-400 hover:text-calm-700 dark:hover:text-gray-300 transition-colors underline underline-offset-2 flex items-center gap-1"
+              className="text-ink-muted hover:text-ink-muted transition-colors underline underline-offset-2 flex items-center gap-1"
             >
               <span>💫</span>
               <span>{recurringCount} {recurringCount === 1 ? 'recurring task ready' : 'recurring tasks ready'}</span>
@@ -82,7 +82,7 @@ function TopPrompt({ inputValue, setInputValue, handleAddTask, handleAddFromBack
 
       {/* Placeholder for recurring task indicator */}
       {/* Will be implemented later:
-      <div className="text-xs text-calm-500">
+      <div className="text-xs text-ink-muted">
         💫 You have recurring tasks waiting — want to review them?
       </div>
       */}

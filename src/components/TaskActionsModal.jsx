@@ -92,23 +92,23 @@ function TaskActionsModal({
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-end justify-center p-0">
-        <div className="bg-white dark:bg-gray-800 rounded-t-3xl shadow-xl border-t border-gray-200 dark:border-gray-700 w-full max-w-2xl animate-slideUp overflow-y-auto" style={{ maxHeight: '75vh' }}>
+        <div className="bg-card rounded-t-3xl shadow-xl border-t border-edge w-full max-w-2xl animate-slideUp overflow-y-auto" style={{ maxHeight: '75vh' }}>
           {/* Header */}
-          <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-5 border-b border-edge">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                <p className="text-xs text-ink-muted uppercase tracking-wide mb-1">
                   {isToday && 'Task Options'}
                   {isBacklog && 'Backlog Task'}
                   {isRecurring && 'Recurring Task'}
                 </p>
-                <h2 className="text-base font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                <h2 className="text-base font-medium text-ink line-clamp-2">
                   {task.title}
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                className="flex-shrink-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors -mt-1"
+                className="flex-shrink-0 text-ink-faint hover:text-ink-muted transition-colors -mt-1"
                 aria-label="Close"
               >
                 <svg
@@ -132,7 +132,7 @@ function TaskActionsModal({
             <div className="flex gap-3">
               <button
                 onClick={onEdit}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-ink hover:bg-hover rounded-xl transition-colors border border-edge"
               >
                 <span className="text-xl">✏️</span>
                 <span className="text-sm font-medium">Edit</span>
@@ -142,8 +142,8 @@ function TaskActionsModal({
                 onClick={handleToggleUrgent}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-colors border ${
                   task.urgent
-                    ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ? 'bg-brand-subtle border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300'
+                    : 'border-edge text-ink hover:bg-hover'
                 }`}
               >
                 <span className="text-xl">🔥</span>
@@ -152,18 +152,18 @@ function TaskActionsModal({
             </div>
 
             {/* Eisenhower quadrant picker - collapsible */}
-            <div className="rounded-xl bg-gray-50 dark:bg-gray-700/50">
+            <div className="rounded-xl bg-hover">
               <button
                 onClick={() => setShowQuadrant(!showQuadrant)}
                 className="w-full flex items-center justify-between px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">⊞</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-ink">
                     Priority
                   </span>
                   {activeQuadrant && (
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                    <span className="text-xs text-ink-faint">
                       {activeQuadrant === 'P1' ? '🎯 Do First' :
                       activeQuadrant === 'P2' ? '📅 Schedule' :
                       activeQuadrant === 'P3' ? '👋 Delegate' :
@@ -172,7 +172,7 @@ function TaskActionsModal({
                   )}
                 </div>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${showQuadrant ? 'rotate-180' : ''}`}
+                  className={`w-4 h-4 text-ink-faint transition-transform ${showQuadrant ? 'rotate-180' : ''}`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -182,12 +182,12 @@ function TaskActionsModal({
               {showQuadrant && (
                 <div className="px-4 pb-3">
                   {activeQuadrant && (
-                    <span className="text-xs text-gray-400 dark:text-gray-500 block mb-2">tap to deselect</span>
+                    <span className="text-xs text-ink-faint block mb-2">tap to deselect</span>
                   )}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2 grid grid-cols-2 px-1">
-                      <span className="text-xs text-gray-400 dark:text-gray-500 text-center">not urgent</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 text-center">urgent</span>
+                      <span className="text-xs text-ink-faint text-center">not urgent</span>
+                      <span className="text-xs text-ink-faint text-center">urgent</span>
                     </div>
                     {QUADRANTS.map((q) => (
                       <button
@@ -196,7 +196,7 @@ function TaskActionsModal({
                         className={`flex flex-col items-center justify-center gap-1 px-3 py-3 rounded-xl text-sm transition-all border ${
                           activeQuadrant === q.id
                             ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-300 dark:ring-indigo-600'
-                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'
+                            : 'bg-input border-edge text-ink hover:bg-hover'
                         }`}
                       >
                         <span className="text-lg">{q.emoji}</span>
@@ -205,8 +205,8 @@ function TaskActionsModal({
                       </button>
                     ))}
                     <div className="col-span-2 grid grid-cols-2 px-1 mt-1">
-                      <span className="text-xs text-gray-400 dark:text-gray-500 text-center">important</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500 text-center">not important</span>
+                      <span className="text-xs text-ink-faint text-center">important</span>
+                      <span className="text-xs text-ink-faint text-center">not important</span>
                     </div>
                   </div>
                 </div>
@@ -214,10 +214,10 @@ function TaskActionsModal({
             </div>
 
             {/* Category inline picker - horizontal scrollable chips */}
-            <div className="px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+            <div className="px-4 py-3 rounded-xl bg-hover">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-lg">🏷️</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Category</span>
+                <span className="text-sm font-medium text-ink">Category</span>
               </div>
               <div className="flex gap-2 overflow-x-auto py-1 -mx-1 px-1 scrollbar-hide">
                 {/* No category option */}
@@ -225,8 +225,8 @@ function TaskActionsModal({
                   onClick={() => handleCategorySelect(null)}
                   className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                     !task.category
-                      ? 'bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 ring-2 ring-gray-400 dark:ring-gray-500'
-                      : 'bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                      ? 'bg-edge-strong dark:bg-secondary text-ink dark:text-ink ring-2 ring-edge dark:ring-edge-strong'
+                      : 'bg-edge text-ink-muted hover:bg-edge-strong dark:hover:bg-secondary-dark'
                   }`}
                 >
                   None
@@ -242,7 +242,7 @@ function TaskActionsModal({
                       style={{ '--accent': categoryOKLab }}
                       className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all cat-chip ${
                         task.category === category.id
-                          ? 'ring-2 ring-gray-500 dark:ring-gray-400'
+                          ? 'ring-2 ring-edge dark:ring-edge-strong'
                           : 'hover:opacity-80'
                       }`}
                     >
@@ -259,7 +259,7 @@ function TaskActionsModal({
                 {onMoveToToday && (
                   <button
                     onClick={onMoveToToday}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition-colors font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-ink bg-hover hover:bg-hover rounded-xl transition-colors font-medium"
                   >
                     <span className="text-xl">←</span>
                     <span className="text-sm">Add to Today</span>
@@ -269,7 +269,7 @@ function TaskActionsModal({
                 {onMakeRecurring && (
                   <button
                     onClick={onMakeRecurring}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-ink hover:bg-hover rounded-xl transition-colors border border-edge"
                   >
                     <span className="text-xl">{isRecurring ? '🔄' : '↻'}</span>
                     <span className="text-sm font-medium">{isRecurring ? 'Change interval' : 'Make recurring'}</span>
@@ -284,7 +284,7 @@ function TaskActionsModal({
                 {onMoveToBacklog && (
                   <button
                     onClick={onMoveToBacklog}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-ink hover:bg-hover rounded-xl transition-colors border border-edge"
                   >
                     <span className="text-xl">📦</span>
                     <span className="text-sm font-medium">Move to backlog</span>
@@ -294,7 +294,7 @@ function TaskActionsModal({
                 {onMakeRecurring && (
                   <button
                     onClick={onMakeRecurring}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-200 dark:border-gray-700"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-ink hover:bg-hover rounded-xl transition-colors border border-edge"
                   >
                     <span className="text-xl">↻</span>
                     <span className="text-sm font-medium">Make recurring</span>

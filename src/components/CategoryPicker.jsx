@@ -15,15 +15,15 @@ function CategoryPicker({ selectedCategory, onSelect, onClose }) {
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-t-3xl md:rounded-lg shadow-xl border-t md:border border-gray-200 dark:border-gray-700 w-full max-w-md animate-slideUp">
+        <div className="bg-card rounded-t-3xl md:rounded-lg shadow-xl border-t md:border border-edge w-full max-w-md animate-slideUp">
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <div className="px-6 py-4 border-b border-edge flex items-center justify-between">
+            <h2 className="text-lg font-medium text-ink">
               Choose Category
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+              className="text-ink-faint hover:text-ink-muted transition-colors"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,16 +42,16 @@ function CategoryPicker({ selectedCategory, onSelect, onClose }) {
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 selectedCategory === null
-                  ? 'bg-gray-100 dark:bg-gray-700'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  ? 'bg-hover'
+                  : 'hover:bg-hover'
               }`}
             >
-              <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+              <div className="w-6 h-6 rounded-full border-2 border-edge-strong flex items-center justify-center">
                 {selectedCategory === null && (
-                  <div className="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500" />
+                  <div className="w-3 h-3 rounded-full bg-edge-strong dark:bg-hover0" />
                 )}
               </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span className="text-sm font-medium text-ink dark:text-ink">
                 No category
               </span>
             </button>
@@ -66,8 +66,8 @@ function CategoryPicker({ selectedCategory, onSelect, onClose }) {
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   selectedCategory === category.id
-                    ? 'bg-gray-100 dark:bg-gray-700'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    ? 'bg-hover'
+                    : 'hover:bg-hover'
                 }`}
               >
                 <div 
@@ -80,7 +80,7 @@ function CategoryPicker({ selectedCategory, onSelect, onClose }) {
                     </svg>
                   )}
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                <span className="text-sm font-medium text-ink dark:text-ink">
                   {category.name}
                 </span>
               </button>
@@ -88,8 +88,8 @@ function CategoryPicker({ selectedCategory, onSelect, onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+          <div className="px-6 py-4 border-t border-edge bg-hover">
+            <p className="text-xs text-ink-muted text-center">
               Manage categories in Settings
             </p>
           </div>
