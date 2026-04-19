@@ -67,11 +67,9 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
     })
   )
 
-  // Show list if there are any tasks
+  // Mirror list view to task presence — empty list returns to TopPrompt
   useEffect(() => {
-    if (today.length > 0) {
-      setShowList(true)
-    }
+    setShowList(today.length > 0)
   }, [today.length])
 
   // Re-pick subtitle when the list's state changes (empty ↔ pending ↔ all_done)
@@ -268,34 +266,28 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
 
           {/* Task list */}
           <div className="bg-card rounded-lg shadow-sm border border-edge overflow-hidden">
-            {today.length === 0 ? (
-              <div className="p-8 text-center text-ink-muted">
-                <p className="text-sm">Your list is empty. Add your first task below.</p>
-              </div>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+            >
+              <SortableContext
+                items={today.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <SortableContext
-                  items={today.map((t) => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="divide-y divide-edge">
-                    {today.map((task) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        onDelete={deleteTask}
-                        onEdit={editTask}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
+                <div className="divide-y divide-edge">
+                  {today.map((task) => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      onDelete={deleteTask}
+                      onEdit={editTask}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Footer actions */}
