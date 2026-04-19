@@ -6,6 +6,7 @@ import FooterActions from './FooterActions'
 import BacklogQuickPicker from './BacklogQuickPicker'
 import RecurringQuickPicker from './RecurringQuickPicker'
 import { getReadyRecurringTasks } from '../utils/recurringUtils'
+import { getTodaySubtitle, getListState } from '../utils/todaySubtitle'
 
 import {
   DndContext,
@@ -23,48 +24,18 @@ import {
 } from '@dnd-kit/sortable'
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
-const TODAY_PROMPTS = [
-  "What's one thing you'd like to accomplish today?",
-  "Ready for a fresh start?",
-  "What matters most to you today?",
-  "Start simple. What's your first step?",
-  "What would make today feel complete?",
-  "Begin with what feels right.",
-  "Today is yours. Where should we start?",
-  "What's calling for your attention?",
-  "Keep it light. What's on your mind?",
-  "Pick one thing. Just one.",
-  "What deserves your energy today?",
-  "A blank slate. What will you create?",
-  "Small steps add up. What's yours?",
-  "No pressure. What feels important?",
-  "What would feel good to finish today?",
-  "Trust yourself. What needs doing?",
-  "Start anywhere. Where feels right?",
-  "What's worth your time today?",
-  "One task at a time. Which one first?",
-  "Let's keep it simple today.",
-  "What would make you proud today?",
-  "Choose one thing to focus on.",
-  "What's been on your mind lately?",
-  "No rush. What feels urgent to you?",
-  "Take a breath. What's next?",
-  "What would make you sleep better tonight?",
-]
-
 function TodayView() {
 const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
-  const [todayPrompt] = useState(
-    () => TODAY_PROMPTS[Math.floor(Math.random() * TODAY_PROMPTS.length)]
+  const [todayPrompt, setTodayPrompt] = useState(
+    () => getTodaySubtitle({ today, dayStart: settings.dayStart })
   )
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
   const [showRecurringPicker, setShowRecurringPicker] = useState(false)
-  const [showResetMessage, setShowResetMessage] = useState(false)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
   const inputRef = useRef(null)
-  const lastResetRef = useRef(settings.lastDayReset)
+  const prevListStateRef = useRef(getListState(today))
   const pullStartY = useRef(0)
   const pullCurrentY = useRef(0)
   const isPulling = useRef(false)
@@ -73,6 +44,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   const undoneCount = today.filter(t => !t.done).length
   const showCounter = today.length > 5
   const hasPrioritized = today.some(t => t.priorityScore !== null)
+  const listState = getListState(today)
 
   // Get ready recurring tasks
   const readyRecurringTasks = getReadyRecurringTasks(recurring, settings.dayStart)
@@ -102,22 +74,14 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
     }
   }, [today.length])
 
-  // Check if day was just reset
+  // Re-pick subtitle when the list's state changes (empty ↔ pending ↔ all_done)
   useEffect(() => {
-    if (settings.lastDayReset && settings.lastDayReset !== lastResetRef.current) {
-      const resetTime = new Date(settings.lastDayReset)
-      const now = new Date()
-      const timeSinceReset = now - resetTime
-      
-      // Show message if reset happened in the last 5 minutes
-      if (timeSinceReset < 5 * 60 * 1000) {
-        setShowResetMessage(true)
-        setTimeout(() => setShowResetMessage(false), 8000)
-      }
-      
-      lastResetRef.current = settings.lastDayReset
+    const nextState = getListState(today)
+    if (nextState !== prevListStateRef.current) {
+      setTodayPrompt(getTodaySubtitle({ today, dayStart: settings.dayStart }))
+      prevListStateRef.current = nextState
     }
-  }, [settings.lastDayReset])
+  }, [today, settings.dayStart])
 
   // Auto-focus input on mount
   useEffect(() => {
@@ -243,37 +207,10 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
         </div>
       )}
 
-      {/* Day Reset Message */}
-      {showResetMessage && (
-        <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 animate-slideDown">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 text-green-600 dark:text-green-400">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-green-900 dark:text-green-100">Good morning! Your day has reset.</h3>
-              <p className="text-sm text-green-800 dark:text-green-200 mt-1">
-                Yesterday's incomplete tasks have been moved to your backlog, and completed tasks are archived in Done!
-              </p>
-            </div>
-            <button
-              onClick={() => setShowResetMessage(false)}
-              className="flex-shrink-0 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Page header */}
       <div className="mb-8">
         <h1 className="font-display text-3xl font-normal text-ink">Today</h1>
-        <p className="text-sm text-ink-muted mt-1 italic">{todayPrompt}</p>
+        <p className={`text-ink-muted italic ${listState === 'empty' ? 'text-3xl mt-4 leading-snug' : 'text-sm mt-1'}`}>{todayPrompt}</p>
       </div>
 
       {/* Blank state */}
@@ -386,22 +323,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
         />
       )}
 
-      {/* Animation for reset message */}
       <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-        
         /* Custom accent color */
         :root {
           --accent-color: #F0A500;
