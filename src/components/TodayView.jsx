@@ -25,7 +25,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function TodayView() {
-const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, loadFromCloudAndMerge } = useStore()
+const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, updateSettings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [todayPrompt, setTodayPrompt] = useState(
@@ -34,7 +34,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
   const [showRecurringPicker, setShowRecurringPicker] = useState(false)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
-  const [hideFinished, setHideFinished] = useState(false)
+  const hideFinished = settings.hideFinishedToday ?? false
   const inputRef = useRef(null)
   const prevListStateRef = useRef(getListState(today))
   const pullStartY = useRef(0)
@@ -298,7 +298,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
           {showHideFinishedToggle && (
             <div className="flex justify-center -mt-2">
               <button
-                onClick={() => setHideFinished((v) => !v)}
+                onClick={() => updateSettings({ hideFinishedToday: !hideFinished })}
                 className="text-xs text-ink-muted hover:text-ink transition-colors underline underline-offset-2"
               >
                 {hideFinished
