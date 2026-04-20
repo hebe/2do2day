@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import useStore from '../store/useStore'
 import BacklogItem from './BacklogItem'
+import { sortBacklog, BACKLOG_SORT_OPTIONS } from '../utils/backlogSort'
 
 import {
   DndContext,
@@ -79,59 +80,12 @@ function BacklogView() {
     }
   }
 
-  // Sort backlog based on current preference
-  const getSortedBacklog = () => {
-    // For manual sorting, return as-is (maintains user's order)
-    if (sortBy === 'manual') {
-      return backlog
-    }
-
-    const sorted = [...backlog]
-
-    switch (sortBy) {
-      case 'recent':
-        return sorted.sort((a, b) =>
-          new Date(b.lastAddedToBacklog || b.createdAt) - new Date(a.lastAddedToBacklog || a.createdAt)
-        )
-      case 'postponed':
-        return sorted.sort((a, b) =>
-          (b.addedToBacklogCount || 0) - (a.addedToBacklogCount || 0)
-        )
-       case 'priority':
-        return sorted.sort((a, b) => {
-          if (a.priorityScore === null && b.priorityScore === null) return 0
-          if (a.priorityScore === null) return 1
-          if (b.priorityScore === null) return -1
-          return b.priorityScore - a.priorityScore
-        })
-      case 'oldest':
-        return sorted.sort((a, b) =>
-          new Date(a.createdAt) - new Date(b.createdAt)
-        )
-      case 'category':
-        return sorted.sort((a, b) => {
-          // Tasks without category go to the end
-          if (!a.category && !b.category) return 0
-          if (!a.category) return 1
-          if (!b.category) return -1
-
-          // Find category names for sorting
-          const catA = settings.categories?.find(c => c.id === a.category)?.name || a.category
-          const catB = settings.categories?.find(c => c.id === b.category)?.name || b.category
-
-          return catA.localeCompare(catB)
-        })
-      default:
-        return sorted
-    }
-  }
-
   const getVisibleItems = (items) => {
     if (showAll || items.length <= 50) return items
     return items.slice(0, 50)
   }
 
-  const sortedBacklog = getSortedBacklog()
+  const sortedBacklog = sortBacklog(backlog, sortBy, settings.categories || [])
   const visibleBacklog = getVisibleItems(sortedBacklog)
   
   // Drag is only enabled in manual sort mode
@@ -159,12 +113,9 @@ function BacklogView() {
             onChange={(e) => handleSortChange(e.target.value)}
             className="text-xs px-3 py-1 border border-edge-strong rounded focus:outline-none focus:border-edge-strong transition-colors bg-card text-ink"
           >
-            <option value="manual">Manual (drag to reorder)</option>
-            <option value="recent">Recently added</option>
-            <option value="postponed">Most postponed</option>
-            <option value="priority">Eisenhower prio</option>
-            <option value="oldest">Oldest first</option>
-            <option value="category">Category</option>
+            {BACKLOG_SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
         </div>
 

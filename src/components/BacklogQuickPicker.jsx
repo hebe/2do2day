@@ -1,13 +1,21 @@
 import React from 'react'
 import useStore from '../store/useStore'
+import { sortBacklog, BACKLOG_SORT_OPTIONS } from '../utils/backlogSort'
 
 function BacklogQuickPicker({ onClose }) {
-  const { backlog, addFromBacklog } = useStore()
+  const { backlog, addFromBacklog, settings, updateSettings } = useStore()
+  const sortBy = settings.backlogSortBy || 'manual'
 
   const handleSelect = (id) => {
     addFromBacklog(id)
     onClose()
   }
+
+  const handleSortChange = (newSort) => {
+    updateSettings({ backlogSortBy: newSort })
+  }
+
+  const sortedBacklog = sortBacklog(backlog, sortBy, settings.categories || [])
 
   return (
     <>
@@ -20,12 +28,23 @@ function BacklogQuickPicker({ onClose }) {
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12">
         <div className="bg-card rounded-lg shadow-xl border border-edge w-full max-w-md max-h-[80vh] flex flex-col animate-slideUp">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-edge flex items-center justify-between">
-            <h2 className="text-lg font-medium text-ink">Add from Backlog</h2>
+          {/* Header — sort control replaces the title */}
+          <div className="px-6 py-4 border-b border-edge flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs text-ink-muted shrink-0">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="text-xs px-3 py-1 border border-edge-strong rounded focus:outline-none focus:border-edge-strong transition-colors bg-card text-ink"
+              >
+                {BACKLOG_SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
             <button
               onClick={onClose}
-              className="text-ink-faint hover:text-ink-muted transition-colors"
+              className="text-ink-faint hover:text-ink-muted transition-colors shrink-0"
               aria-label="Close"
             >
               <svg
@@ -53,7 +72,7 @@ function BacklogQuickPicker({ onClose }) {
               </div>
             ) : (
               <div className="divide-y divide-edge">
-                {backlog.map((task) => (
+                {sortedBacklog.map((task) => (
                   <button
                     key={task.id}
                     onClick={() => handleSelect(task.id)}
