@@ -25,7 +25,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function TodayView() {
-const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, loadFromCloudAndMerge } = useStore()
+const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks, sortTodayByCompletion, sortTodayByPriority, settings, updateSettings, loadFromCloudAndMerge } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [showList, setShowList] = useState(false)
   const [todayPrompt, setTodayPrompt] = useState(
@@ -34,6 +34,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   const [showBacklogPicker, setShowBacklogPicker] = useState(false)
   const [showRecurringPicker, setShowRecurringPicker] = useState(false)
   const [isPullRefreshing, setIsPullRefreshing] = useState(false)
+  const hideFinished = settings.hideFinishedToday ?? false
   const inputRef = useRef(null)
   const prevListStateRef = useRef(getListState(today))
   const pullStartY = useRef(0)
@@ -45,6 +46,9 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   const showCounter = today.length > 5
   const hasPrioritized = today.some(t => t.priorityScore !== null)
   const listState = getListState(today)
+  // Offer collapsing finished tasks once there are enough of them to feel noisy
+  const showHideFinishedToggle = doneCount > 0 && (doneCount >= 5 || today.length > 10)
+  const visibleToday = hideFinished ? today.filter(t => !t.done) : today
 
   // Get ready recurring tasks
   const readyRecurringTasks = getReadyRecurringTasks(recurring, settings.dayStart)
@@ -273,11 +277,11 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
               modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             >
               <SortableContext
-                items={today.map((t) => t.id)}
+                items={visibleToday.map((t) => t.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="divide-y divide-edge">
-                  {today.map((task) => (
+                  {visibleToday.map((task) => (
                     <TaskRow
                       key={task.id}
                       task={task}
@@ -289,6 +293,20 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
               </SortableContext>
             </DndContext>
           </div>
+
+          {/* Show/hide finished tasks toggle */}
+          {showHideFinishedToggle && (
+            <div className="flex justify-center -mt-2">
+              <button
+                onClick={() => updateSettings({ hideFinishedToday: !hideFinished })}
+                className="text-xs text-ink-muted hover:text-ink transition-colors underline underline-offset-2"
+              >
+                {hideFinished
+                  ? `Show ${doneCount} finished ${doneCount === 1 ? 'task' : 'tasks'}`
+                  : `Hide ${doneCount} finished ${doneCount === 1 ? 'task' : 'tasks'}`}
+              </button>
+            </div>
+          )}
 
           {/* Footer actions */}
           <FooterActions
