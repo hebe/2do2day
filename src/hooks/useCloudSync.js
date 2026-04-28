@@ -27,6 +27,7 @@ export function useCloudSync(session, debounceMs = 2000) {
   const backlog = useStore((state) => state.backlog)
   const recurring = useStore((state) => state.recurring)
   const done = useStore((state) => state.done)
+  const tombstones = useStore((state) => state._tombstones)
   const settings = useStore((state) => state.settings)
 
   // Load from cloud and apply to store
@@ -58,6 +59,7 @@ export function useCloudSync(session, debounceMs = 2000) {
           backlog: result.data.backlog || [],
           recurring: result.data.recurring || [],
           done: result.data.done || [],
+          _tombstones: result.data._tombstones || [],
           settings: result.data.settings || {}
         }
 
@@ -81,6 +83,7 @@ export function useCloudSync(session, debounceMs = 2000) {
           backlog: currentState.backlog || [],
           recurring: currentState.recurring || [],
           done: currentState.done || [],
+          _tombstones: currentState._tombstones || [],
           settings: currentState.settings || {}
         }
 
@@ -108,6 +111,7 @@ export function useCloudSync(session, debounceMs = 2000) {
       backlog: currentState.backlog || [],
       recurring: currentState.recurring || [],
       done: currentState.done || [],
+      _tombstones: currentState._tombstones || [],
       settings: currentState.settings || {}
     }
 
@@ -190,7 +194,7 @@ export function useCloudSync(session, debounceMs = 2000) {
         clearTimeout(syncTimeoutRef.current)
       }
     }
-  }, [today, backlog, recurring, done, settings, session, cloudSyncReady, syncCurrentState, debounceMs])
+  }, [today, backlog, recurring, done, tombstones, settings, session, cloudSyncReady, syncCurrentState, debounceMs])
 
   // NO visibility change handler
   // NO online/offline handler
