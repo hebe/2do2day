@@ -47,7 +47,7 @@ const { today, recurring, addTodayTask, deleteTask, editTask, reorderTodayTasks,
   const hasPrioritized = today.some(t => t.priorityScore !== null)
   const listState = getListState(today)
   // Offer collapsing finished tasks once there are enough of them to feel noisy
-  const showHideFinishedToggle = doneCount > 0 && (doneCount >= 5 || today.length > 10)
+  const showHideFinishedToggle = doneCount > 0
   const visibleToday = hideFinished ? today.filter(t => !t.done) : today
 
   // Get ready recurring tasks
