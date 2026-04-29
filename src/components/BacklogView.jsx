@@ -20,7 +20,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers'
 
 function BacklogView() {
-  const { backlog, recurring, done, addBacklogTask, reorderBacklogTasks, updateSettings, settings } = useStore()
+  const { backlog, recurring, done, today, addBacklogTask, reorderBacklogTasks, updateSettings, settings } = useStore()
   const [activeTab, setActiveTab] = useState('backlog')
   const [showAll, setShowAll] = useState(false)
   const [showAllDone, setShowAllDone] = useState(false)
@@ -196,9 +196,18 @@ function BacklogView() {
         )
 
       case 'done':
+        // Merge archived done tasks with tasks ticked done in Today (not yet day-reset)
+        const todayDone = today.filter(t => t.done).map(t => ({
+          id: t.id,
+          title: t.title,
+          category: t.category,
+          completedAt: new Date().toISOString(),
+        }))
+        const allDone = [...todayDone, ...done]
+
         // Sort done tasks based on preference
         const getSortedDone = () => {
-          const sorted = [...done]
+          const sorted = [...allDone]
 
           switch (doneSortBy) {
             case 'recent':
@@ -230,11 +239,11 @@ function BacklogView() {
         }
 
         const sortedDone = getSortedDone()
-        const visibleDone = showAllDone || done.length <= 10 ? sortedDone : sortedDone.slice(0, 10)
+        const visibleDone = showAllDone || allDone.length <= 10 ? sortedDone : sortedDone.slice(0, 10)
 
         return (
           <div>
-            {done.length === 0 ? (
+            {allDone.length === 0 ? (
               <div className="p-8 text-center text-ink-muted">
                 <p className="text-sm">No completed tasks yet.</p>
                 <p className="text-xs mt-2 text-ink-muted">
@@ -245,7 +254,7 @@ function BacklogView() {
               <>
                 <div className="p-4 bg-hover border-b border-edge flex items-center justify-between">
                   <p className="text-sm text-ink">
-                    🎉 <strong>{done.length}</strong> {done.length === 1 ? 'task' : 'tasks'} completed!
+                    🎉 <strong>{allDone.length}</strong> {allDone.length === 1 ? 'task' : 'tasks'} completed!
                   </p>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-ink-muted">Sort:</span>
@@ -266,13 +275,13 @@ function BacklogView() {
                     <BacklogItem key={task.id} task={task} type="done" />
                   ))}
                 </div>
-                {done.length > 10 && !showAllDone && (
+                {allDone.length > 10 && !showAllDone && (
                   <div className="p-4 text-center border-t border-edge">
                     <button
                       onClick={() => setShowAllDone(true)}
                       className="text-sm text-ink-muted hover:text-ink transition-colors font-medium"
                     >
-                      Show all ({done.length} tasks)
+                      Show all ({allDone.length} tasks)
                     </button>
                   </div>
                 )}
@@ -356,7 +365,7 @@ function BacklogView() {
                 : 'border-transparent text-ink-faint hover:text-ink-muted'
             }`}
           >
-            Done! {done.length > 0 && `(${done.length})`}
+            Done! {(done.length + today.filter(t => t.done).length) > 0 && `(${done.length + today.filter(t => t.done).length})`}
           </button>
         </div>
 
