@@ -65,15 +65,11 @@ export async function saveToCloud(data) {
       return { success: false, error: 'Not authenticated' }
     }
 
-    // Sanity check - don't save empty/smaller data if cloud has more data.
-    // Tombstones count as "items accounted for" so legitimate cross-device
-    // deletes (which shrink the local lists) aren't blocked.
-    const tombstoneCount = data._tombstones?.length || 0
+    // Sanity check - don't save empty/smaller data if cloud has more data
     const totalItems = (data.today?.length || 0) +
                        (data.backlog?.length || 0) +
                        (data.recurring?.length || 0) +
-                       (data.done?.length || 0) +
-                       tombstoneCount
+                       (data.done?.length || 0)
 
     // Always check cloud before saving to prevent data loss
     const { data: existing } = await supabase
@@ -83,12 +79,10 @@ export async function saveToCloud(data) {
       .single()
 
     if (existing?.data) {
-      const cloudTombstoneCount = existing.data._tombstones?.length || 0
       const cloudTotal = (existing.data.today?.length || 0) +
                         (existing.data.backlog?.length || 0) +
                         (existing.data.recurring?.length || 0) +
-                        (existing.data.done?.length || 0) +
-                        cloudTombstoneCount
+                        (existing.data.done?.length || 0)
 
       // Block if we're about to lose significant data (more than 2 items)
       if (cloudTotal > 0 && totalItems < cloudTotal - 2) {
@@ -125,7 +119,6 @@ export async function saveToCloud(data) {
           backlog: data.backlog || [],
           recurring: data.recurring || [],
           done: data.done || [],
-          _tombstones: data._tombstones || [],
           settings: data.settings || {}
         },
         schema_version: SCHEMA_VERSION

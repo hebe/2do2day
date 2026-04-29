@@ -15,33 +15,9 @@ function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const checkAndResetDay = useStore((state) => state.checkAndResetDay)
-  const loadFromCloudAndMerge = useStore((state) => state.loadFromCloudAndMerge)
   const cloudSyncReady = useStore((state) => state._cloudSyncReady)
   useDarkMode() // Initialize dark mode
   useCloudSync(session) // Initialize cloud sync
-
-  // Re-sync from cloud when the tab regains focus or becomes visible.
-  // Initial cloud load only runs once on login, so without this, another
-  // device/tab can leave this tab with stale state and overwrite cloud
-  // changes (e.g. items marked done elsewhere reappearing).
-  useEffect(() => {
-    if (!session || !cloudSyncReady) return
-
-    const refresh = () => {
-      if (document.visibilityState === 'visible') {
-        loadFromCloudAndMerge().catch((err) =>
-          console.error('[App] Cloud refresh failed:', err)
-        )
-      }
-    }
-
-    document.addEventListener('visibilitychange', refresh)
-    window.addEventListener('focus', refresh)
-    return () => {
-      document.removeEventListener('visibilitychange', refresh)
-      window.removeEventListener('focus', refresh)
-    }
-  }, [session, cloudSyncReady, loadFromCloudAndMerge])
 
   // Check for existing session and set up auth listener
   useEffect(() => {
